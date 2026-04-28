@@ -1,0 +1,231 @@
+<Page
+    x:Class="ClientAccountApp.OrganizationSetupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Background="#0F1115" Padding="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Spacing="4">
+                <TextBlock
+                    x:Name="OrganizationSetupTitleTextBlock"
+                    Text="Создание организации"
+                    FontSize="34"
+                    FontWeight="SemiBold"
+                    Foreground="White"/>
+
+                <TextBlock
+                    Text="Заполните данные организации, от имени которой будут формироваться договоры и счета."
+                    Foreground="#9AA4B2"
+                    TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <Border
+                Grid.Row="2"
+                MaxWidth="900"
+                HorizontalAlignment="Left"
+                Background="#171A21"
+                BorderBrush="#2B3140"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="20">
+
+                <StackPanel Spacing="14">
+                    <TextBlock
+                        Text="Основные реквизиты"
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        Foreground="White"/>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Name="OrganizationInnTextBox"
+                            Grid.Column="0"
+                            Header="ИНН"
+                            PlaceholderText="Введите ИНН организации"/>
+
+                        <Button
+                            Grid.Column="1"
+                            x:Name="FillOrganizationByInnButton"
+                            Content="Заполнить по ИНН"
+                            Height="40"
+                            VerticalAlignment="Bottom"
+                            Click="FillOrganizationByInnButton_Click"/>
+                    </Grid>
+
+                    <TextBox
+                        x:Name="OrganizationNameTextBox"
+                        Header="Наименование организации"
+                        PlaceholderText="Например: ООО «НИАТЕК»"/>
+
+                    <TextBox
+                        x:Name="OrganizationShortNameTextBox"
+                        Header="Краткое название"
+                        PlaceholderText="Например: НИАТЕК"/>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Name="OrganizationKppTextBox"
+                            Grid.Column="0"
+                            Header="КПП"/>
+
+                        <TextBox
+                            x:Name="OrganizationOgrnTextBox"
+                            Grid.Column="1"
+                            Header="ОГРН / ОГРНИП"/>
+                    </Grid>
+
+                    <TextBox
+                        x:Name="OrganizationLegalAddressTextBox"
+                        Header="Юридический адрес"
+                        PlaceholderText="Юридический адрес организации"/>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="220"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Name="OrganizationDirectorNameTextBox"
+                            Grid.Column="0"
+                            Header="Руководитель / подписант"
+                            PlaceholderText="Например: Иванов Иван Иванович"/>
+
+                        <TextBox
+                            x:Name="OrganizationDirectorPositionTextBox"
+                            Grid.Column="1"
+                            Header="Должность"
+                            Text="Директор"/>
+                    </Grid>
+
+                    <TextBlock
+                        Text="Банковские реквизиты"
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Margin="0,10,0,0"/>
+
+                    <TextBox
+                        x:Name="OrganizationBankNameTextBox"
+                        Header="Банк"
+                        PlaceholderText="Наименование банка"/>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Name="OrganizationSettlementAccountTextBox"
+                            Grid.Column="0"
+                            Header="Расчётный счёт"/>
+
+                        <TextBox
+                            x:Name="OrganizationBankBicTextBox"
+                            Grid.Column="1"
+                            Header="БИК"/>
+                    </Grid>
+
+                    <TextBox
+                        x:Name="OrganizationCorrespondentAccountTextBox"
+                        Header="Корреспондентский счёт"/>
+
+                    <TextBlock
+                        Text="Контакты"
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Margin="0,10,0,0"/>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Name="OrganizationEmailTextBox"
+                            Grid.Column="0"
+                            Header="E-mail"/>
+
+                        <TextBox
+                            x:Name="OrganizationPhoneTextBox"
+                            Grid.Column="1"
+                            Header="Телефон"/>
+                    </Grid>
+                    <TextBlock
+    Text="Логотип"
+    FontSize="22"
+    FontWeight="SemiBold"
+    Foreground="White"
+    Margin="0,10,0,0"/>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+        x:Name="OrganizationLogoPathTextBox"
+        Grid.Column="0"
+        Header="Файл логотипа"
+        IsReadOnly="True"
+        PlaceholderText="Логотип пока не выбран"/>
+
+                        <Button
+        Grid.Column="1"
+        Content="Выбрать логотип"
+        Height="40"
+        VerticalAlignment="Bottom"
+        Click="PickOrganizationLogoButton_Click"/>
+                    </Grid>
+
+                    <Grid ColumnSpacing="12" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button
+                            Grid.Column="0"
+                            x:Name="SaveOrganizationButton"
+                            Content="Сохранить и войти"
+                            Click="SaveOrganizationButton_Click"/>
+
+                        <Button
+                            Grid.Column="1"
+                            Content="Выбрать другую организацию"
+                            Click="OpenOrganizationSelectButton_Click"/>
+                    </Grid>
+
+                    <TextBlock
+                        x:Name="OrganizationSetupStatusTextBlock"
+                        Text=""
+                        Foreground="#D7BA7D"
+                        TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

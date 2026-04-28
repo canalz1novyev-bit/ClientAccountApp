@@ -1,0 +1,160 @@
+<Page
+    x:Class="ClientAccountApp.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid
+            Background="{StaticResource NiatecBackgroundBrush}"
+            Padding="24"
+            RowSpacing="16">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Заголовок -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Spacing="4">
+                    <TextBlock
+                        Text="Сводка"
+                        Style="{StaticResource NiatecPageTitleTextStyle}"/>
+
+                    <TextBlock
+                        x:Name="ActiveOrganizationTextBlock"
+                        Text="Рабочая организация: —"
+                        Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+
+                    <TextBlock
+                        x:Name="DashboardUpdatedAtTextBlock"
+                        Text="Обновлено: —"
+                        Style="{StaticResource NiatecMutedTextStyle}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Карточки показателей -->
+            <Grid Grid.Row="1" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            Text="Клиенты"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <TextBlock
+                            x:Name="ClientsTotalTextBlock"
+                            Text="0"
+                            FontSize="28"
+                            FontWeight="SemiBold"
+                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+
+                        <TextBlock
+                            Text="Всего в базе"
+                            Style="{StaticResource NiatecMutedTextStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            Text="ЭЦП"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <TextBlock
+                            x:Name="SignaturesAttentionTextBlock"
+                            Text="0"
+                            Style="{StaticResource NiatecMetricNumberTextStyle}"/>
+
+                        <TextBlock
+                            Text="Истекают или просрочены"
+                            Style="{StaticResource NiatecMutedTextStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            Text="Договоры"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <TextBlock
+                            x:Name="ContractsWorkTextBlock"
+                            Text="0"
+                            Style="{StaticResource NiatecMetricNumberTextStyle}"/>
+
+                        <TextBlock
+                            Text="В работе по организации"
+                            Style="{StaticResource NiatecMutedTextStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            Text="Начисления"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <TextBlock
+                            x:Name="UnpaidInvoicesTextBlock"
+                            Text="0"
+                            Style="{StaticResource NiatecMetricNumberTextStyle}"/>
+
+                        <TextBlock
+                            x:Name="UnpaidInvoicesAmountTextBlock"
+                            Text="К оплате: 0,00 ₽"
+                            Style="{StaticResource NiatecMutedTextStyle}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Нижний рабочий блок -->
+            <Grid Grid.Row="3" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.2*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Требует внимания"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <StackPanel
+                            x:Name="AttentionPanel"
+                            Spacing="10"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Последние события"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <StackPanel
+                            x:Name="RecentPanel"
+                            Spacing="10"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

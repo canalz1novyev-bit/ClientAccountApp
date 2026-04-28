@@ -1,0 +1,156 @@
+<Page
+    x:Class="ClientAccountApp.BackupsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid
+            Background="{StaticResource NiatecBackgroundBrush}"
+            Padding="24"
+            RowSpacing="16">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Spacing="4">
+                <TextBlock
+                    Text="Резервные копии"
+                    Style="{StaticResource NiatecPageTitleTextStyle}"/>
+
+                <TextBlock
+                    Text="Полное резервное копирование базы данных, файлов клиентов и структуры папок."
+                    Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+            </StackPanel>
+
+            <Grid
+                Grid.Row="1"
+                ColumnSpacing="16">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.1*"/>
+                    <ColumnDefinition Width="1.9*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Действия -->
+                <Border
+                    Grid.Column="0"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Действия"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Создайте резервную копию или восстановите последнюю сохранённую версию."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Button
+    Content="Создать резервную копию"
+    Style="{StaticResource NiatecPrimaryButtonStyle}"
+    HorizontalAlignment="Stretch"
+    Click="CreateBackupButton_Click"/>
+
+                        <Button
+    Content="Восстановить последнюю резервную копию"
+    Style="{StaticResource NiatecDangerButtonStyle}"
+    HorizontalAlignment="Stretch"
+    Click="RestoreLatestBackupButton_Click"/>
+
+                        <Button
+    Content="Открыть папку резервных копий"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    HorizontalAlignment="Stretch"
+    Click="OpenBackupsFolderButton_Click"/>
+
+                        <Button
+    Content="Перейти к рабочему экрану клиентов"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    HorizontalAlignment="Stretch"
+    Click="OpenLegacyWorkspaceButton_Click"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="6">
+                                <TextBlock
+                                    Text="Совет"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Text="Перед крупными изменениями в базе или перед обновлением программы лучше создать резервную копию."
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Статус и информация -->
+                <Border
+                    Grid.Column="1"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Статус и информация"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Папка резервных копий"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                x:Name="BackupFolderPathTextBlock"
+                                Text="—"
+                                Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+
+                        <TextBlock
+                            Text="Текущее состояние"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                x:Name="BackupStatusTextBlock"
+                                Text="Раздел резервных копий готов к работе."
+                                Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="6">
+                                <TextBlock
+                                    Text="Что входит в резервную копию"
+                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Text="• база SQLite&#10;• прикреплённые файлы клиентов&#10;• структура папок файлов&#10;• данные начислений, договоров и документов"
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border
+                            Background="{StaticResource NiatecSurfaceAltBrush}"
+                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12">
+
+                            <TextBlock
+                                Text="После восстановления лучше заново открыть рабочий экран клиентов или перезапустить приложение, чтобы обновить данные на страницах."
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

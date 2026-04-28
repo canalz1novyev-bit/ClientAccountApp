@@ -1,0 +1,86 @@
+<Page
+    x:Class="ClientAccountApp.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        Background="{StaticResource NiatecBackgroundBrush}"
+        Padding="24"
+        RowSpacing="16">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="4">
+            <TextBlock
+                Text="Настройки"
+                Style="{StaticResource NiatecPageTitleTextStyle}"/>
+
+            <TextBlock
+                Text="Служебные настройки приложения, хранилище данных и резервные копии."
+                Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+
+            <TextBlock
+                Text="NIATEC.Client · v0.9.0-beta · закрытая бета"
+                Style="{StaticResource NiatecMutedTextStyle}"/>
+        </StackPanel>
+
+        <Grid
+            Grid.Row="1"
+            ColumnSpacing="16"
+            RowSpacing="16">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border
+                Grid.Column="0"
+                Style="{StaticResource NiatecCardBorderStyle}">
+
+                <StackPanel Spacing="12">
+                    <TextBlock
+                        Text="Хранилище данных"
+                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                    <TextBlock
+                        Text="Папка, где хранится база данных, файлы клиентов и резервные копии. Можно подключить локальную или сетевую папку."
+                        Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                    <Button
+    Content="Открыть настройки хранилища"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    HorizontalAlignment="Left"
+    Click="OpenStorageSettingsButton_Click"/>
+                </StackPanel>
+            </Border>
+
+            <Border
+                Grid.Column="1"
+                Style="{StaticResource NiatecCardBorderStyle}">
+
+                <StackPanel Spacing="12">
+                    <TextBlock
+                        Text="Резервные копии"
+                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                    <TextBlock
+                        Text="Создание и восстановление резервных копий базы данных и файлов клиентов."
+                        Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                    <Button
+    Content="Открыть резервные копии"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    HorizontalAlignment="Left"
+    Click="OpenBackupsButton_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

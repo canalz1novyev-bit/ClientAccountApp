@@ -1,0 +1,763 @@
+<Page
+    x:Class="ClientAccountApp.ToolsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="#0F1115" Padding="24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="4">
+            <TextBlock
+                Text="Инструменты"
+                FontSize="30"
+                FontWeight="SemiBold"
+                Foreground="White"/>
+
+            <TextBlock
+                Text="PDF, НДС и ИИ-инструменты для повседневной работы"
+                FontSize="13"
+                Foreground="#9AA4B2"
+                TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <TabView
+            Grid.Row="1"
+            IsAddTabButtonVisible="False"
+            TabWidthMode="Equal">
+
+            <!-- PDF -->
+            <TabViewItem Header="PDF" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid ColumnSpacing="16" Padding="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.2*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+    Grid.Column="0"
+    Background="#171A21"
+    BorderBrush="#2B3140"
+    BorderThickness="1"
+    CornerRadius="14"
+    Padding="12">
+
+                            <StackPanel Spacing="14">
+                                <TextBlock
+                                    Text="📄 Конвертер в PDF"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"/>
+
+                                <TextBlock
+                                    Text="Выбери файл, укажи место сохранения и получи PDF."
+                                    Foreground="#B8B8B8"
+                                    TextWrapping="Wrap"/>
+                                <Border
+    Background="#11151C"
+    BorderBrush="#243042"
+    BorderThickness="1"
+    CornerRadius="10"
+    Padding="10">
+
+                                    <TextBlock
+        Text="Шаг 1. Выберите исходный файл"
+        FontSize="13"
+        FontWeight="SemiBold"
+        Foreground="#D7BA7D"/>
+                                </Border>
+
+                                <Border
+                                    x:Name="SourceDropZoneBorder"
+                                    Background="#11151C"
+                                    BorderBrush="#2B3140"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="18"
+                                    AllowDrop="True"
+                                    DragOver="SourceDropZoneBorder_DragOver"
+                                    Drop="SourceDropZoneBorder_Drop">
+
+                                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                        <TextBlock
+                                            Text="Перетащи файл сюда"
+                                            FontSize="16"
+                                            FontWeight="SemiBold"
+                                            Foreground="White"
+                                            HorizontalAlignment="Center"/>
+
+                                        <TextBlock
+                                            Text="Если приложение запущено от администратора, drag &amp; drop из проводника может не работать."
+                                            Foreground="#B8B8B8"
+                                            TextWrapping="Wrap"
+                                            TextAlignment="Center"
+                                            HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBox
+                                    x:Name="SourceFileTextBox"
+                                    Header="Исходный файл"
+                                    IsReadOnly="True"
+                                    PlaceholderText="Файл пока не выбран"/>
+
+                                <Button
+                                    Content="Выбрать исходный файл"
+                                    Click="PickSourceFileButton_Click"/>
+                                <Border
+    Background="#11151C"
+    BorderBrush="#243042"
+    BorderThickness="1"
+    CornerRadius="10"
+    Padding="10"
+    Margin="0,6,0,0">
+
+                                    <TextBlock
+        Text="Шаг 2. Укажите, куда сохранить PDF"
+        FontSize="13"
+        FontWeight="SemiBold"
+        Foreground="#D7BA7D"/>
+                                </Border>
+
+                                <TextBox
+                                    x:Name="TargetPdfTextBox"
+                                    Header="Сохранить PDF как"
+                                    IsReadOnly="True"
+                                    PlaceholderText="Путь сохранения пока не выбран"/>
+
+                                <Button
+                                    Content="Выбрать путь сохранения PDF"
+                                    Click="PickTargetPdfButton_Click"/>
+                                <Border
+    Background="#11151C"
+    BorderBrush="#243042"
+    BorderThickness="1"
+    CornerRadius="10"
+    Padding="10"
+    Margin="0,6,0,0">
+
+                                    <TextBlock
+        Text="Шаг 3. Выполните конвертацию"
+        FontSize="13"
+        FontWeight="SemiBold"
+        Foreground="#D7BA7D"/>
+                                </Border>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+    x:Name="ConvertToPdfButton"
+    Grid.Column="0"
+    Content="Конвертировать в PDF"
+    FontWeight="SemiBold"
+    IsEnabled="False"
+    Click="ConvertToPdfButton_Click"/>
+
+                                    <Button
+                                        x:Name="OpenConvertedPdfButton"
+                                        Grid.Column="1"
+                                        Content="Открыть PDF"
+                                        IsEnabled="False"
+                                        Click="OpenConvertedPdfButton_Click"/>
+                                </Grid>
+
+                                <TextBlock
+                                    x:Name="ToolsStatusTextBlock"
+                                    Text="Выбери исходный файл и путь сохранения."
+                                    Foreground="#D7BA7D"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border
+                            Grid.Column="1"
+                            Background="#171A21"
+                            BorderBrush="#2B3140"
+                            BorderThickness="1"
+                            CornerRadius="16"
+                            Padding="16">
+
+                            <StackPanel Spacing="10">
+                                <TextBlock
+                                    Text="Будущие PDF-инструменты"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"/>
+
+                                <TextBlock Text="• Объединение PDF" Foreground="#B8B8B8"/>
+                                <TextBlock Text="• Разделение PDF" Foreground="#B8B8B8"/>
+                                <TextBlock Text="• Сжатие PDF" Foreground="#B8B8B8"/>
+                                <TextBlock Text="• Проверка длинных путей файлов" Foreground="#B8B8B8"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabViewItem>
+
+            <!-- НДС -->
+            <TabViewItem Header="НДС" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid ColumnSpacing="16" Padding="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                            Grid.Column="0"
+                            Background="#171A21"
+                            BorderBrush="#2B3140"
+                            BorderThickness="1"
+                            CornerRadius="16"
+                            Padding="16">
+
+                            <StackPanel Spacing="14">
+                                <TextBlock
+                                    Text="Калькулятор НДС"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"/>
+
+                                <TextBlock
+                                    x:Name="VatModeHintTextBlock"
+                                    Text="Режим: выделение НДС из суммы"
+                                    Foreground="#B8B8B8"
+                                    TextWrapping="Wrap"/>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+                                        x:Name="VatExtractModeButton"
+                                        Grid.Column="0"
+                                        Content="Выделить НДС"
+                                        Click="VatExtractModeButton_Click"/>
+
+                                    <Button
+                                        x:Name="VatAddModeButton"
+                                        Grid.Column="1"
+                                        Content="Начислить НДС"
+                                        Click="VatAddModeButton_Click"/>
+                                </Grid>
+
+                                <TextBox
+                                    x:Name="VatAmountTextBox"
+                                    Header="Сумма"
+                                    PlaceholderText="Например: 125 000,50"
+                                    TextChanged="VatInputs_TextChanged"/>
+
+                                <TextBox
+                                    x:Name="VatRateTextBox"
+                                    Header="Ставка НДС, %"
+                                    Text="22"
+                                    TextChanged="VatInputs_TextChanged"/>
+
+                                <Grid ColumnSpacing="8" RowSpacing="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Row="0" Grid.Column="0" Content="22%" Tag="22" Click="VatPresetRateButton_Click"/>
+                                    <Button Grid.Row="0" Grid.Column="1" Content="20%" Tag="20" Click="VatPresetRateButton_Click"/>
+                                    <Button Grid.Row="0" Grid.Column="2" Content="10%" Tag="10" Click="VatPresetRateButton_Click"/>
+
+                                    <Button Grid.Row="1" Grid.Column="0" Content="7%" Tag="7" Click="VatPresetRateButton_Click"/>
+                                    <Button Grid.Row="1" Grid.Column="1" Content="5%" Tag="5" Click="VatPresetRateButton_Click"/>
+                                    <Button Grid.Row="1" Grid.Column="2" Content="0%" Tag="0" Click="VatPresetRateButton_Click"/>
+                                </Grid>
+
+                                <Border
+                                    Background="#11151C"
+                                    BorderBrush="#2B3140"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="14">
+
+                                    <StackPanel Spacing="10">
+                                        <TextBlock
+                                            Text="Результат"
+                                            FontSize="18"
+                                            FontWeight="SemiBold"
+                                            Foreground="White"/>
+
+                                        <TextBox
+                                            x:Name="VatResultVatTextBox"
+                                            Text="НДС: —"
+                                            IsReadOnly="True"
+                                            TextWrapping="Wrap"
+                                            AcceptsReturn="False"
+                                            FontSize="24"
+                                            FontWeight="SemiBold"
+                                            Foreground="#FF8A65"
+                                            Background="#0F1115"
+                                            BorderBrush="#2B3140"
+                                            BorderThickness="1"
+                                            Padding="10,8"/>
+
+                                        <TextBox
+                                            x:Name="VatResultNetTextBox"
+                                            Text="Без НДС: —"
+                                            IsReadOnly="True"
+                                            TextWrapping="Wrap"
+                                            AcceptsReturn="False"
+                                            Foreground="White"
+                                            Background="#0F1115"
+                                            BorderBrush="#2B3140"
+                                            BorderThickness="1"
+                                            Padding="10,8"/>
+
+                                        <TextBox
+                                            x:Name="VatResultGrossTextBox"
+                                            Text="С НДС: —"
+                                            IsReadOnly="True"
+                                            TextWrapping="Wrap"
+                                            AcceptsReturn="False"
+                                            Foreground="White"
+                                            Background="#0F1115"
+                                            BorderBrush="#2B3140"
+                                            BorderThickness="1"
+                                            Padding="10,8"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+                                        Grid.Column="0"
+                                        Content="Очистить"
+                                        Click="ClearVatButton_Click"/>
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Content="Скопировать"
+                                        Click="CopyVatResultButton_Click"/>
+                                </Grid>
+
+                                <TextBlock
+                                    x:Name="VatStatusTextBlock"
+                                    Text="Введи сумму и при необходимости измени ставку."
+                                    Foreground="#D7BA7D"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabViewItem>
+            <TabViewItem Header="395 ГК РФ" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid ColumnSpacing="16" Padding="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                Grid.Column="0"
+                Background="#171A21"
+                BorderBrush="#2B3140"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="16">
+
+                            <StackPanel Spacing="14">
+                                <TextBlock
+                        Text="Расчёт процентов по ст. 395 ГК РФ"
+                        FontSize="20"
+                        FontWeight="SemiBold"
+                        Foreground="White"/>
+
+                                <TextBlock
+                        Text="Расчёт процентов за просрочку денежного обязательства. Первый вариант использует одну ставку за весь период."
+                        Foreground="#B8B8B8"
+                        TextWrapping="Wrap"/>
+
+                                <Border
+                        Background="#11151C"
+                        BorderBrush="#243042"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="10">
+
+                                    <TextBlock
+                            Text="Шаг 1. Укажите сумму задолженности"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#D7BA7D"/>
+                                </Border>
+
+                                <TextBox
+                        x:Name="Civil395DebtTextBox"
+                        Header="Сумма долга"
+                        PlaceholderText="Например: 100 000"
+                        TextChanged="Civil395Inputs_TextChanged"/>
+
+                                <Border
+                        Background="#11151C"
+                        BorderBrush="#243042"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="10"
+                        Margin="0,6,0,0">
+
+                                    <TextBlock
+                            Text="Шаг 2. Укажите период просрочки"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#D7BA7D"/>
+                                </Border>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <DatePicker
+                            x:Name="Civil395StartDatePicker"
+                            Grid.Column="0"
+                            Header="Дата начала"
+                            DateChanged="Civil395DatePicker_DateChanged"/>
+
+                                    <DatePicker
+                            x:Name="Civil395EndDatePicker"
+                            Grid.Column="1"
+                            Header="Дата окончания"
+                            DateChanged="Civil395DatePicker_DateChanged"/>
+                                </Grid>
+
+                                <CheckBox
+                        x:Name="Civil395IncludeEndDateCheckBox"
+                        Content="Включить последний день"
+                        IsChecked="True"
+                        Foreground="White"
+                        Checked="Civil395IncludeEndDateCheckBox_Changed"
+                        Unchecked="Civil395IncludeEndDateCheckBox_Changed"/>
+
+                                <Border
+                        Background="#11151C"
+                        BorderBrush="#243042"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="10"
+                        Margin="0,6,0,0">
+
+                                    <TextBlock
+                            Text="Шаг 3. Укажите ставку"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#D7BA7D"/>
+                                </Border>
+
+                                <TextBox
+                        x:Name="Civil395RateTextBox"
+                        Header="Ставка, % годовых"
+                        Text="15"
+                        TextChanged="Civil395Inputs_TextChanged"/>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+                            Grid.Column="0"
+                            Content="Рассчитать"
+                            FontWeight="SemiBold"
+                            Click="CalculateCivil395Button_Click"/>
+
+                                    <Button
+                            Grid.Column="1"
+                            Content="Очистить"
+                            Click="ClearCivil395Button_Click"/>
+
+                                    <Button
+                            Grid.Column="2"
+                            Content="Скопировать"
+                            Click="CopyCivil395ResultButton_Click"/>
+                                </Grid>
+
+                                <TextBlock
+                        x:Name="Civil395StatusTextBlock"
+                        Text="Введите сумму, период и ставку."
+                        Foreground="#D7BA7D"
+                        TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border
+                Grid.Column="1"
+                Background="#171A21"
+                BorderBrush="#2B3140"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="16">
+
+                            <StackPanel Spacing="14">
+                                <TextBlock
+                        Text="Результат"
+                        FontSize="20"
+                        FontWeight="SemiBold"
+                        Foreground="White"/>
+
+                                <TextBox
+                        x:Name="Civil395DaysResultTextBox"
+                        Text="Дней просрочки: —"
+                        IsReadOnly="True"
+                        TextWrapping="Wrap"
+                        Background="#0F1115"
+                        BorderBrush="#2B3140"
+                        BorderThickness="1"
+                        Foreground="White"
+                        Padding="10,8"/>
+
+                                <TextBox
+                        x:Name="Civil395InterestResultTextBox"
+                        Text="Проценты: —"
+                        IsReadOnly="True"
+                        TextWrapping="Wrap"
+                        Background="#0F1115"
+                        BorderBrush="#2B3140"
+                        BorderThickness="1"
+                        Foreground="#D7BA7D"
+                        FontSize="22"
+                        FontWeight="SemiBold"
+                        Padding="10,8"/>
+
+                                <TextBox
+                        x:Name="Civil395TotalResultTextBox"
+                        Text="Итого к взысканию: —"
+                        IsReadOnly="True"
+                        TextWrapping="Wrap"
+                        Background="#0F1115"
+                        BorderBrush="#2B3140"
+                        BorderThickness="1"
+                        Foreground="White"
+                        FontWeight="SemiBold"
+                        Padding="10,8"/>
+
+                                <TextBox
+                        x:Name="Civil395FormulaResultTextBox"
+                        Text="Формула: —"
+                        IsReadOnly="True"
+                        AcceptsReturn="True"
+                        TextWrapping="Wrap"
+                        Height="120"
+                        Background="#0F1115"
+                        BorderBrush="#2B3140"
+                        BorderThickness="1"
+                        Foreground="#B8B8B8"
+                        Padding="10,8"/>
+
+                                <Border
+                        Background="#11151C"
+                        BorderBrush="#243042"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="12">
+
+                                    <StackPanel Spacing="6">
+                                        <TextBlock
+                                Text="Важно"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="#D7BA7D"/>
+
+                                        <TextBlock
+                                Text="Это первый упрощённый вариант расчёта по одной ставке. Для судебного расчёта за длительный период позже добавим разбивку по изменениям ключевой ставки ЦБ."
+                                Foreground="#B8B8B8"
+                                TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabViewItem>
+            <!-- ИИ -->
+            <TabViewItem Header="ИИ" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid ColumnSpacing="16" Padding="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1.1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                            Grid.Column="0"
+                            Background="#171A21"
+                            BorderBrush="#2B3140"
+                            BorderThickness="1"
+                            CornerRadius="16"
+                            Padding="16">
+
+                            <StackPanel Spacing="14">
+                                <TextBlock
+                                    Text="Настройки GigaChat"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"/>
+
+                                <TextBlock
+                                    Text="ИИ будет использоваться для подготовки черновиков документов. Данные отправляются во внешний API GigaChat."
+                                    Foreground="#B8B8B8"
+                                    TextWrapping="Wrap"/>
+
+                                <CheckBox
+                                    x:Name="GigaChatEnabledCheckBox"
+                                    Content="Включить ИИ-помощник GigaChat"
+                                    Foreground="White"/>
+
+                                <TextBox
+                                    x:Name="GigaChatOAuthUrlTextBox"
+                                    Header="OAuth URL"
+                                    Text="https://ngw.devices.sberbank.ru:9443/api/v2/oauth"/>
+
+                                <TextBox
+                                    x:Name="GigaChatApiUrlTextBox"
+                                    Header="Chat API URL"
+                                    Text="https://gigachat.devices.sberbank.ru/api/v1/chat/completions"/>
+
+                                <TextBox
+                                    x:Name="GigaChatModelTextBox"
+                                    Header="Модель"
+                                    Text="GigaChat"/>
+
+                                <ComboBox
+                                    x:Name="GigaChatScopeComboBox"
+                                    Header="Версия API / Scope"
+                                    SelectedIndex="0">
+                                    <ComboBoxItem Content="GIGACHAT_API_PERS"/>
+                                    <ComboBoxItem Content="GIGACHAT_API_B2B"/>
+                                    <ComboBoxItem Content="GIGACHAT_API_CORP"/>
+                                </ComboBox>
+
+                                <PasswordBox
+                                    x:Name="GigaChatAuthorizationKeyPasswordBox"
+                                    Header="Authorization Key GigaChat"
+                                    PlaceholderText="Вставьте Authorization Key из кабинета GigaChat"/>
+
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+                                        Grid.Column="0"
+                                        Content="Сохранить настройки"
+                                        Click="SaveAiSettingsButton_Click"/>
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Content="Проверить подключение"
+                                        Click="TestGigaChatButton_Click"/>
+                                </Grid>
+
+                                <TextBlock
+                                    x:Name="AiStatusTextBlock"
+                                    Text="Введите Authorization Key GigaChat и проверьте подключение."
+                                    Foreground="#D7BA7D"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border
+                            Grid.Column="1"
+                            Background="#171A21"
+                            BorderBrush="#2B3140"
+                            BorderThickness="1"
+                            CornerRadius="16"
+                            Padding="16">
+
+                            <StackPanel Spacing="14">
+                                <TextBlock
+                                    Text="Ответ на требование ФНС"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    Foreground="White"/>
+
+                                <TextBlock
+                                    Text="Загрузите требование ФНС. ИИ подготовит черновик официального ответа от имени выбранной организации."
+                                    Foreground="#B8B8B8"
+                                    TextWrapping="Wrap"/>
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="170"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ComboBox
+        x:Name="TaxRequirementClientComboBox"
+        Grid.Column="0"
+        Header="Клиент / налогоплательщик"
+        DisplayMemberPath="Name"
+        PlaceholderText="Выберите клиента, по которому готовится ответ"/>
+
+                                    <Button
+        Grid.Column="1"
+        Content="Обновить клиентов"
+        Height="40"
+        VerticalAlignment="Bottom"
+        Click="RefreshTaxRequirementClientsButton_Click"/>
+                                </Grid>
+                                <TextBox
+                                    x:Name="TaxRequirementFileTextBox"
+                                    Header="Файл требования"
+                                    IsReadOnly="True"
+                                    PlaceholderText="Файл пока не выбран"/>
+
+                                <Button
+                                    Content="Выбрать требование ФНС"
+                                    Click="PickTaxRequirementFileButton_Click"/>
+
+                                <TextBox
+                                    x:Name="TaxRequirementPreviewTextBox"
+                                    Header="Извлечённый текст требования"
+                                    PlaceholderText="На следующем шаге подключим извлечение текста из PDF / Word / XML / TXT."
+                                    AcceptsReturn="True"
+                                    TextWrapping="Wrap"
+                                    IsReadOnly="True"
+                                    Height="220"/>
+
+                                <Button
+                                    Content="Сформировать Word-ответ"
+                                    Click="GenerateTaxRequirementResponseButton_Click"/>
+
+                                <TextBlock
+                                    Text="Важно: ИИ формирует черновик. Перед отправкой в ФНС документ необходимо проверить вручную."
+                                    Foreground="#D7BA7D"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabViewItem>
+        </TabView>
+    </Grid>
+</Page>

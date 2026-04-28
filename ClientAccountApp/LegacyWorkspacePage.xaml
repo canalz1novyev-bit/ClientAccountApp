@@ -1,0 +1,1288 @@
+<Page
+    x:Class="ClientAccountApp.LegacyWorkspacePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClientAccountApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <DataTemplate x:Key="NormalClientItemTemplate" x:DataType="local:ClientInfo">
+            <Border
+            Tag="ClientCardRoot"
+            Background="#11151C"
+            BorderBrush="#243042"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="12"
+            Margin="0,0,0,10"
+            RightTapped="ClientCard_RightTapped">
+
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border
+                    Grid.Column="0"
+                    Width="18"
+                    Height="18"
+                    CornerRadius="9"
+                    Background="{x:Bind StatusBadgeBackgroundBrush}"
+                    Visibility="{x:Bind StatusBadgeVisibility}"
+                    VerticalAlignment="Top"
+                    Margin="0,2,0,0"
+                    Opacity="0.75">
+                        <TextBlock
+                        Text="{x:Bind StatusBadgeText}"
+                        Foreground="White"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock
+                        Text="{x:Bind Name}"
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        TextWrapping="Wrap"/>
+
+                        <TextBlock
+                        Text="{x:Bind ClientListMetaText}"
+                        Foreground="#B8B8B8"
+                        TextWrapping="Wrap"/>
+
+                        <TextBlock
+                        Text="{x:Bind SignatureWarningText}"
+                        Foreground="#F0C674"
+                        FontWeight="SemiBold"
+                        TextWrapping="Wrap"/>
+
+                        <TextBlock
+                        Text="{x:Bind AccountShortInfo}"
+                        Foreground="#9FB3C8"
+                        TextWrapping="Wrap"/>
+
+                        <TextBlock
+                        Text="{x:Bind Address}"
+                        Foreground="#8F9BB3"
+                        TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CompactClientItemTemplate" x:DataType="local:ClientInfo">
+            <Border
+            Tag="ClientCardRoot"
+            Background="#11151C"
+            BorderBrush="#243042"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="10"
+            Margin="0,0,0,6"
+            RightTapped="ClientCard_RightTapped">
+
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border
+                    Grid.Column="0"
+                    Width="16"
+                    Height="16"
+                    CornerRadius="8"
+                    Background="{x:Bind StatusBadgeBackgroundBrush}"
+                    Visibility="{x:Bind StatusBadgeVisibility}"
+                    VerticalAlignment="Top"
+                    Margin="0,2,0,0"
+                    Opacity="0.75">
+                        <TextBlock
+                        Text="{x:Bind StatusBadgeText}"
+                        Foreground="White"
+                        FontSize="9"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock
+                        Text="{x:Bind Name}"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        TextTrimming="CharacterEllipsis"/>
+
+                        <TextBlock
+                        Text="{x:Bind ClientListMetaText}"
+                        FontSize="12"
+                        Foreground="#B8B8B8"
+                        TextTrimming="CharacterEllipsis"/>
+
+                        <TextBlock
+                        Text="{x:Bind SignatureWarningText}"
+                        FontSize="12"
+                        Foreground="#F0C674"
+                        FontWeight="SemiBold"
+                        TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DenseClientItemTemplate" x:DataType="local:ClientInfo">
+            <Border
+            Tag="ClientCardRoot"
+            Background="#11151C"
+            BorderBrush="#243042"
+            BorderThickness="0,0,0,1"
+            Padding="8,8"
+            RightTapped="ClientCard_RightTapped">
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="26"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="80"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border
+                    Grid.Column="0"
+                    Width="16"
+                    Height="16"
+                    CornerRadius="8"
+                    Background="{x:Bind StatusBadgeBackgroundBrush}"
+                    Visibility="{x:Bind StatusBadgeVisibility}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Opacity="0.75">
+                        <TextBlock
+                        Text="{x:Bind StatusBadgeText}"
+                        Foreground="White"
+                        FontSize="9"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"/>
+                    </Border>
+
+                    <TextBlock
+                    Grid.Column="1"
+                    Text="{x:Bind Name}"
+                    Foreground="White"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    TextTrimming="CharacterEllipsis"
+                    VerticalAlignment="Center"/>
+
+                    <TextBlock
+                    Grid.Column="2"
+                    Text="{x:Bind ClientType}"
+                    Foreground="#B8B8B8"
+                    FontSize="12"
+                    TextTrimming="CharacterEllipsis"
+                    VerticalAlignment="Center"/>
+
+                    <TextBlock
+                    Grid.Column="3"
+                    Text="{x:Bind Inn}"
+                    Foreground="#B8B8B8"
+                    FontSize="12"
+                    TextTrimming="CharacterEllipsis"
+                    VerticalAlignment="Center"/>
+
+                    <TextBlock
+                    Grid.Column="4"
+                    Text="{x:Bind SignatureShortInfo}"
+                    Foreground="#F0C674"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    TextTrimming="CharacterEllipsis"
+                    VerticalAlignment="Center"/>
+
+                    <TextBlock
+                    Grid.Column="5"
+                    Text="{x:Bind AccountCount}"
+                    Foreground="#9FB3C8"
+                    FontSize="12"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+
+                    <TextBlock
+                    Grid.Column="6"
+                    Text="{x:Bind NoteCount}"
+                    Foreground="#9FB3C8"
+                    FontSize="12"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid Background="#0F1115">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0"/>
+            <ColumnDefinition Width="0"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+
+
+        <Grid
+    x:Name="ClientsSectionGrid"
+    Grid.Column="2"
+    Padding="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="12"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="14"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Spacing="4">
+                    <TextBlock
+                Text="Клиенты"
+                FontSize="30"
+                FontWeight="SemiBold"
+                Foreground="White"/>
+
+                    <TextBlock
+                Text="Рабочая база клиентов с ЭЦП, счетами, заметками и файлами"
+                FontSize="13"
+                Foreground="#9AA4B2"
+                TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="220"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox
+                x:Name="SearchTextBox"
+                Grid.Column="0"
+                Header="Поиск"
+                PlaceholderText="Поиск по названию, ИНН, адресу, заметкам"
+                TextChanged="SearchTextBox_TextChanged"/>
+
+                    <ComboBox
+                x:Name="SignatureFilterComboBox"
+                Grid.Column="2"
+                Header="Фильтр по ЭЦП"
+                SelectedIndex="0"
+                SelectionChanged="SignatureFilterComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Все клиенты"/>
+                        <ComboBoxItem Content="ЭЦП истекает в 30 дней"/>
+                        <ComboBoxItem Content="ЭЦП истекает в 7 дней"/>
+                        <ComboBoxItem Content="ЭЦП уже истекла"/>
+                    </ComboBox>
+
+                    <ComboBox
+    x:Name="StatusFilterComboBox"
+    Grid.Column="4"
+    Header="Фильтр по статусу"
+    SelectedIndex="0"
+    Visibility="Collapsed"
+    SelectionChanged="StatusFilterComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Все статусы"/>
+                        <ComboBoxItem Content="Активный"/>
+                        <ComboBoxItem Content="На продлении"/>
+                        <ComboBoxItem Content="Проблемный"/>
+                        <ComboBoxItem Content="Архив"/>
+                        <ComboBoxItem Content="Новый"/>
+                    </ComboBox>
+
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="1.4*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border
+            Grid.Column="0"
+            Background="#171A21"
+            CornerRadius="14"
+Padding="12"
+            BorderBrush="#2B3140"
+            BorderThickness="1">
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                        Text="Список клиентов"
+                        FontSize="20"
+                        FontWeight="SemiBold"
+                        Foreground="White"  
+                        VerticalAlignment="Center"/>
+
+                            <ToggleButton
+                        x:Name="ClientViewModeToggleButton"
+                        Grid.Column="1"
+                        Width="38"
+                        Height="38"
+                        Margin="12,0,0,0"
+                        Background="#11151C"
+                        BorderBrush="#2B3140"
+                        BorderThickness="1"
+                        Click="ClientViewModeToggleButton_Click"
+                        ToolTipService.ToolTip="Включить компактный вид списка">
+                                <TextBlock
+                            Text="≡"
+                            FontSize="18"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                            </ToggleButton>
+                        </Grid>
+                        <Grid
+    x:Name="DenseClientsHeaderGrid"
+    Grid.Row="1"
+    ColumnSpacing="12"
+    Visibility="Collapsed"
+    Margin="0,8,0,6"
+    VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="26"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="180"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="1" Text="Клиент" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="Тип" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Text="ИНН" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="4" Text="ЭЦП" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="5" Text="Счета" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="6" Text="Заметки" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ListView
+    x:Name="ClientsListView"
+    Grid.Row="2"
+    SelectionChanged="ClientsListView_SelectionChanged"
+    SelectionMode="Single"
+    Background="Transparent"
+    BorderThickness="0"
+    ItemTemplate="{StaticResource NormalClientItemTemplate}">
+
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="MinHeight" Value="0"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                        </ListView>
+                    </Grid>
+                </Border>
+
+                <TabView
+            Grid.Column="2"
+            Margin="0"
+            IsAddTabButtonVisible="False"
+            TabWidthMode="Equal">
+
+                    <TabViewItem Header="Основное" IsClosable="False">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="12" Padding="0">
+                                <Border
+    Grid.Column="0"
+    Background="#171A21"
+    CornerRadius="14"
+    Padding="12"
+    BorderBrush="#2B3140"
+    BorderThickness="1">
+
+                                    <Grid ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock
+                x:Name="ClientHeaderTitleTextBlock"
+                Text="Новый клиент"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Foreground="White"
+                TextWrapping="Wrap"/>
+
+                                            <TextBlock
+    x:Name="ClientHeaderMetaTextBlock"
+    Text="Заполните реквизиты или используйте автозаполнение по ИНН"
+    FontSize="12"
+    Foreground="#9AA4B2"
+    TextWrapping="Wrap"/>
+
+                                            <TextBlock
+    x:Name="ClientHeaderSignatureTextBlock"
+    Text="ЭЦП: —"
+    FontSize="12"
+    Foreground="#D7BA7D"
+    TextWrapping="Wrap"/>
+                                        </StackPanel>
+
+                                        <Border
+            Grid.Column="1"
+            Background="#2F4F6F"
+            CornerRadius="10"
+            Padding="8,2"
+            VerticalAlignment="Top">
+
+                                            <TextBlock
+                x:Name="ClientHeaderStatusTextBlock"
+                Text="Новый"
+                Foreground="White"
+                FontSize="12"
+                FontWeight="SemiBold"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <Border
+                Background="#171A21"
+                CornerRadius="14"
+Padding="12"
+                BorderBrush="#2B3140"
+                BorderThickness="1">
+
+                                    <StackPanel Spacing="8">
+                                        <TextBlock
+    Text="Реквизиты клиента"
+    FontSize="17"
+    FontWeight="SemiBold"
+    Foreground="White"/>
+
+                                        <TextBlock
+    x:Name="FormModeTextBlock"
+    Text="Режим: добавление нового клиента"
+    FontSize="12"
+    Foreground="#D7BA7D"
+    TextWrapping="Wrap"/>
+
+                                        <ComboBox
+                        x:Name="ClientTypeComboBox"
+                                             FontSize="13"
+                        Header="Тип клиента"
+                        SelectedIndex="0"
+                        SelectionChanged="ClientTypeComboBox_SelectionChanged">
+                                            <ComboBoxItem Content="ООО"/>
+                                            <ComboBoxItem Content="ИП"/>
+                                            <ComboBoxItem Content="ИПГКФХ"/>
+                                            <ComboBoxItem Content="АНО"/>
+                                        </ComboBox>
+
+                                        <ComboBox
+    x:Name="ClientStatusComboBox"
+    Header="Статус"
+    SelectedIndex="0"
+    Visibility="Collapsed">
+                                            <ComboBoxItem Content="Активный"/>
+                                            <ComboBoxItem Content="На продлении"/>
+                                            <ComboBoxItem Content="Проблемный"/>
+                                            <ComboBoxItem Content="Архив"/>
+                                            <ComboBoxItem Content="Новый"/>
+                                        </ComboBox>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="14"/>
+                                                <ColumnDefinition Width="170"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBox
+                            x:Name="InnTextBox"
+                                                FontSize="13"
+                            Grid.Column="0"
+                            Header="ИНН"
+                            PlaceholderText="Введите ИНН"
+                            TextChanged="ClientFormField_TextChanged"/>
+
+                                            <Button
+    x:Name="FillByInnButton"
+    Grid.Column="2"
+    Content="По ИНН"
+    FontSize="12"
+    Height="34"
+    VerticalAlignment="Bottom"
+    Click="FillByInnButton_Click"/>
+                                        </Grid>
+
+                                        <TextBlock
+                        Text="Наименование организации / ФИО"
+                                            FontSize="12"
+                        Foreground="#C9D1D9"/>
+
+                                        <TextBox
+                        x:Name="ClientNameTextBox"
+                                            FontSize="13"
+                        PlaceholderText="Например: ООО НИАТЕК / ИП Иванов Иван Иванович"
+                        TextChanged="ClientFormField_TextChanged"/>
+
+                                        <TextBlock
+                        x:Name="DirectorLabelTextBlock"
+                        Text="ФИО руководителя организации"
+                                            FontSize="12"
+                        Foreground="#C9D1D9"/>
+
+                                        <TextBox
+                        x:Name="DirectorTextBox"
+                                                FontSize="13"
+
+                        PlaceholderText="Например: Петров Петр Петрович"
+                        TextChanged="ClientFormField_TextChanged"/>
+
+                                        <TextBlock
+                        x:Name="OgrnLabelTextBlock"
+                        Text="ОГРН"
+                                            FontSize="12"
+                        Foreground="#C9D1D9"/>
+
+                                        <TextBox
+                        x:Name="OgrnTextBox"
+                                            FontSize="13"
+                        PlaceholderText="Введите ОГРН"
+                        TextChanged="ClientFormField_TextChanged"/>
+
+                                        <TextBlock
+                        Text="Юридический адрес"
+                                            FontSize="12"
+                        Foreground="#C9D1D9"/>
+
+                                        <TextBox
+                        x:Name="AddressTextBox"
+                                            FontSize="13"
+                        PlaceholderText="Введите юридический адрес"
+                        TextChanged="ClientFormField_TextChanged"/>
+
+                                        <TextBlock
+    x:Name="ClientFormValidationTextBlock"
+    Text=""
+    FontSize="12"
+    Foreground="#D7BA7D"
+    TextWrapping="Wrap"/>
+
+                                        <Border
+    Background="#11151C"
+    CornerRadius="10"
+    Padding="8">
+
+                                            <StackPanel Spacing="12">
+                                                <TextBlock
+    Text="Действия"
+    FontSize="14"
+    FontWeight="SemiBold"
+    Foreground="White"/>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="12"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Button
+                                    x:Name="SaveClientButton"
+                                    Grid.Column="0"
+                                    Content="Сохранить нового клиента"
+                                                        FontSize="12"
+    Height="32"
+                                    Click="SaveClientButton_Click"/>
+
+                                                    <Button
+                                    x:Name="UpdateSelectedClientButton"
+                                    Grid.Column="2"
+                                    Content="Обновить выбранного"
+                                                                                                            FontSize="12"
+Height="32"
+                                    Click="UpdateSelectedClientButton_Click"/>
+                                                </Grid>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="12"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Button
+                                    Grid.Column="0"
+                                    Content="Удалить выбранного"
+                                                                                                            FontSize="12"
+Height="32"
+                                    Click="DeleteSelectedClientButton_Click"/>
+
+                                                    <Button
+                                    Grid.Column="2"
+                                    Content="Очистить форму"
+                                                                                                            FontSize="12"
+Height="32"
+                                    Click="ClearFormButton_Click"/>
+                                                </Grid>
+
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="12"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Button
+                                    Grid.Column="0"
+                                    Content="Экспорт карточки в Word"
+                                                                                                            FontSize="12"
+Height="32"
+                                    Click="ExportClientCardToWordButton_Click"/>
+
+                                                    <Button
+                                    Grid.Column="2"
+                                    Content="Выписка"
+                                                                                                            FontSize="12"
+Height="32"
+                                    Click="DownloadEgrulExtractButton_Click"/>
+                                                   
+                                                </Grid>
+                                
+                                            </StackPanel>
+                                        </Border>
+
+                                        <TextBlock
+    x:Name="StatusTextBlock"
+    Text=""
+    FontSize="12"
+    Foreground="#D7BA7D"
+    TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border
+    Visibility="Collapsed"
+    Background="#171A21"
+    CornerRadius="16"
+    Padding="16"
+    BorderBrush="#2B3140"
+    BorderThickness="1">
+
+                                    <StackPanel Spacing="10">
+                                        <TextBlock
+            Text="Карточка клиента"
+            FontSize="20"
+            FontWeight="SemiBold"
+            Foreground="White"/>
+
+                                        <TextBlock Text="Статус" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedStatusTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="Тип" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedTypeTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="Наименование / ФИО" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedNameTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="ФИО руководителя" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedDirectorTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="ИНН" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedInnTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="ОГРН / ОГРНИП" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedOgrnTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="Юридический адрес" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedAddressTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="Количество ЭЦП" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedSignatureCountTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="Ближайшее окончание ЭЦП" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedNearestSignatureTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="Количество счетов" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedAccountCountTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="Основной банк" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedPrimaryBankTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+
+                                        <TextBlock Text="Количество заметок" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedNoteCountTextBlock" Text="—" Foreground="White"/>
+
+                                        <TextBlock Text="Последняя заметка" Foreground="#8F9BB3"/>
+                                        <TextBlock x:Name="SelectedLatestNoteTextBlock" Text="—" Foreground="White"/>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabViewItem>
+
+                    <TabViewItem Header="ЭЦП" IsClosable="False">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="12" Padding="0">
+
+                                <Border
+                    Background="#171A21"
+                    CornerRadius="14"
+Padding="12"
+                    BorderBrush="#2B3140"
+                    BorderThickness="1">
+
+                                    <StackPanel Spacing="12">
+                                        <TextBlock
+                            Text="ЭЦП выбранного клиента"
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            Foreground="White"/>
+
+                                        <ListView
+                            x:Name="SignaturesListView"
+                            Height="220"
+                            SelectionMode="Single"
+                            Background="Transparent"
+                            BorderThickness="0">
+
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="local:DigitalSignature">
+                                                    <Border
+                                        Background="#11151C"
+                                        CornerRadius="12"
+                                        Padding="12"
+                                        Margin="0,0,0,10">
+                                                        <StackPanel Spacing="4">
+                                                            <TextBlock
+                                                Text="{x:Bind CertificationAuthority}"
+                                                FontSize="15"
+                                                FontWeight="SemiBold"
+                                                Foreground="White"/>
+
+                                                            <TextBlock
+                                                Text="{x:Bind DisplayText}"
+                                                Foreground="#B8B8B8"/>
+
+                                                            <TextBlock
+                                                Text="{x:Bind Comment}"
+                                                Foreground="#8F9BB3"
+                                                TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+
+                                        <TextBox
+                            x:Name="SignatureAuthorityTextBox"
+                            Header="Удостоверяющий центр"
+                            PlaceholderText="Например: Контур / СБИС / Астрал"/>
+
+                                        <TextBox
+                            x:Name="SignatureCommentTextBox"
+                            Header="Комментарий"
+                            PlaceholderText="Например: Отчетность / ЭДО / Госуслуги"/>
+
+                                        <DatePicker
+                            x:Name="SignatureIssuedDatePicker"
+                            Header="ЭЦП получена"/>
+
+                                        <DatePicker
+                            x:Name="SignatureExpiresDatePicker"
+                            Header="ЭЦП действует до"/>
+
+                                        <Button
+                            Content="Добавить ЭЦП выбранному клиенту"
+                            Click="AddSignatureButton_Click"/>
+
+                                        <Button
+                            Content="Удалить выбранную ЭЦП"
+                            Click="DeleteSelectedSignatureButton_Click"/>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabViewItem>
+
+                    <TabViewItem Header="Счета" IsClosable="False">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="12" Padding="0">
+
+                                <Border
+                Background="#171A21"
+                CornerRadius="14"
+Padding="12"
+                BorderBrush="#2B3140"
+                BorderThickness="1">
+
+                                    <StackPanel Spacing="12">
+                                        <TextBlock
+                        Text="Банковские счета выбранного клиента"
+                        FontSize="20"
+                        FontWeight="SemiBold"
+                        Foreground="White"/>
+
+                                        <ListView
+                        x:Name="AccountsListView"
+                        Height="220"
+                        SelectionMode="Single"
+                        Background="Transparent"
+                        BorderThickness="0">
+
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="local:BankAccount">
+                                                    <Border
+                                    Background="#11151C"
+                                    CornerRadius="12"
+                                    Padding="12"
+                                    Margin="0,0,0,10">
+                                                        <StackPanel Spacing="4">
+                                                            <TextBlock
+                                            Text="{x:Bind BankName}"
+                                            FontSize="15"
+                                            FontWeight="SemiBold"
+                                            Foreground="White"/>
+
+                                                            <TextBlock
+                                            Text="{x:Bind BIC}"
+                                            Foreground="#9FB3C8"/>
+
+                                                            <TextBlock
+                                            Text="{x:Bind CorrespondentAccount}"
+                                            Foreground="#9FB3C8"/>
+
+                                                            <TextBlock
+                                            Text="{x:Bind AccountNumber}"
+                                            Foreground="#B8B8B8"/>
+
+                                                            <TextBlock
+                                            Text="{x:Bind Comment}"
+                                            Foreground="#8F9BB3"
+                                            TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+
+                                        <TextBox
+                        x:Name="BankBicTextBox"
+                        Header="БИК"
+                        PlaceholderText="Введите БИК"
+                        LostFocus="BankBicTextBox_LostFocus"/>
+
+                                        <TextBox
+                        x:Name="BankNameTextBox"
+                        Header="Банк"
+                        PlaceholderText="Заполнится по БИК или введи вручную"/>
+
+                                        <TextBox
+                        x:Name="BankCorrespondentAccountTextBox"
+                        Header="Корреспондентский счет"
+                        PlaceholderText="Заполнится по БИК"/>
+
+                                        <TextBox
+                        x:Name="BankAccountNumberTextBox"
+                        Header="Расчетный счет"
+                        PlaceholderText="Введите расчетный счет"/>
+
+                                        <TextBox
+                        x:Name="BankCommentTextBox"
+                        Header="Комментарий"
+                        PlaceholderText="Например: основной счет / резервный / зарплатный"/>
+
+                                        <Button
+                        Content="Добавить счет выбранному клиенту"
+                        Click="AddBankAccountButton_Click"/>
+
+                                        <Button
+                        Content="Удалить выбранный счет"
+                        Click="DeleteSelectedBankAccountButton_Click"/>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabViewItem>
+
+                    <TabViewItem Header="Заметки" IsClosable="False">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="12" Padding="0">
+
+                                <Border
+                    Background="#171A21"
+                    CornerRadius="14"
+Padding="12"
+                    BorderBrush="#2B3140"
+                    BorderThickness="1">
+
+                                    <StackPanel Spacing="12">
+                                        <TextBlock
+                            Text="Заметки выбранного клиента"
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            Foreground="White"/>
+
+                                        <ListView
+                            x:Name="NotesListView"
+                            Height="220"
+                            SelectionMode="Single"
+                            Background="Transparent"
+                            BorderThickness="0">
+
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="local:ClientNote">
+                                                    <Border
+                                        Background="#11151C"
+                                        CornerRadius="12"
+                                        Padding="12"
+                                        Margin="0,0,0,10">
+                                                        <StackPanel Spacing="4">
+                                                            <TextBlock
+                                                Text="{x:Bind CreatedAtText}"
+                                                FontSize="14"
+                                                FontWeight="SemiBold"
+                                                Foreground="White"/>
+
+                                                            <TextBlock
+                                                Text="{x:Bind NoteText}"
+                                                Foreground="#B8B8B8"
+                                                TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+
+                                        <TextBox
+                            x:Name="NoteTextBox"
+                            Header="Текст заметки"
+                            PlaceholderText="Например: позвонить клиенту, продлить ЭЦП, уточнить реквизиты"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            Height="100"/>
+
+                                        <Button
+                            Content="Добавить заметку выбранному клиенту"
+                            Click="AddNoteButton_Click"/>
+
+                                        <Button
+                            Content="Удалить выбранную заметку"
+                            Click="DeleteSelectedNoteButton_Click"/>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabViewItem>
+
+                    <TabViewItem Header="Файлы" IsClosable="False">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="12" Padding="0">
+
+                                <Border
+                Background="#171A21"
+                CornerRadius="14"
+Padding="12"
+                BorderBrush="#2B3140"
+                BorderThickness="1">
+
+                                    <StackPanel Spacing="12">
+                                        <TextBlock
+                        Text="Файлы выбранного клиента"
+                        FontSize="20"
+                        FontWeight="SemiBold"
+                        Foreground="White"/>
+                                        <Grid ColumnSpacing="12" RowSpacing="12">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="30"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <Grid x:Name="AddClientFileTopButtonHost" Grid.Row="0" Grid.Column="0" Background="Transparent">
+                                                <Button
+            x:Name="AddClientFileTopButton"
+            Click="AddClientFileButton_Click">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <SymbolIcon Symbol="Add"/>
+                                                        <TextBlock Text="Прикрепить" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <Grid x:Name="OpenSelectedClientFileTopButtonHost" Grid.Row="0" Grid.Column="1" Background="Transparent">
+
+                                                <Button
+            x:Name="OpenSelectedClientFileTopButton"
+            Click="OpenSelectedClientFileButton_Click">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <SymbolIcon Symbol="OpenFile"/>
+                                                        <TextBlock Text="Открыть" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <Grid x:Name="RevealSelectedClientFileTopButtonHost" Grid.Row="1" Grid.Column="0" Background="Transparent">
+
+                                                <Button
+            x:Name="RevealSelectedClientFileTopButton"
+            Click="RevealSelectedClientFileButton_Click">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <SymbolIcon Symbol="Folder"/>
+                                                        <TextBlock Text="В папке" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <Grid x:Name="OpenClientFilesFolderTopButtonHost" Grid.Row="1" Grid.Column="1" Background="Transparent">
+                                                <Button
+            x:Name="OpenClientFilesFolderTopButton"
+            Click="OpenClientFilesFolderButton_Click">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <SymbolIcon Symbol="Folder"/>
+                                                        <TextBlock Text="Папка клиента" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <Grid x:Name="ConvertSelectedClientFileToPdfTopButtonHost" Grid.Row="2" Grid.Column="0" Background="Transparent">
+
+                                                <Button
+            x:Name="ConvertSelectedClientFileToPdfTopButton"
+            Click="ConvertSelectedClientFileToPdfButton_Click">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <SymbolIcon Symbol="Document"/>
+                                                        <TextBlock Text="PDF" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <Grid x:Name="DeleteSelectedClientFileTopButtonHost" Grid.Row="2" Grid.Column="1" Background="Transparent">
+                                                <Button
+            x:Name="DeleteSelectedClientFileTopButton"
+            Click="DeleteSelectedClientFileButton_Click">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <SymbolIcon Symbol="Delete"/>
+                                                        <TextBlock Text="Удалить" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Grid>
+
+
+                                        <TextBlock
+                        Text="Предпросмотр выбранного файла"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Foreground="White"/>
+
+                                        <TextBlock
+                        x:Name="FilePreviewStatusTextBlock"
+                        Text="Выбери файл для предпросмотра."
+                        Foreground="#B8B8B8"
+                        TextWrapping="Wrap"/>
+
+                                        <Border
+                        Background="#11151C"
+                        CornerRadius="12"
+                        Padding="8"
+                        Height="320">
+
+                                            <Grid>
+                                                <Image
+                                x:Name="FilePreviewImage"
+                                Stretch="Uniform"
+                                Visibility="Collapsed"/>
+
+                                                <WebView2
+                                x:Name="FilePreviewWebView"
+                                Visibility="Collapsed"/>
+
+                                                <TextBox
+                                x:Name="FilePreviewTextBox"
+                                IsReadOnly="True"
+                                AcceptsReturn="True"
+                                TextWrapping="Wrap"
+                                Visibility="Collapsed"/>
+
+                                                <StackPanel
+                                x:Name="FilePreviewFallbackPanel"
+                                Visibility="Visible"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="8">
+                                                    <TextBlock
+                                    x:Name="FilePreviewFallbackTitleTextBlock"
+                                    Text="Предпросмотр недоступен"
+                                    Foreground="White"
+                                    FontSize="18"
+                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Center"/>
+                                                    <TextBlock
+                                    x:Name="FilePreviewFallbackTextBlock"
+                                    Text="Для этого типа файла пока доступно открытие внешней программой."
+                                    Foreground="#B8B8B8"
+                                    TextWrapping="Wrap"
+                                    HorizontalAlignment="Center"
+                                    TextAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+
+                                        <ComboBox
+    x:Name="ClientFileFilterComboBox"
+    Header="Фильтр файлов"
+    SelectionChanged="ClientFileFilterComboBox_SelectionChanged">
+                                            <ComboBoxItem Content="Все файлы"/>
+                                            <ComboBoxItem Content="Выписка"/>
+                                            <ComboBoxItem Content="Требование"/>
+                                            <ComboBoxItem Content="Договор"/>
+                                            <ComboBoxItem Content="ЭЦП"/>
+                                            <ComboBoxItem Content="Доверенность"/>
+                                            <ComboBoxItem Content="Прочее"/>
+                                            <ComboBoxItem Content="Акт"/>
+                                            <ComboBoxItem Content="Счёт-фактура"/>
+                                            <ComboBoxItem Content="Акт XML"/>
+                                            <ComboBoxItem Content="Счёт-фактура XML"/>
+                                        </ComboBox>
+
+                                        <TextBox
+                        x:Name="ClientFileSearchTextBox"
+                        Header="Поиск по файлам"
+                        PlaceholderText="Поиск по имени файла или категории"
+                        TextChanged="ClientFileSearchTextBox_TextChanged"/>
+
+                                        <Button
+                        Content="Очистить поиск файлов"
+                        Click="ClearClientFileSearchButton_Click"/>
+
+                                        <ListView
+                        x:Name="ClientFilesListView"
+                        Height="220"
+                        SelectionMode="Single"
+                        SelectionChanged="ClientFilesListView_SelectionChanged"
+                        Background="Transparent"
+                        BorderThickness="0">
+
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="local:ClientFile">
+                                                    <Border
+    Background="#11151C"
+    CornerRadius="12"
+    Padding="12"
+    Margin="0,0,0,10"
+    RightTapped="ClientFileCard_RightTapped"
+    DoubleTapped="ClientFileCard_DoubleTapped">
+                                                        <StackPanel Spacing="4">
+                                                            <TextBlock
+                                            Text="{x:Bind OriginalFileName}"
+                                            FontSize="15"
+                                            FontWeight="SemiBold"
+                                            Foreground="White"
+                                            TextWrapping="Wrap"/>
+
+                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                <Border
+                                                Background="#2F4F6F"
+                                                CornerRadius="8"
+                                                Padding="8,2">
+                                                                    <TextBlock
+                                                    Text="{x:Bind FileTypeLabel}"
+                                                    Foreground="White"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"/>
+                                                                </Border>
+
+                                                                <TextBlock
+                                                Text="{x:Bind Category}"
+                                                Foreground="#D7BA7D"
+                                                VerticalAlignment="Center"/>
+                                                            </StackPanel>
+
+                                                            <TextBlock
+                                            Text="{x:Bind FileTypeDescription}"
+                                            Foreground="#B8B8B8"/>
+
+                                                            <TextBlock
+                                            Text="{x:Bind AddedAtText}"
+                                            Foreground="#9FB3C8"/>
+
+                                                            <TextBlock
+                                            Text="{x:Bind FileSizeText}"
+                                            Foreground="#8F9BB3"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+
+                                        <ComboBox
+    x:Name="ClientFileCategoryComboBox"
+    Header="Категория файла"
+    SelectedIndex="5">
+                                            <ComboBoxItem Content="Выписка"/>
+                                            <ComboBoxItem Content="Требование"/>
+                                            <ComboBoxItem Content="Договор"/>
+                                            <ComboBoxItem Content="ЭЦП"/>
+                                            <ComboBoxItem Content="Доверенность"/>
+                                            <ComboBoxItem Content="Прочее"/>
+                                            <ComboBoxItem Content="Акт"/>
+                                            <ComboBoxItem Content="Счёт-фактура"/>
+                                            <ComboBoxItem Content="Акт XML"/>
+                                            <ComboBoxItem Content="Счёт-фактура XML"/>
+                                        </ComboBox>
+
+
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabViewItem>
+                </TabView>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

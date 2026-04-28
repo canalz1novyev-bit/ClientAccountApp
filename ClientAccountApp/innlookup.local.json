@@ -1,0 +1,6 @@
+﻿{
+  "ApiKey": "4ed47e6d79381264039636689278b88541bbafce",
+  "BaseUrl": "https://suggestions.dadata.ru/suggestions/api/4_1/rs/",
+  "TimeoutSeconds": 20,
+  "UseMainBranchOnly": true
+}
