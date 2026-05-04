@@ -111,51 +111,88 @@
     </Style>
 
     <!-- =========================
-         BUTTONS
-         ========================= -->
+     BUTTONS
+     ========================= -->
 
-    
-    <!-- Кнопки NIATEC.Client -->
+    <!-- Базовая кнопка NIATEC.Client.
+     Все остальные кнопки наследуются от неё. -->
+    <Style x:Key="NiatecBaseButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource DefaultButtonStyle}">
 
-    <Style x:Key="NiatecPrimaryButtonStyle" TargetType="Button">
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- Главная кнопка: сохранить, создать, перенести, сформировать -->
+    <Style x:Key="NiatecPrimaryButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource NiatecBaseButtonStyle}">
+
         <Setter Property="Background" Value="{StaticResource NiatecAccentBrush}"/>
         <Setter Property="Foreground" Value="#111111"/>
         <Setter Property="BorderBrush" Value="{StaticResource NiatecAccentBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="14,8"/>
-        <Setter Property="MinHeight" Value="36"/>
     </Style>
 
-    <Style x:Key="NiatecSecondaryButtonStyle" TargetType="Button">
+    <!-- Обычная вторичная кнопка: открыть, выбрать, перейти -->
+    <Style x:Key="NiatecSecondaryButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource NiatecBaseButtonStyle}">
+
         <Setter Property="Background" Value="{StaticResource NiatecSurfaceAltBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource NiatecTextPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource NiatecBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="14,8"/>
-        <Setter Property="MinHeight" Value="36"/>
     </Style>
 
-    <Style x:Key="NiatecDangerButtonStyle" TargetType="Button">
+    <!-- Опасная кнопка: удалить, сбросить, восстановить -->
+    <Style x:Key="NiatecDangerButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource NiatecBaseButtonStyle}">
+
         <Setter Property="Background" Value="{StaticResource NiatecDangerBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderBrush" Value="{StaticResource NiatecDangerBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="14,8"/>
-        <Setter Property="MinHeight" Value="36"/>
     </Style>
 
-    <Style x:Key="NiatecSmallIconButtonStyle" TargetType="Button">
+    <!-- Маленькая кнопка-иконка, например переключение компактного вида -->
+    <Style x:Key="NiatecSmallIconButtonStyle"
+       TargetType="Button"
+       BasedOn="{StaticResource NiatecBaseButtonStyle}">
+
         <Setter Property="Background" Value="{StaticResource NiatecSurfaceAltBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource NiatecTextPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource NiatecBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Width" Value="36"/>
         <Setter Property="Height" Value="36"/>
+        <Setter Property="MinHeight" Value="36"/>
     </Style>
-    
+    <!-- Акцентная информационная строка -->
+    <Style x:Key="NiatecAccentInfoTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource NiatecAccentBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <!-- Заголовок маленького шага внутри карточки -->
+    <Style x:Key="NiatecStepTitleTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource NiatecAccentBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <!-- Крупное значение результата -->
+    <Style x:Key="NiatecResultValueTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Foreground" Value="{StaticResource NiatecAccentBrush}"/>
+        <Setter Property="Background" Value="{StaticResource NiatecBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource NiatecBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
 </ResourceDictionary>

@@ -10,6 +10,17 @@ namespace ClientAccountApp
         {
             using var db = new AppDbContext();
 
+            // SQL Server:
+            // Таблицы создаются через EF Core Database.EnsureCreated() в AppDbContext.
+            // SQLite-команды CREATE TABLE IF NOT EXISTS / PRAGMA / AUTOINCREMENT здесь не выполняем.
+            if (IsSqlServerProvider(db))
+            {
+                db.Database.EnsureCreated();
+                return;
+            }
+
+            // SQLite:
+            // Оставляем старую проверенную логику.
             db.Database.ExecuteSqlRaw(@"
 CREATE TABLE IF NOT EXISTS ClientContracts (
     Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -24,22 +35,31 @@ CREATE TABLE IF NOT EXISTS ClientContracts (
     UpdatedAt TEXT NOT NULL
 );");
 
-            EnsureColumnExists(db, "ClientContracts", "OrganizationProfileId", "INTEGER NOT NULL DEFAULT 0");
-            EnsureColumnExists(db, "ClientContracts", "ClientInfoId", "INTEGER NOT NULL DEFAULT 0");
-            EnsureColumnExists(db, "ClientContracts", "Status", "TEXT NOT NULL DEFAULT 'Требует договора'");
-            EnsureColumnExists(db, "ClientContracts", "ContractNumber", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExists(db, "ClientContracts", "DocumentRelativePath", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExists(db, "ClientContracts", "GeneratedAt", "TEXT NULL");
-            EnsureColumnExists(db, "ClientContracts", "SignedAt", "TEXT NULL");
-            EnsureColumnExists(db, "ClientContracts", "CreatedAt", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExists(db, "ClientContracts", "UpdatedAt", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "OrganizationProfileId", "INTEGER NOT NULL DEFAULT 0");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "ClientInfoId", "INTEGER NOT NULL DEFAULT 0");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "Status", "TEXT NOT NULL DEFAULT 'Требует договора'");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "ContractNumber", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "DocumentRelativePath", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "GeneratedAt", "TEXT NULL");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "SignedAt", "TEXT NULL");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "CreatedAt", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "ClientContracts", "UpdatedAt", "TEXT NOT NULL DEFAULT ''");
 
             db.Database.ExecuteSqlRaw(@"
 CREATE UNIQUE INDEX IF NOT EXISTS IX_ClientContracts_Organization_Client
 ON ClientContracts (OrganizationProfileId, ClientInfoId);");
         }
 
-        private static void EnsureColumnExists(
+        private static bool IsSqlServerProvider(AppDbContext db)
+        {
+            string providerName = db.Database.ProviderName ?? "";
+
+            return providerName.Contains(
+                "SqlServer",
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void EnsureColumnExistsSqlite(
             AppDbContext db,
             string tableName,
             string columnName,

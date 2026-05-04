@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using Microsoft.Data.SqlClient;
 
 namespace ClientAccountApp
 {
@@ -15,10 +16,12 @@ namespace ClientAccountApp
             AppShell = this;
 
             this.InitializeComponent();
+
             if (PaneFooterContent != null && !AppNavigationView.IsPaneOpen)
             {
                 PaneFooterContent.Visibility = Visibility.Collapsed;
             }
+
             OrganizationSchemaService.EnsureOrganizationTables();
             ActiveOrganizationService.Initialize();
             ContractSchemaService.EnsureContractTables();
@@ -28,7 +31,7 @@ namespace ClientAccountApp
             this.Title = "ClientAccountApp — Версия 2";
 
             RefreshOrganizationFooter();
-
+            RefreshDatabaseFooter();
             if (ActiveOrganizationService.Current == null)
             {
                 if (ActiveOrganizationService.HasAnyOrganizations())
@@ -45,11 +48,45 @@ namespace ClientAccountApp
 
             EnterMainApplication();
         }
+        public void RefreshDatabaseFooter()
+        {
+            if (DatabaseModeFooterTextBlock == null)
+                return;
 
+            var settings = DatabaseConnectionSettingsService.Load();
+
+            if (settings.ProviderMode == DatabaseProviderMode.SqlServer)
+            {
+                string databaseName = "SQL Server";
+
+                try
+                {
+                    var builder = new SqlConnectionStringBuilder(settings.SqlServerConnectionString);
+
+                    if (!string.IsNullOrWhiteSpace(builder.InitialCatalog))
+                    {
+                        databaseName = builder.InitialCatalog;
+                    }
+                }
+                catch
+                {
+                    databaseName = "SQL Server";
+                }
+
+                DatabaseModeFooterTextBlock.Text =
+                    $"База: SQL Server\n{databaseName}";
+
+                return;
+            }
+
+            DatabaseModeFooterTextBlock.Text =
+                "База: SQLite\nЛокальная база";
+        }
         public void EnterMainApplication()
         {
             ActiveOrganizationService.RefreshCurrent();
             RefreshOrganizationFooter();
+            RefreshDatabaseFooter();
             ClientContractService.EnsureContractsForActiveOrganization();
 
             DashboardNavItem.IsSelected = true;
@@ -59,6 +96,7 @@ namespace ClientAccountApp
                 RootFrame.Navigate(typeof(DashboardPage));
             }
         }
+
         private void AppNavigationView_PaneOpening(NavigationView sender, object args)
         {
             if (PaneFooterContent != null)
@@ -74,6 +112,7 @@ namespace ClientAccountApp
                 PaneFooterContent.Visibility = Visibility.Collapsed;
             }
         }
+
         public void RefreshOrganizationFooter()
         {
             if (ActiveOrganizationFooterTextBlock == null)
@@ -113,9 +152,22 @@ namespace ClientAccountApp
         }
 
         private void AppNavigationView_SelectionChanged(
-    NavigationView sender,
-    NavigationViewSelectionChangedEventArgs args)
+            NavigationView sender,
+            NavigationViewSelectionChangedEventArgs args)
         {
+            // Settings должен открываться всегда,
+            // даже если рабочая организация ещё не выбрана.
+            if (args.IsSettingsSelected)
+            {
+                if (RootFrame.CurrentSourcePageType != typeof(SettingsPage))
+                {
+                    RootFrame.Navigate(typeof(SettingsPage));
+                }
+
+                return;
+            }
+
+            // Остальные разделы требуют выбранной рабочей организации.
             if (ActiveOrganizationService.Current == null)
             {
                 if (ActiveOrganizationService.HasAnyOrganizations())
@@ -125,16 +177,6 @@ namespace ClientAccountApp
                 else
                 {
                     RootFrame.Navigate(typeof(OrganizationSetupPage), "new");
-                }
-
-                return;
-            }
-
-            if (args.IsSettingsSelected)
-            {
-                if (RootFrame.CurrentSourcePageType != typeof(SettingsPage))
-                {
-                    RootFrame.Navigate(typeof(SettingsPage));
                 }
 
                 return;
@@ -160,7 +202,6 @@ namespace ClientAccountApp
             {
                 RootFrame.Navigate(targetPage);
             }
-        
-    }
+        }
     }
 }

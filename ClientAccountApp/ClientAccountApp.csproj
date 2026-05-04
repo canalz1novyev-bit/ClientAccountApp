@@ -1,18 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>ClientAccountApp</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;ARM64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
-    <UseWinUI>true</UseWinUI>
-    <WinUISDKReferences>false</WinUISDKReferences>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+  <OutputType>WinExe</OutputType>
+  <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+  <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+  <RootNamespace>ClientAccountApp</RootNamespace>
+  <ApplicationManifest>app.manifest</ApplicationManifest>
+  <Platforms>x86;x64;ARM64</Platforms>
+  <UseWinUI>true</UseWinUI>
+</PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -42,6 +40,7 @@
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.26" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.26" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.26">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -52,6 +51,7 @@
     <PackageReference Include="PdfPig" Version="0.1.14" />
     <PackageReference Include="QRCoder" Version="1.8.0" />
     <PackageReference Include="QuestPDF" Version="2026.2.4" />
+    <PackageReference Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
 
   <!--
@@ -59,34 +59,37 @@
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
     the Windows App SDK Nuget package has not yet been restored.
   -->
-  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
-  </PropertyGroup>
+	
 
-  <!-- Publish Properties -->
-  <PropertyGroup>
-    <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
-    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
-    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-    <GenerateTestArtifacts>False</GenerateTestArtifacts>
-    <AppxBundle>Never</AppxBundle>
-    <AppInstallerUri>C:\NIATEC\NIATEC.Client_Beta</AppInstallerUri>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-  </PropertyGroup>
+ <!-- Publish Properties -->
+<PropertyGroup>
+  <PublishReadyToRun>False</PublishReadyToRun>
+  <PublishTrimmed>False</PublishTrimmed>
+
+  <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+  <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+  <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+  <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+  <GenerateTestArtifacts>True</GenerateTestArtifacts>
+  <AppxBundle>Never</AppxBundle>
+  <AppInstallerUri>C:\NIATEC\NIATEC.Client_Beta</AppInstallerUri>
+  <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+  <PackageCertificateThumbprint>8B84DEAE4EBE1A545A7A0DD889321711A409CB35</PackageCertificateThumbprint>
+</PropertyGroup>
   <ItemGroup>
     <EditorConfigFiles Remove="C:\Users\Admin\source\repos\ClientAccountApp\ClientAccountApp\.editorconfig" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="AiSettingsPage.xaml" />
+    <None Remove="AppUpdatesPage.xaml" />
     <None Remove="BackupsPage.xaml" />
     <None Remove="BillingPage.xaml" />
     <None Remove="ClientsPage.xaml" />
     <None Remove="ContractsPage.xaml" />
+    <None Remove="CounterpartySourcesSettingsPage.xaml" />
     <None Remove="DashboardPage.xaml" />
+    <None Remove="DatabaseConnectionSettingsPage.xaml" />
+    <None Remove="DatabaseDiagnosticsPage.xaml" />
     <None Remove="DataStorageSettingsPage.xaml" />
     <None Remove="innlookup.local.json" />
     <None Remove="LegacyWorkspacePage.xaml" />
@@ -177,8 +180,39 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Assets\Reports\" />
     <Folder Include="XsdSchemas\ACT\" />
     <Folder Include="XsdSchemas\CHET_F\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\Reports\NiatecCounterpartyLogo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="AppUpdatesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CounterpartySourcesSettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="AiSettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="DatabaseDiagnosticsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="DatabaseConnectionSettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Themes\NiatecTheme.xaml">

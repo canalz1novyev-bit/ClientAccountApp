@@ -5,9 +5,131 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    <Page.Resources>
+        <DataTemplate x:Key="CompactContractItemTemplate">
+            <Border
+            Background="{StaticResource NiatecSurfaceAltBrush}"
+            BorderBrush="{StaticResource NiatecBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="10"
+            Margin="0,0,0,6">
 
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="2.2*"/>
+                        <ColumnDefinition Width="145"/>
+                        <ColumnDefinition Width="115"/>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="360"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                    Grid.Column="0"
+                    Width="16"
+                    Height="16"
+                    CornerRadius="8"
+                    Background="{Binding StatusBrush}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+
+                        <TextBlock
+                        Text="{Binding StatusIcon}"
+                        Foreground="White"
+                        FontSize="9"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock
+                        Text="{Binding ClientName}"
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                        TextTrimming="CharacterEllipsis"/>
+
+                        <TextBlock
+                        Text="{Binding ClientMetaText}"
+                        FontSize="11"
+                        Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                        TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+
+                    <TextBlock
+                    Grid.Column="2"
+                    Text="{Binding ContractStatusText}"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{Binding StatusTextBrush}"
+                    VerticalAlignment="Center"
+                    TextTrimming="CharacterEllipsis"/>
+
+                    <TextBlock
+                    Grid.Column="3"
+                    Text="{Binding ContractNumber}"
+                    FontSize="12"
+                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                    VerticalAlignment="Center"
+                    TextTrimming="CharacterEllipsis"/>
+
+                    <StackPanel Grid.Column="4" Spacing="2" VerticalAlignment="Center">
+                        <TextBlock
+                        Text="{Binding GeneratedAtText}"
+                        FontSize="11"
+                        Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                        TextTrimming="CharacterEllipsis"/>
+
+                        <TextBlock
+                        Text="{Binding SignedAtText}"
+                        FontSize="11"
+                        Foreground="{StaticResource NiatecTextMutedBrush}"
+                        TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+
+                    <StackPanel
+                    Grid.Column="5"
+                    Orientation="Horizontal"
+                    Spacing="6"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+
+                        <Button
+                        Content="Клиент"
+                        Style="{StaticResource NiatecSecondaryButtonStyle}"
+                        Click="OpenClientButton_Click"/>
+
+                        <Button
+                        Content="Договор"
+                        Style="{StaticResource NiatecPrimaryButtonStyle}"
+                        Click="OpenContractButton_Click"/>
+
+                        <Button
+                        Content="Папка"
+                        Style="{StaticResource NiatecSecondaryButtonStyle}"
+                        Click="OpenClientFolderButton_Click"/>
+
+                        <Button
+    Content="{Binding SignToggleButtonText}"
+    MinWidth="96"
+    IsEnabled="{Binding CanToggleSigned}"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    ToolTipService.ToolTip="Отметить договор подписанным"
+    Click="MarkContractSignedButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Background="#0F1115" Padding="24" RowSpacing="16">
+        <Grid
+            Background="{StaticResource NiatecBackgroundBrush}"
+            Padding="24"
+            RowSpacing="16">
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -15,6 +137,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <!-- Заголовок -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -24,74 +147,45 @@
                 <StackPanel Spacing="4">
                     <TextBlock
                         Text="Договоры"
-                        FontSize="30"
-                        FontWeight="SemiBold"
-                        Foreground="White"/>
+                        Style="{StaticResource NiatecPageTitleTextStyle}"/>
 
                     <TextBlock
                         Text="Реестр договорного цикла по клиентам"
-                        FontSize="13"
-                        Foreground="#9AA4B2"
-                        TextWrapping="Wrap"/>
+                        Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
                 </StackPanel>
 
-                <Button
-                    Grid.Column="1"
-                    Content="Обновить"
-                    MinWidth="140"
-                    Height="40"
-                    VerticalAlignment="Top"
-                    Click="RefreshContractsButton_Click"/>
             </Grid>
 
+            <!-- Фильтры -->
             <Grid Grid.Row="1" ColumnSpacing="14" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="240"/>
                     <ColumnDefinition Width="260"/>
-                    <ColumnDefinition Width="170"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBox
-    x:Name="ContractsSearchTextBox"
-    Grid.Column="0"
-    Header="Поиск"
-    MinWidth="320"
-    PlaceholderText="Поиск по клиенту, ИНН, номеру договора"
-    TextChanged="ContractsSearchTextBox_TextChanged"/>
+        x:Name="ContractsSearchTextBox"
+        Grid.Column="0"
+        Header="Поиск"
+        MinWidth="320"
+        PlaceholderText="Поиск по клиенту, ИНН, номеру договора"
+        TextChanged="ContractsSearchTextBox_TextChanged"/>
 
                 <ComboBox
     x:Name="ContractStatusFilterComboBox"
     Grid.Column="1"
     Header="Статус договора"
-    MinWidth="220"
-    SelectedIndex="1"
+    MinWidth="240"
+    SelectedIndex="0"
     SelectionChanged="ContractStatusFilterComboBox_SelectionChanged">
-                    <ComboBoxItem Content="В работе"/>
-                    <ComboBoxItem Content="Все"/>
-                    <ComboBoxItem Content="Требует договора"/>
-                    <ComboBoxItem Content="Договор сформирован"/>
+
+                    <ComboBoxItem Content="Все договоры"/>
+                    <ComboBoxItem Content="Требует подписания"/>
                     <ComboBoxItem Content="Договор подписан"/>
                 </ComboBox>
-
-                <ComboBox
-    x:Name="ContractsSortComboBox"
-    Grid.Column="2"
-    Header="Сортировка"
-    SelectedIndex="0"
-    SelectionChanged="ContractsSortComboBox_SelectionChanged">
-                    <ComboBoxItem Content="Сначала требующие внимания"/>
-                    <ComboBoxItem Content="По дате формирования"/>
-                    <ComboBoxItem Content="По названию клиента"/>
-                </ComboBox>
-
-                <Button
-                    Grid.Column="3"
-                    Content="Сбросить"
-                    Height="40"
-                    VerticalAlignment="Bottom"/>
             </Grid>
 
+            <!-- Карточки показателей -->
             <Grid Grid.Row="2" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -100,86 +194,69 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border
-                    Grid.Column="0"
-                    Background="#171A21"
-                    BorderBrush="#2B3140"
-                    BorderThickness="1"
-                    CornerRadius="14"
-                    Padding="14">
+                <Border Grid.Column="0" Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Всего договоров" Foreground="#8F9BB3"/>
+                        <TextBlock
+                            Text="Всего договоров"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
                         <TextBlock
                             x:Name="ContractsTotalCountTextBlock"
                             Text="0"
                             FontSize="28"
                             FontWeight="SemiBold"
-                            Foreground="White"/>
+                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                     </StackPanel>
                 </Border>
 
-                <Border
-                    Grid.Column="1"
-                    Background="#171A21"
-                    BorderBrush="#2B3140"
-                    BorderThickness="1"
-                    CornerRadius="14"
-                    Padding="14">
+                <Border Grid.Column="1" Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Требует договора" Foreground="#8F9BB3"/>
+                        <TextBlock
+                            Text="Требует договора"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
                         <TextBlock
                             x:Name="ContractsNeedCountTextBlock"
                             Text="0"
                             FontSize="28"
                             FontWeight="SemiBold"
-                            Foreground="#B8B8B8"/>
+                            Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
                     </StackPanel>
                 </Border>
 
-                <Border
-                    Grid.Column="2"
-                    Background="#171A21"
-                    BorderBrush="#2B3140"
-                    BorderThickness="1"
-                    CornerRadius="14"
-                    Padding="14">
+                <Border Grid.Column="2" Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Сформированы" Foreground="#8F9BB3"/>
+                        <TextBlock
+                            Text="Сформированы"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
                         <TextBlock
                             x:Name="ContractsGeneratedCountTextBlock"
                             Text="0"
-                            FontSize="28"
-                            FontWeight="SemiBold"
-                            Foreground="#D7BA7D"/>
+                            Style="{StaticResource NiatecMetricNumberTextStyle}"/>
                     </StackPanel>
                 </Border>
 
-                <Border
-                    Grid.Column="3"
-                    Background="#171A21"
-                    BorderBrush="#2B3140"
-                    BorderThickness="1"
-                    CornerRadius="14"
-                    Padding="14">
+                <Border Grid.Column="3" Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Подписаны" Foreground="#8F9BB3"/>
+                        <TextBlock
+                            Text="Подписаны"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
                         <TextBlock
                             x:Name="ContractsSignedCountTextBlock"
                             Text="0"
                             FontSize="28"
                             FontWeight="SemiBold"
-                            Foreground="#73C991"/>
+                            Foreground="{StaticResource NiatecSuccessBrush}"/>
                     </StackPanel>
                 </Border>
             </Grid>
 
+            <!-- Список договоров -->
             <Border
                 Grid.Row="3"
-                Background="#171A21"
-                BorderBrush="#2B3140"
-                BorderThickness="1"
-                CornerRadius="16"
-                Padding="16">
+                Style="{StaticResource NiatecCardBorderStyle}">
 
                 <Grid RowSpacing="12">
                     <Grid.RowDefinitions>
@@ -188,23 +265,36 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Grid>
+                    <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock
-                            Text="Список договоров"
-                            FontSize="20"
-                            FontWeight="SemiBold"
-                            Foreground="White"/>
+        Text="Список договоров"
+        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
 
                         <TextBlock
-                            Grid.Column="1"
-                            Text="Рабочая очередь по договорам"
-                            Foreground="#8F9BB3"
-                            VerticalAlignment="Center"/>
+        Grid.Column="1"
+        Text="Рабочая очередь по договорам"
+        Style="{StaticResource NiatecMutedTextStyle}"
+        VerticalAlignment="Center"/>
+
+                        <Button
+        x:Name="ToggleContractsViewButton"
+        Grid.Column="2"
+        Style="{StaticResource NiatecSmallIconButtonStyle}"
+        ToolTipService.ToolTip="Компактный вид списка"
+        Click="ToggleContractsViewButton_Click">
+
+                            <TextBlock
+            Text="☰"
+            FontSize="16"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"/>
+                        </Button>
                     </Grid>
 
                     <ListView
@@ -226,8 +316,8 @@
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Border
-                                    Background="#11151C"
-                                    BorderBrush="#243042"
+                                    Background="{StaticResource NiatecSurfaceAltBrush}"
+                                    BorderBrush="{StaticResource NiatecBorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="12"
                                     Padding="14">
@@ -239,6 +329,7 @@
                                             <ColumnDefinition Width="290"/>
                                         </Grid.ColumnDefinitions>
 
+                                        <!-- Клиент и статус -->
                                         <StackPanel Grid.Column="0" Spacing="6">
                                             <Grid ColumnSpacing="10">
                                                 <Grid.ColumnDefinitions>
@@ -253,6 +344,7 @@
                                                     Background="{Binding StatusBrush}"
                                                     VerticalAlignment="Top"
                                                     Margin="0,2,0,0">
+
                                                     <TextBlock
                                                         Text="{Binding StatusIcon}"
                                                         Foreground="White"
@@ -268,13 +360,13 @@
                                                     Text="{Binding ClientName}"
                                                     FontSize="16"
                                                     FontWeight="SemiBold"
-                                                    Foreground="White"
+                                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                                     TextWrapping="Wrap"/>
                                             </Grid>
 
                                             <TextBlock
                                                 Text="{Binding ClientMetaText}"
-                                                Foreground="#B8B8B8"
+                                                Foreground="{StaticResource NiatecTextSecondaryBrush}"
                                                 TextWrapping="Wrap"/>
 
                                             <TextBlock
@@ -284,27 +376,54 @@
                                                 TextWrapping="Wrap"/>
                                         </StackPanel>
 
+                                        <!-- Реквизиты договора -->
                                         <StackPanel Grid.Column="1" Spacing="6">
-                                            <TextBlock Text="Номер договора" Foreground="#8F9BB3"/>
-                                            <TextBlock Text="{Binding ContractNumber}" Foreground="White"/>
+                                            <TextBlock
+                                                Text="Номер договора"
+                                                Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                            <TextBlock
+                                                Text="{Binding ContractNumber}"
+                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                            <TextBlock Text="Сформирован" Foreground="#8F9BB3" Margin="0,6,0,0"/>
-                                            <TextBlock Text="{Binding GeneratedAtText}" Foreground="White"/>
+                                            <TextBlock
+                                                Text="Сформирован"
+                                                Style="{StaticResource NiatecCaptionTextStyle}"
+                                                Margin="0,6,0,0"/>
+                                            <TextBlock
+                                                Text="{Binding GeneratedAtText}"
+                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                            <TextBlock Text="Подписан" Foreground="#8F9BB3" Margin="0,6,0,0"/>
-                                            <TextBlock Text="{Binding SignedAtText}" Foreground="White"/>
+                                            <TextBlock
+                                                Text="Подписан"
+                                                Style="{StaticResource NiatecCaptionTextStyle}"
+                                                Margin="0,6,0,0"/>
+                                            <TextBlock
+                                                Text="{Binding SignedAtText}"
+                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                                         </StackPanel>
 
+                                        <!-- Действия -->
                                         <StackPanel Grid.Column="2" Spacing="8">
-                                            <Button Content="Открыть клиента" Click="OpenClientButton_Click"/>
                                             <Button
-    Content="{Binding ContractFileButtonText}"
-    Click="OpenContractButton_Click"/>
-                                            <Button Content="Открыть папку клиента" Click="OpenClientFolderButton_Click"/>
+                                                Content="Открыть клиента"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="OpenClientButton_Click"/>
+
                                             <Button
-    Content="{Binding SignToggleButtonText}"
-    IsEnabled="{Binding CanToggleSigned}"
-    Click="MarkContractSignedButton_Click"/>
+                                                Content="{Binding ContractFileButtonText}"
+                                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                Click="OpenContractButton_Click"/>
+
+                                            <Button
+                                                Content="Открыть папку клиента"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="OpenClientFolderButton_Click"/>
+
+                                            <Button
+                                                Content="{Binding SignToggleButtonText}"
+                                                IsEnabled="{Binding CanToggleSigned}"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="MarkContractSignedButton_Click"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -314,17 +433,13 @@
 
                     <Border
                         Grid.Row="2"
-                        Background="#11151C"
-                        BorderBrush="#243042"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="12"
+                        Style="{StaticResource NiatecInnerPanelBorderStyle}"
                         Margin="0,10,0,0">
+
                         <TextBlock
                             x:Name="ContractsEmptyStateTextBlock"
                             Text="Пока нет договоров для отображения."
-                            Foreground="#8F9BB3"
-                            TextWrapping="Wrap"/>
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
                     </Border>
                 </Grid>
             </Border>

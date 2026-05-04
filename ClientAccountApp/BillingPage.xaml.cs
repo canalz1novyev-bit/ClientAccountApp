@@ -10,7 +10,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
 using System.Diagnostics;
 using System.Reflection;
 using ClientAccountApp.Services;
@@ -83,6 +82,21 @@ namespace ClientAccountApp
         {
             return value.ToString("N2", new CultureInfo("ru-RU")) + " ₽";
         }
+        private static bool StoredFileExists(string? relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath))
+                return false;
+
+            try
+            {
+                string fullPath = ClientFileStorageService.GetFullPath(relativePath);
+                return File.Exists(fullPath);
+            }
+            catch
+            {
+                return false;
+            }
+        }
         private void OpenInvoiceListItemButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement element ||
@@ -150,13 +164,105 @@ namespace ClientAccountApp
                     StatusText = exists ? "Файл найден" : "Файл не найден"
                 });
             }
+            var firstAvailableDocument = _invoiceDocuments.FirstOrDefault(x => x.CanOpen);
+
+            if (firstAvailableDocument != null)
+            {
+                InvoiceDocumentsListView.SelectedItem = firstAvailableDocument;
+                OpenInvoiceDocumentButton.IsEnabled = true;
+            }
+            else
+            {
+                OpenInvoiceDocumentButton.IsEnabled = false;
+            }
         }
 
         private void InvoiceDocumentsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            OpenInvoiceDocumentButton.IsEnabled =
-                InvoiceDocumentsListView.SelectedItem is InvoiceDocumentListItem item &&
-                item.CanOpen;
+            if (InvoiceDocumentsListView.SelectedItem is InvoiceDocumentListItem selectedDocument)
+            {
+                OpenInvoiceDocumentButton.IsEnabled = selectedDocument.CanOpen;
+
+                BillingStatusTextBlock.Text =
+                    $"Выбран документ: {selectedDocument.Title}.";
+            }
+            else
+            {
+                OpenInvoiceDocumentButton.IsEnabled = false;
+            }
+
+            UpdateInvoiceDocumentsSelectionVisuals();
+        }
+        private void InvoiceDocumentsListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateInvoiceDocumentsSelectionVisuals();
+        }
+        private void UpdateInvoiceDocumentsSelectionVisuals()
+        {
+            if (InvoiceDocumentsListView == null)
+                return;
+
+            InvoiceDocumentsListView.UpdateLayout();
+
+            object? selectedItem = InvoiceDocumentsListView.SelectedItem;
+
+            foreach (object item in InvoiceDocumentsListView.Items)
+            {
+                var container = InvoiceDocumentsListView.ContainerFromItem(item) as ListViewItem;
+
+                if (container == null)
+                    continue;
+
+                var cardBorder = FindVisualChildByName<Border>(container, "DocumentCardBorder");
+                var accentBar = FindVisualChildByName<Border>(container, "DocumentSelectedAccentBar");
+
+                bool isSelected = ReferenceEquals(item, selectedItem);
+
+                if (cardBorder != null)
+                {
+                    if (isSelected)
+                    {
+                        cardBorder.Background = CreateSolidBrush(32, 48, 74);
+                        cardBorder.BorderBrush = CreateSolidBrush(122, 99, 54);
+                    }
+                    else
+                    {
+                        cardBorder.Background = CreateSolidBrush(23, 26, 33);
+                        cardBorder.BorderBrush = CreateSolidBrush(43, 49, 64);
+                    }
+                }
+
+                if (accentBar != null)
+                {
+                    accentBar.Opacity = isSelected ? 1 : 0;
+                }
+            }
+        }
+
+        private static SolidColorBrush CreateSolidBrush(byte r, byte g, byte b)
+        {
+            return new SolidColorBrush(ColorHelper.FromArgb(255, r, g, b));
+        }
+
+        private static T? FindVisualChildByName<T>(DependencyObject parent, string name)
+            where T : FrameworkElement
+        {
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+
+            for (int i = 0; i < childrenCount; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T typedChild && typedChild.Name == name)
+                    return typedChild;
+
+                T? result = FindVisualChildByName<T>(child, name);
+
+                if (result != null)
+                    return result;
+            }
+
+            return null;
         }
 
         private void OpenInvoiceDocumentButton_Click(object sender, RoutedEventArgs e)
@@ -177,6 +283,44 @@ namespace ClientAccountApp
 
             ClientFileStorageService.OpenFile(fullPath);
             BillingStatusTextBlock.Text = $"Открыт документ: {item.Title}.";
+        }
+        private bool TryOpenFirstAvailableInvoiceDocument(int invoiceId)
+        {
+            try
+            {
+                using var db = new AppDbContext();
+
+                var documents = db.InvoiceDocuments
+                    .AsNoTracking()
+                    .Where(x => x.InvoiceId == invoiceId)
+                    .OrderByDescending(x => x.UpdatedAt)
+                    .ToList();
+
+                foreach (var document in documents)
+                {
+                    if (string.IsNullOrWhiteSpace(document.RelativePath))
+                        continue;
+
+                    string fullPath = ClientFileStorageService.GetFullPath(document.RelativePath);
+
+                    if (!File.Exists(fullPath))
+                        continue;
+
+                    ClientFileStorageService.OpenFile(fullPath);
+
+                    BillingStatusTextBlock.Text =
+                        $"Открыт документ: {document.DocumentType} · {document.DocumentFormat}.";
+
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                BillingStatusTextBlock.Text = $"Ошибка открытия документа счёта: {ex.Message}";
+                return false;
+            }
         }
         private void GenerateInvoiceWordListItemButton_Click(object sender, RoutedEventArgs e)
         {
@@ -202,6 +346,9 @@ namespace ClientAccountApp
 
             InvoicesListView.SelectedItem = item;
             LoadInvoiceIntoForm(item.InvoiceId);
+
+            if (TryOpenFirstAvailableInvoiceDocument(item.InvoiceId))
+                return;
 
             OpenInvoiceWordButton_Click(sender, e);
         }
@@ -276,19 +423,37 @@ namespace ClientAccountApp
                 .Select(c => string.IsNullOrWhiteSpace(c.Name) ? "Клиент без названия" : c.Name)
                 .FirstOrDefault() ?? "Клиент";
 
-            bool hasDocument = false;
+            bool hasOldWordDocument = StoredFileExists(invoice.DocumentRelativePath);
 
-            if (!string.IsNullOrWhiteSpace(invoice.DocumentRelativePath))
+            OpenInvoiceWordButton.IsEnabled = hasOldWordDocument;
+
+            var invoiceDocuments = db.InvoiceDocuments
+                .AsNoTracking()
+                .Where(x => x.InvoiceId == invoice.Id)
+                .ToList();
+
+            int registeredDocumentsCount = invoiceDocuments.Count;
+            int existingDocumentsCount = invoiceDocuments.Count(x => StoredFileExists(x.RelativePath));
+
+            string documentsText;
+
+            if (registeredDocumentsCount > 0)
             {
-                string fullPath = ClientFileStorageService.GetFullPath(invoice.DocumentRelativePath);
-                hasDocument = File.Exists(fullPath);
+                documentsText = existingDocumentsCount == registeredDocumentsCount
+                    ? $"Документов: {registeredDocumentsCount}"
+                    : $"Документов: {registeredDocumentsCount}, найдено файлов: {existingDocumentsCount}";
+            }
+            else if (hasOldWordDocument)
+            {
+                documentsText = "Word-счёт сформирован";
+            }
+            else
+            {
+                documentsText = "Документы не сформированы";
             }
 
-            OpenInvoiceWordButton.IsEnabled = hasDocument;
-
             InvoiceQuickSummaryTextBlock.Text =
-                $"{invoice.InvoiceNumber} • {clientName} • {invoice.TotalWithVat:N2} ₽ • {invoice.Status}" +
-                (hasDocument ? " • Документ сформирован" : " • Документ не сформирован");
+                $"{invoice.InvoiceNumber} • {clientName} • {invoice.TotalWithVat:N2} ₽ • {invoice.Status} • {documentsText}";
         }
 
         private void GenerateInvoiceWordButton_Click(object sender, RoutedEventArgs e)
@@ -330,21 +495,21 @@ namespace ClientAccountApp
 
                 string invoiceRelativePath = Convert.ToString(copyResult.RelativePath) ?? "";
                 long invoiceFileSizeBytes = Convert.ToInt64(copyResult.FileSizeBytes);
-                int clientId = client.Id;
+                string fileName = Path.GetFileName(tempPath);
 
                 invoice.DocumentRelativePath = invoiceRelativePath;
                 invoice.UpdatedAt = DateTime.Now;
 
                 bool fileEntryExists = db.ClientFiles.Any(f =>
-                    f.ClientInfoId == clientId &&
+                    f.ClientInfoId == client.Id &&
                     f.RelativePath == invoiceRelativePath);
 
                 if (!fileEntryExists)
                 {
                     db.ClientFiles.Add(new ClientFile
                     {
-                        ClientInfoId = clientId,
-                        OriginalFileName = Path.GetFileName(tempPath),
+                        ClientInfoId = client.Id,
+                        OriginalFileName = fileName,
                         RelativePath = invoiceRelativePath,
                         FileSizeBytes = invoiceFileSizeBytes,
                         AddedAt = DateTime.Now,
@@ -352,14 +517,26 @@ namespace ClientAccountApp
                     });
                 }
 
+                InvoiceDocumentService.RegisterInvoiceDocument(
+                    db,
+                    invoice,
+                    client,
+                    "Счёт",
+                    "Word",
+                    fileName,
+                    invoiceRelativePath,
+                    invoiceFileSizeBytes);
+
                 db.SaveChanges();
 
                 string fullPath = ClientFileStorageService.GetFullPath(invoiceRelativePath);
 
                 LoadInvoices(invoice.Id);
                 LoadInvoiceIntoForm(invoice.Id);
+                LoadInvoiceDocuments(invoice.Id);
 
-                BillingStatusTextBlock.Text = $"Word-счет {invoice.InvoiceNumber} сформирован, сохранен в файлы клиента и открыт.";
+                BillingStatusTextBlock.Text =
+                    $"Word-счёт {invoice.InvoiceNumber} сформирован и добавлен во вкладку «Документы».";
 
                 if (File.Exists(fullPath))
                 {
@@ -367,10 +544,8 @@ namespace ClientAccountApp
                 }
                 else
                 {
-                    BillingStatusTextBlock.Text = "Word-счет сформирован, но файл не найден на диске для открытия.";
+                    BillingStatusTextBlock.Text = "Word-счёт сформирован, но файл не найден на диске для открытия.";
                 }
-
-                ClientFileStorageService.OpenFile(fullPath);
 
                 try
                 {
@@ -384,7 +559,7 @@ namespace ClientAccountApp
             }
             catch (Exception ex)
             {
-                BillingStatusTextBlock.Text = $"Ошибка формирования Word-счета: {ex.Message}";
+                BillingStatusTextBlock.Text = $"Ошибка формирования Word-счёта: {ex.Message}";
             }
         }
         private void LoadOrganizationSettingsIntoForm()
@@ -1935,10 +2110,18 @@ namespace ClientAccountApp
 
             AttachLegacyInvoicesToCurrentOrganization();
 
+            var migrationResult = LegacyInvoiceDocumentsMigrationService.Run();
+
             PrepareNewInvoiceForm();
             LoadInvoices();
 
             _pageReady = true;
+
+            if (migrationResult.RegisteredDocuments > 0)
+            {
+                BillingStatusTextBlock.Text =
+                    $"Старые Word-счета добавлены во вкладку «Документы»: {migrationResult.RegisteredDocuments}.";
+            }
         }
         private void LoadServicesCatalog(int? selectServiceId = null)
         {
@@ -2423,13 +2606,15 @@ namespace ClientAccountApp
             _invoices.Clear();
 
             using var db = new AppDbContext();
+
             int organizationId = GetRequiredActiveOrganizationId();
+
             var invoices = db.Invoices
-    .AsNoTracking()
-    .Where(x => x.OrganizationProfileId == organizationId)
-    .OrderByDescending(x => x.InvoiceDate)
-    .ThenByDescending(x => x.Id)
-    .ToList();
+                .AsNoTracking()
+                .Where(x => x.OrganizationProfileId == organizationId)
+                .OrderByDescending(x => x.InvoiceDate)
+                .ThenByDescending(x => x.Id)
+                .ToList();
 
             var clients = db.Clients
                 .AsNoTracking()
@@ -2440,6 +2625,27 @@ namespace ClientAccountApp
                 c => string.IsNullOrWhiteSpace(c.Name)
                     ? "Клиент без названия"
                     : c.Name);
+
+            var invoiceIds = invoices
+                .Select(x => x.Id)
+                .ToList();
+
+            var invoiceDocumentRows = invoiceIds.Count == 0
+                ? new List<InvoiceDocument>()
+                : db.InvoiceDocuments
+                    .AsNoTracking()
+                    .Where(x => invoiceIds.Contains(x.InvoiceId))
+                    .ToList();
+
+            var documentStatsByInvoiceId = invoiceDocumentRows
+                .GroupBy(x => x.InvoiceId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => new
+                    {
+                        TotalCount = g.Count(),
+                        ExistingCount = g.Count(x => StoredFileExists(x.RelativePath))
+                    });
 
             string searchText = BillingSearchTextBox?.Text?.Trim().ToLowerInvariant() ?? "";
             string statusFilter = GetSelectedComboBoxText(BillingStatusFilterComboBox, "Все статусы");
@@ -2490,12 +2696,34 @@ namespace ClientAccountApp
                     continue;
                 }
 
-                bool hasDocument = false;
+                bool hasOldWordDocument = StoredFileExists(invoice.DocumentRelativePath);
 
-                if (!string.IsNullOrWhiteSpace(invoice.DocumentRelativePath))
+                int registeredDocumentsCount = 0;
+                int existingDocumentsCount = 0;
+
+                if (documentStatsByInvoiceId.TryGetValue(invoice.Id, out var documentStats))
                 {
-                    string fullPath = ClientFileStorageService.GetFullPath(invoice.DocumentRelativePath);
-                    hasDocument = File.Exists(fullPath);
+                    registeredDocumentsCount = documentStats.TotalCount;
+                    existingDocumentsCount = documentStats.ExistingCount;
+                }
+
+                bool hasDocument = hasOldWordDocument || existingDocumentsCount > 0;
+
+                string documentStateText;
+
+                if (registeredDocumentsCount > 0)
+                {
+                    documentStateText = existingDocumentsCount == registeredDocumentsCount
+                        ? $"Документов: {registeredDocumentsCount}"
+                        : $"Документов: {registeredDocumentsCount}, найдено: {existingDocumentsCount}";
+                }
+                else if (hasOldWordDocument)
+                {
+                    documentStateText = "Word-счёт сформирован";
+                }
+                else
+                {
+                    documentStateText = "Документы не сформированы";
                 }
 
                 items.Add(new BillingListItem
@@ -2510,9 +2738,7 @@ namespace ClientAccountApp
                     PeriodText = periodText,
                     TotalText = FormatMoney(invoice.TotalWithVat),
                     HasDocument = hasDocument,
-                    DocumentStateText = hasDocument
-                        ? "Документ сформирован"
-                        : "Документ не сформирован",
+                    DocumentStateText = documentStateText,
                     CanMarkPaid =
                         !string.Equals(status, InvoiceStatusNames.Paid, StringComparison.OrdinalIgnoreCase) &&
                         !string.Equals(status, InvoiceStatusNames.Cancelled, StringComparison.OrdinalIgnoreCase),

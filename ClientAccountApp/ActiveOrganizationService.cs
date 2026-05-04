@@ -93,7 +93,17 @@ namespace ClientAccountApp
 
             SaveActiveOrganizationId(organization.Id);
         }
+        public static void SetCurrentOrganization(int organizationId)
+        {
+            using var db = new AppDbContext();
 
+            var organization = db.OrganizationProfiles.FirstOrDefault(x => x.Id == organizationId);
+
+            if (organization == null)
+                throw new InvalidOperationException("Организация не найдена.");
+
+            SetActiveOrganization(organization);
+        }
         public static void SetActiveOrganization(OrganizationProfile organization)
         {
             CurrentOrganizationId = organization.Id;

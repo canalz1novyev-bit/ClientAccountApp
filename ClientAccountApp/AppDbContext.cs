@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 
 namespace ClientAccountApp
 {
@@ -19,14 +18,36 @@ namespace ClientAccountApp
         public DbSet<ClientContract> ClientContracts => Set<ClientContract>();
         public DbSet<InvoiceDocument> InvoiceDocuments => Set<InvoiceDocument>();
 
-
-
         public AppDbContext()
         {
+            InitializeDatabase();
+        }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
+        {
+            InitializeDatabase();
+        }
+
+        private void InitializeDatabase()
+        {
             Database.EnsureCreated();
-            EnsureClientStatusColumn();
-            EnsureBankAccountCorrespondentAccountColumn();
-            EnsureClientContractColumns();
+
+            if (IsSqliteProvider())
+            {
+                EnsureClientStatusColumn();
+                EnsureBankAccountCorrespondentAccountColumn();
+                EnsureClientContractColumns();
+            }
+        }
+
+        private bool IsSqliteProvider()
+        {
+            string providerName = Database.ProviderName ?? "";
+
+            return providerName.Contains(
+                "Sqlite",
+                StringComparison.OrdinalIgnoreCase);
         }
 
         private void EnsureClientStatusColumn()
@@ -44,6 +65,7 @@ namespace ClientAccountApp
                 while (reader.Read())
                 {
                     var columnName = reader["name"]?.ToString();
+
                     if (string.Equals(columnName, "Status", StringComparison.OrdinalIgnoreCase))
                     {
                         hasStatus = true;
@@ -54,8 +76,106 @@ namespace ClientAccountApp
 
             if (!hasStatus)
             {
-                Database.ExecuteSqlRaw("ALTER TABLE Clients ADD COLUMN Status TEXT NOT NULL DEFAULT 'Активный';");
+                Database.ExecuteSqlRaw(
+                    "ALTER TABLE Clients ADD COLUMN Status TEXT NOT NULL DEFAULT 'Активный';");
             }
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // SQL Server не любит каскадные удаления с несколькими путями.
+            // Поэтому для корпоративного режима отключаем каскадное удаление у связей.
+
+            modelBuilder.Entity<DigitalSignature>()
+    .HasOne(x => x.ClientInfo)
+    .WithMany()
+    .HasForeignKey(x => x.ClientInfoId)
+    .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<BankAccount>()
+    .HasOne(x => x.ClientInfo)
+    .WithMany()
+    .HasForeignKey(x => x.ClientInfoId)
+    .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ClientNote>()
+                .HasOne<ClientInfo>()
+                .WithMany()
+                .HasForeignKey(x => x.ClientInfoId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ClientFile>()
+                .HasOne<ClientInfo>()
+                .WithMany()
+                .HasForeignKey(x => x.ClientInfoId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ClientRecurringService>()
+                .HasOne<ClientInfo>()
+                .WithMany()
+                .HasForeignKey(x => x.ClientInfoId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ClientRecurringService>()
+                .HasOne<ServiceCatalog>()
+                .WithMany()
+                .HasForeignKey(x => x.ServiceCatalogId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Invoice>()
+                .HasOne<ClientInfo>()
+                .WithMany()
+                .HasForeignKey(x => x.ClientInfoId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Invoice>()
+                .HasOne<OrganizationProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationProfileId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<InvoiceItem>()
+                .HasOne<Invoice>()
+                .WithMany()
+                .HasForeignKey(x => x.InvoiceId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<InvoiceItem>()
+                .HasOne<ServiceCatalog>()
+                .WithMany()
+                .HasForeignKey(x => x.ServiceCatalogId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ClientContract>()
+                .HasOne<OrganizationProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationProfileId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ClientContract>()
+                .HasOne<ClientInfo>()
+                .WithMany()
+                .HasForeignKey(x => x.ClientInfoId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<InvoiceDocument>()
+                .HasOne<Invoice>()
+                .WithMany()
+                .HasForeignKey(x => x.InvoiceId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<InvoiceDocument>()
+                .HasOne<ClientInfo>()
+                .WithMany()
+                .HasForeignKey(x => x.ClientInfoId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<InvoiceDocument>()
+                .HasOne<OrganizationProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.OrganizationProfileId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
         private void EnsureClientContractColumns()
         {
@@ -104,6 +224,7 @@ namespace ClientAccountApp
                     "ALTER TABLE Clients ADD COLUMN ContractSignedAt TEXT NULL;");
             }
         }
+
         private void EnsureBankAccountCorrespondentAccountColumn()
         {
             using var connection = Database.GetDbConnection();
@@ -119,6 +240,7 @@ namespace ClientAccountApp
                 while (reader.Read())
                 {
                     var columnName = reader["name"]?.ToString();
+
                     if (string.Equals(columnName, "CorrespondentAccount", StringComparison.OrdinalIgnoreCase))
                     {
                         hasCorrespondentAccount = true;
@@ -129,12 +251,31 @@ namespace ClientAccountApp
 
             if (!hasCorrespondentAccount)
             {
-                Database.ExecuteSqlRaw("ALTER TABLE BankAccounts ADD COLUMN CorrespondentAccount TEXT NOT NULL DEFAULT '';");
+                Database.ExecuteSqlRaw(
+                    "ALTER TABLE BankAccounts ADD COLUMN CorrespondentAccount TEXT NOT NULL DEFAULT '';");
             }
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            if (optionsBuilder.IsConfigured)
+                return;
+
+            var settings = DatabaseConnectionSettingsService.Load();
+
+            if (settings.ProviderMode == DatabaseProviderMode.SqlServer &&
+                !string.IsNullOrWhiteSpace(settings.SqlServerConnectionString))
+            {
+                optionsBuilder.UseSqlServer(
+                    settings.SqlServerConnectionString,
+                    sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure();
+                    });
+
+                return;
+            }
+
             optionsBuilder.UseSqlite($"Data Source={AppPaths.DatabasePath}");
         }
     }

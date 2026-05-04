@@ -1,0 +1,160 @@
+<Page
+    x:Class="ClientAccountApp.AppUpdatesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        Background="{StaticResource NiatecBackgroundBrush}"
+        Padding="24"
+        RowSpacing="16">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="4">
+            <TextBlock
+                Text="Обновления"
+                Style="{StaticResource NiatecPageTitleTextStyle}"/>
+
+            <TextBlock
+                Text="Проверка, скачивание и установка новых версий NIATEC.Client."
+                Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.05*"/>
+                    <ColumnDefinition Width="0.95*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border
+                    Grid.Column="0"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="14">
+                        <TextBlock
+                            Text="Проверка обновлений"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Приложение может проверять наличие новой версии, скачивать обновление и перезапускаться после установки."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    Text="Текущая версия"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    x:Name="CurrentVersionTextBlock"
+                                    Text="—"
+                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    Text="Доступная версия"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    x:Name="AvailableVersionTextBlock"
+                                    Text="Проверка ещё не выполнялась."
+                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button
+                                x:Name="CheckUpdatesButton"
+                                Grid.Column="0"
+                                Content="Проверить обновления"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                Click="CheckUpdatesButton_Click"/>
+
+                            <Button
+                                x:Name="InstallUpdateButton"
+                                Grid.Column="1"
+                                Content="Скачать и установить"
+                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                IsEnabled="False"
+                                Click="InstallUpdateButton_Click"/>
+                        </Grid>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                x:Name="UpdateStatusTextBlock"
+                                Text="Раздел обновлений готов к работе."
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border
+                    Grid.Column="1"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="14">
+                        <TextBlock
+                            Text="Как это будет работать"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="После выпуска новой версии пользователь сможет проверить обновление прямо из приложения. Если новая версия найдена, программа скачает пакет обновления и перезапустится."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    Text="Важно"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Text="Пока адрес обновлений временный. После подготовки сайта или папки релизов мы заменим его на реальный путь."
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    Text="Следующий этап"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Text="После этой страницы настроим сборку установщика Setup.exe и папку releases для публикации обновлений."
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button
+                            Content="Вернуться в настройки"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="BackToSettingsButton_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

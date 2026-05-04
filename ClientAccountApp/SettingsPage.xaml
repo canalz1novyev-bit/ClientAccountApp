@@ -22,7 +22,7 @@
                 Style="{StaticResource NiatecPageTitleTextStyle}"/>
 
             <TextBlock
-                Text="Служебные настройки приложения, хранилище данных и резервные копии."
+                Text="Служебные настройки приложения, хранилище данных, резервные копии, корпоративная база и ИИ."
                 Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
 
             <TextBlock
@@ -30,57 +30,185 @@
                 Style="{StaticResource NiatecMutedTextStyle}"/>
         </StackPanel>
 
-        <Grid
+        <ScrollViewer
             Grid.Row="1"
-            ColumnSpacing="16"
-            RowSpacing="16">
+            VerticalScrollBarVisibility="Auto">
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <Grid
+                ColumnSpacing="16"
+                RowSpacing="16">
 
-            <Border
-                Grid.Column="0"
-                Style="{StaticResource NiatecCardBorderStyle}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Spacing="12">
-                    <TextBlock
-                        Text="Хранилище данных"
-                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <TextBlock
-                        Text="Папка, где хранится база данных, файлы клиентов и резервные копии. Можно подключить локальную или сетевую папку."
-                        Style="{StaticResource NiatecCaptionTextStyle}"/>
+                <!-- Хранилище данных -->
+                <Border
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Style="{StaticResource NiatecCardBorderStyle}">
 
-                    <Button
-    Content="Открыть настройки хранилища"
-    Style="{StaticResource NiatecSecondaryButtonStyle}"
-    HorizontalAlignment="Left"
-    Click="OpenStorageSettingsButton_Click"/>
-                </StackPanel>
-            </Border>
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Хранилище данных"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
 
-            <Border
-                Grid.Column="1"
-                Style="{StaticResource NiatecCardBorderStyle}">
+                        <TextBlock
+                            Text="Папка, где хранится база данных, файлы клиентов и резервные копии. Можно подключить локальную или сетевую папку."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
 
-                <StackPanel Spacing="12">
-                    <TextBlock
-                        Text="Резервные копии"
-                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+                        <Button
+                            Content="Открыть настройки хранилища"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="OpenStorageSettingsButton_Click"/>
+                    </StackPanel>
+                </Border>
 
-                    <TextBlock
-                        Text="Создание и восстановление резервных копий базы данных и файлов клиентов."
-                        Style="{StaticResource NiatecCaptionTextStyle}"/>
+                <!-- Резервные копии -->
+                <Border
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Style="{StaticResource NiatecCardBorderStyle}">
 
-                    <Button
-    Content="Открыть резервные копии"
-    Style="{StaticResource NiatecSecondaryButtonStyle}"
-    HorizontalAlignment="Left"
-    Click="OpenBackupsButton_Click"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Резервные копии"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Создание и восстановление резервных копий базы данных и файлов клиентов."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Button
+                            Content="Открыть резервные копии"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="OpenBackupsButton_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Корпоративная база -->
+                <Border
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Корпоративная база"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Подключение к SQL Server для одновременной работы нескольких пользователей с одной общей базой."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Button
+                            Content="Открыть настройки базы"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="OpenDatabaseConnectionSettingsButton_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Диагностика базы -->
+                <Border
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="Диагностика базы"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Проверка текущего режима базы, подключения, основных таблиц и файлов клиентов."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Button
+                            Content="Открыть диагностику"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="OpenDatabaseDiagnosticsButton_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- ИИ / GigaChat -->
+                <Border
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="12">
+                        <TextBlock
+                            Text="ИИ / GigaChat"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Настройки подключения GigaChat для ИИ-инструментов: ответы на требования, проверка контрагентов и будущие помощники."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Button
+                            Content="Открыть настройки ИИ"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="OpenAiSettingsButton_Click"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Источники проверки контрагентов -->
+                <Border
+    Grid.Row="2"
+    Grid.Column="1"
+    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="12">
+                        <TextBlock
+            Text="Проверка контрагентов"
+            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+            Text="Настройки внешних источников и API-поставщиков для автоматической проверки по ИНН."
+            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Button
+            Content="Открыть источники проверки"
+            Style="{StaticResource NiatecSecondaryButtonStyle}"
+            HorizontalAlignment="Left"
+            Click="OpenCounterpartySourcesSettingsButton_Click"/>
+                    </StackPanel>
+                </Border>
+                <!-- Обновления -->
+                <Border
+    Grid.Row="3"
+    Grid.Column="0"
+    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="12">
+                        <TextBlock
+            Text="Обновления"
+            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+            Text="Проверка и установка новых версий NIATEC.Client после выпуска программы."
+            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Button
+            Content="Открыть обновления"
+            Style="{StaticResource NiatecSecondaryButtonStyle}"
+            HorizontalAlignment="Left"
+            Click="OpenAppUpdatesButton_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>

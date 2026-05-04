@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
-
+using System.Text.RegularExpressions;
 
 namespace ClientAccountApp
 {
@@ -17,6 +17,8 @@ namespace ClientAccountApp
     {
         private readonly ObservableCollection<ContractsListItemViewModel> _items = new();
         private bool _pageReady = false;
+        private bool _isContractsCompactView = false;
+        private DataTemplate? _normalContractItemTemplate;
         public bool CanToggleSigned { get; set; }
         public string SignToggleButtonText { get; set; } = "Отметить договор подписанным";
 
@@ -25,21 +27,27 @@ namespace ClientAccountApp
         {
             this.InitializeComponent();
 
+            _normalContractItemTemplate = ContractsListView.ItemTemplate;
+
             if (ContractsListView != null)
             {
                 ContractsListView.ItemsSource = _items;
             }
 
             Loaded += ContractsPage_Loaded;
-            
         }
 
         private void ContractsPage_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_pageReady)
+                return;
+
             ContractSchemaService.EnsureContractTables();
             ClientContractService.EnsureContractsForActiveOrganization();
 
-           
+            RestorePageState();
+
+            _pageReady = true;
 
             LoadContracts();
         }
@@ -48,8 +56,8 @@ namespace ClientAccountApp
             UiStateService.Save(state =>
             {
                 state.ContractsPage.SearchText = ContractsSearchTextBox?.Text ?? "";
-                state.ContractsPage.StatusFilter = GetComboBoxValue(ContractStatusFilterComboBox, "В работе");
-                state.ContractsPage.SortMode = GetComboBoxValue(ContractsSortComboBox, "Сначала требующие внимания");
+                state.ContractsPage.StatusFilter = GetComboBoxValue(ContractStatusFilterComboBox, "Все договоры");
+                state.ContractsPage.SortMode = "";
             });
         }
 
@@ -60,8 +68,10 @@ namespace ClientAccountApp
             if (ContractsSearchTextBox != null)
                 ContractsSearchTextBox.Text = state.SearchText ?? "";
 
-            SelectComboBoxValue(ContractStatusFilterComboBox, state.StatusFilter, "В работе");
-            SelectComboBoxValue(ContractsSortComboBox, state.SortMode, "Сначала требующие внимания");
+            SelectComboBoxValue(
+                ContractStatusFilterComboBox,
+                state.StatusFilter,
+                "Все договоры");
         }
 
         private static string GetComboBoxValue(ComboBox? comboBox, string fallback)
@@ -121,23 +131,40 @@ namespace ClientAccountApp
             LoadContracts();
         }
 
-        private void ContractsSortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        
+        private void ToggleContractsViewButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_pageReady)
-                return;
-
-            SavePageState();
-            LoadContracts();
+            SetContractsListViewMode(!_isContractsCompactView);
         }
 
+        private void SetContractsListViewMode(bool compact)
+        {
+            _isContractsCompactView = compact;
+
+            if (compact)
+            {
+                if (Resources.TryGetValue("CompactContractItemTemplate", out object compactTemplate) &&
+                    compactTemplate is DataTemplate dataTemplate)
+                {
+                    ContractsListView.ItemTemplate = dataTemplate;
+                }
+
+                ToolTipService.SetToolTip(ToggleContractsViewButton, "Обычный вид списка");
+            }
+            else
+            {
+                ContractsListView.ItemTemplate = _normalContractItemTemplate;
+                ToolTipService.SetToolTip(ToggleContractsViewButton, "Компактный вид списка");
+            }
+        }
         private string GetSelectedContractStatusFilter()
         {
             if (ContractStatusFilterComboBox?.SelectedItem is ComboBoxItem selectedItem)
             {
-                return selectedItem.Content?.ToString() ?? "Все";
+                return selectedItem.Content?.ToString() ?? "Все договоры";
             }
 
-            return "Все";
+            return "Все договоры";
         }
         private bool MatchesContractsFilter(ContractsListItemViewModel item)
         {
@@ -146,22 +173,29 @@ namespace ClientAccountApp
 
             bool matchesSearch =
                 string.IsNullOrWhiteSpace(searchText) ||
-                (item.ClientName?.ToLowerInvariant().Contains(searchText) ?? false) ||
-                (item.ClientMetaText?.ToLowerInvariant().Contains(searchText) ?? false) ||
-                (item.ContractNumber?.ToLowerInvariant().Contains(searchText) ?? false);
+                ContainsSearch(item.ClientName, searchText) ||
+                ContainsSearch(item.ClientMetaText, searchText) ||
+                ContainsSearch(item.ContractNumber, searchText) ||
+                ContainsSearch(item.ContractStatusText, searchText) ||
+                ContainsSearch(item.GeneratedAtText, searchText) ||
+                ContainsSearch(item.SignedAtText, searchText);
 
             if (!matchesSearch)
                 return false;
 
             return statusFilter switch
             {
-                "В работе" => !string.Equals(item.ContractStatusText, "Договор подписан", StringComparison.OrdinalIgnoreCase),
-                "Все" => true,
-                "Требует договора" => string.Equals(item.ContractStatusText, "Требует договора", StringComparison.OrdinalIgnoreCase),
-                "Договор сформирован" => string.Equals(item.ContractStatusText, "Договор сформирован", StringComparison.OrdinalIgnoreCase),
+                "Все договоры" => true,
+                "Требует подписания" => string.Equals(item.ContractStatusText, "Требует подписания", StringComparison.OrdinalIgnoreCase),
                 "Договор подписан" => string.Equals(item.ContractStatusText, "Договор подписан", StringComparison.OrdinalIgnoreCase),
                 _ => true
             };
+        }
+
+        private static bool ContainsSearch(string? value, string searchText)
+        {
+            return !string.IsNullOrWhiteSpace(value) &&
+                   value.ToLowerInvariant().Contains(searchText);
         }
 
         private void LoadContracts()
@@ -196,6 +230,11 @@ namespace ClientAccountApp
                 string contractStatus = contract == null || string.IsNullOrWhiteSpace(contract.Status)
                     ? "Требует договора"
                     : contract.Status;
+                bool isSigned = string.Equals(contractStatus, "Договор подписан", StringComparison.OrdinalIgnoreCase);
+
+                string displayStatus = isSigned
+                    ? "Договор подписан"
+                    : "Требует подписания";
 
                 bool hasContractFile = false;
                 string contractNumber = "—";
@@ -203,7 +242,7 @@ namespace ClientAccountApp
                 if (contract != null)
                 {
                     if (!string.IsNullOrWhiteSpace(contract.ContractNumber))
-                        contractNumber = contract.ContractNumber;
+                        contractNumber = ExtractContractNumber(contract.ContractNumber, client.Id, contract.GeneratedAt);
 
                     if (!string.IsNullOrWhiteSpace(contract.DocumentRelativePath))
                     {
@@ -231,7 +270,10 @@ namespace ClientAccountApp
                             hasContractFile = true;
 
                             if (contractNumber == "—")
-                                contractNumber = ExtractContractNumber(latestContractFile.OriginalFileName);
+                                contractNumber = ExtractContractNumber(
+    latestContractFile.OriginalFileName,
+    client.Id,
+    latestContractFile.AddedAt);
                         }
                     }
                 }
@@ -241,7 +283,7 @@ namespace ClientAccountApp
                     ClientId = client.Id,
                     ClientName = string.IsNullOrWhiteSpace(client.Name) ? "Клиент без названия" : client.Name,
                     ClientMetaText = BuildClientMeta(client),
-                    ContractStatusText = contractStatus,
+                    ContractStatusText = displayStatus,
                     ContractNumber = contractNumber,
                     GeneratedAtText = contract?.GeneratedAt.HasValue == true
                         ? contract.GeneratedAt.Value.ToString("dd.MM.yyyy HH:mm")
@@ -251,13 +293,13 @@ namespace ClientAccountApp
                         : "—",
                     HasContractFile = hasContractFile,
                     ContractFileButtonText = hasContractFile ? "Открыть договор" : "Сформировать договор",
-                    CanToggleSigned = string.Equals(contractStatus, "Договор сформирован", StringComparison.OrdinalIgnoreCase),
-                    SignToggleButtonText = string.Equals(contractStatus, "Договор подписан", StringComparison.OrdinalIgnoreCase)
-                        ? "Договор подписан"
-                        : "Отметить договор подписанным"
+                    CanToggleSigned = !isSigned,
+                    SignToggleButtonText = isSigned
+    ? "Подписан"
+    : "Подписать"
                 };
 
-                ApplyStatusStyle(item, contractStatus);
+                ApplyStatusStyle(item, displayStatus);
                 allItems.Add(item);
             }
 
@@ -267,17 +309,15 @@ namespace ClientAccountApp
             }
 
             ContractsTotalCountTextBlock.Text = allItems.Count.ToString();
-            ContractsNeedCountTextBlock.Text = allItems.Count(x => x.ContractStatusText == "Требует договора").ToString();
-            ContractsGeneratedCountTextBlock.Text = allItems.Count(x => x.ContractStatusText == "Договор сформирован").ToString();
+            ContractsNeedCountTextBlock.Text = allItems.Count(x => x.ContractStatusText == "Требует подписания").ToString();
+            ContractsGeneratedCountTextBlock.Text = allItems.Count(x => x.HasContractFile && x.ContractStatusText == "Требует подписания").ToString();
             ContractsSignedCountTextBlock.Text = allItems.Count(x => x.ContractStatusText == "Договор подписан").ToString();
 
             string currentFilter = GetSelectedContractStatusFilter();
 
             ContractsEmptyStateTextBlock.Text = _items.Count == 0
-                ? currentFilter == "В работе"
-                    ? "В рабочей очереди сейчас нет договоров по выбранной организации."
-                    : "По текущему фильтру договоры не найдены."
-                : $"Договоры показаны по организации: {organization.Name}";
+    ? "По текущему фильтру договоры не найдены."
+    : $"Договоры показаны по организации: {organization.Name}";
         }
 
 
@@ -345,7 +385,10 @@ namespace ClientAccountApp
 
                     if (File.Exists(oldFullPath))
                     {
-                        contract.ContractNumber = latestContractFile.OriginalFileName;
+                        contract.ContractNumber = ExtractContractNumber(
+    latestContractFile.OriginalFileName,
+    client.Id,
+    latestContractFile.AddedAt);
                         contract.DocumentRelativePath = latestContractFile.RelativePath;
 
                         if (!contract.GeneratedAt.HasValue)
@@ -376,7 +419,10 @@ namespace ClientAccountApp
                 string contractRelativePath = Convert.ToString(copyResult.RelativePath) ?? "";
                 long contractFileSizeBytes = Convert.ToInt64(copyResult.FileSizeBytes);
                 string contractFileName = Path.GetFileName(tempContractPath);
-
+                string contractNumber = ExtractContractNumber(
+    contractFileName,
+    client.Id,
+    DateTime.Now);
                 db.ClientFiles.Add(new ClientFile
                 {
                     ClientInfoId = client.Id,
@@ -388,10 +434,10 @@ namespace ClientAccountApp
                 });
 
                 ClientContractService.MarkGenerated(
-                    db,
-                    contract,
-                    contractFileName,
-                    contractRelativePath);
+    db,
+    contract,
+    contractNumber,
+    contractRelativePath);
 
                 // Временно синхронизируем старые поля, чтобы старый список клиентов не потерял галочки.
                 if (!string.Equals(client.ContractStatus, "Договор подписан", StringComparison.OrdinalIgnoreCase))
@@ -488,19 +534,7 @@ namespace ClientAccountApp
                     organization.Id,
                     client.Id);
 
-                bool hasContractFile = false;
-
-                if (!string.IsNullOrWhiteSpace(contract.DocumentRelativePath))
-                {
-                    string fullPath = ClientFileStorageService.GetFullPath(contract.DocumentRelativePath);
-                    hasContractFile = File.Exists(fullPath);
-                }
-
-                if (!hasContractFile && !contract.GeneratedAt.HasValue)
-                {
-                    ContractsEmptyStateTextBlock.Text = "Сначала сформируй договор для этого клиента.";
-                    return;
-                }
+                
 
                 if (string.Equals(contract.Status, "Договор подписан", StringComparison.OrdinalIgnoreCase))
                 {
@@ -519,12 +553,16 @@ namespace ClientAccountApp
 
                 db.SaveChanges();
 
+                SelectComboBoxValue(
+                    ContractStatusFilterComboBox,
+                    "Договор подписан",
+                    "Договор подписан");
+
+                SavePageState();
                 LoadContracts();
 
                 ContractsEmptyStateTextBlock.Text =
-                    GetSelectedContractStatusFilter() == "В работе"
-                        ? $"Договор клиента «{client.Name}» отмечен как подписанный. Если он исчез из списка — это нормально: фильтр «В работе» скрывает подписанные договоры."
-                        : $"Договор клиента «{client.Name}» отмечен как подписанный.";
+                    $"Договор клиента «{client.Name}» отмечен как подписанный.";
             }
             catch (Exception ex)
             {
@@ -539,17 +577,44 @@ namespace ClientAccountApp
             return $"{type} | {inn}";
         }
 
-        private static string ExtractContractNumber(string? fileName)
+        private static string ExtractContractNumber(string? value, int clientId = 0, DateTime? generatedAt = null)
         {
-            if (string.IsNullOrWhiteSpace(fileName))
-                return "—";
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                if (clientId > 0 && generatedAt.HasValue)
+                    return BuildContractNumber(clientId, generatedAt.Value);
 
-            return fileName;
+                return "—";
+            }
+
+            string text = Path.GetFileNameWithoutExtension(value.Trim());
+
+            // Если внутри уже есть нормальный номер вида 260420-018 — берём его.
+            var match = Regex.Match(text, @"\d{6}-\d{3,}");
+
+            if (match.Success)
+                return match.Value;
+
+            // Если в базе лежит старое имя файла вида Договор_ИП Иванов_20260420.docx,
+            // показываем аккуратный номер по дате формирования и ID клиента.
+            if (clientId > 0 && generatedAt.HasValue)
+                return BuildContractNumber(clientId, generatedAt.Value);
+
+            text = text
+                .Replace("Договор_", "", StringComparison.OrdinalIgnoreCase)
+                .Replace("ДОГОВОР_", "", StringComparison.OrdinalIgnoreCase)
+                .Trim('_', ' ', '-');
+
+            return string.IsNullOrWhiteSpace(text) ? "—" : text;
+        }
+
+        private static string BuildContractNumber(int clientId, DateTime date)
+        {
+            return $"{date:yyMMdd}-{clientId:000}";
         }
 
         private static void ApplyStatusStyle(ContractsListItemViewModel item, string contractStatus)
         {
-
             switch (contractStatus)
             {
                 case "Договор подписан":
@@ -558,8 +623,8 @@ namespace ClientAccountApp
                     item.StatusTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 115, 201, 145));
                     break;
 
-                case "Договор сформирован":
-                    item.StatusIcon = "●";
+                case "Требует подписания":
+                    item.StatusIcon = "•";
                     item.StatusBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 140, 110, 40));
                     item.StatusTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 215, 186, 125));
                     break;
@@ -570,7 +635,6 @@ namespace ClientAccountApp
                     item.StatusTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 184, 184, 184));
                     break;
             }
-
         }
     }
 }

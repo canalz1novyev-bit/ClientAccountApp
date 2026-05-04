@@ -10,8 +10,8 @@
 
   <Identity
     Name="36146e0c-a06f-4e12-876d-ee202ed47329"
-    Publisher="CN=Admin"
-    Version="1.0.0.0" />
+    Publisher="CN=NIATEC"
+    Version="1.0.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="36146e0c-a06f-4e12-876d-ee202ed47329" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

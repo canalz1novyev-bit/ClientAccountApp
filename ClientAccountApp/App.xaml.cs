@@ -17,6 +17,8 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Microsoft.EntityFrameworkCore;
 
+
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -37,7 +39,6 @@ namespace ClientAccountApp
         public App()
         {
             InitializeComponent();
-
         }
         public static Window? MainAppWindow { get; private set; }
 
@@ -47,10 +48,58 @@ namespace ClientAccountApp
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            EnsureDatabaseSchema();
+            WriteAppLog("OnLaunched start");
 
-            MainAppWindow = new ShellWindow();
-            MainAppWindow.Activate();
+            try
+            {
+                EnsureDatabaseSchema();
+                WriteAppLog("EnsureDatabaseSchema ok");
+            }
+            catch (Exception ex)
+            {
+                WriteAppLog("EnsureDatabaseSchema error: " + ex);
+            }
+
+            try
+            {
+                WriteAppLog("Before ShellWindow");
+
+                MainAppWindow = new ShellWindow();
+
+                WriteAppLog("After ShellWindow");
+
+                MainAppWindow.Activate();
+
+                WriteAppLog("After Activate");
+            }
+            catch (Exception ex)
+            {
+                WriteAppLog("ShellWindow error: " + ex);
+                throw;
+            }
+        }
+
+        private static void WriteAppLog(string message)
+        {
+            try
+            {
+                string folder = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "ClientAccountApp",
+                    "Logs");
+
+                Directory.CreateDirectory(folder);
+
+                string path = System.IO.Path.Combine(folder, "startup-log.txt");
+
+                File.AppendAllText(
+                    path,
+                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine);
+            }
+            catch
+            {
+                // логирование не должно ломать запуск
+            }
         }
         private void EnsureDatabaseSchema()
         {
@@ -58,21 +107,25 @@ namespace ClientAccountApp
 
             db.Database.EnsureCreated();
 
+            string providerName = db.Database.ProviderName ?? "";
+
+            if (providerName.Contains("SqlServer", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             try
             {
                 db.Database.ExecuteSqlRaw(@"
-            ALTER TABLE Clients
-            ADD COLUMN Ogrn TEXT NOT NULL DEFAULT '';
-        ");
+ALTER TABLE Clients
+ADD COLUMN Ogrn TEXT NOT NULL DEFAULT '';
+");
             }
-            catch (Exception ex)
+            catch
             {
-                if (!ex.Message.Contains("duplicate column name", StringComparison.OrdinalIgnoreCase))
-                {
-                    throw;
-                }
             }
         }
     }
+    
     
 }

@@ -1,0 +1,197 @@
+<Page
+    x:Class="ClientAccountApp.CounterpartySourcesSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        Background="{StaticResource NiatecBackgroundBrush}"
+        Padding="24"
+        RowSpacing="16">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="4">
+            <TextBlock
+                Text="Источники проверки контрагентов"
+                Style="{StaticResource NiatecPageTitleTextStyle}"/>
+
+            <TextBlock
+                Text="Настройки внешних API для автоматической проверки контрагентов по ИНН."
+                Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.05*"/>
+                    <ColumnDefinition Width="0.95*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border
+                    Grid.Column="0"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="14">
+                        <TextBlock
+                            Text="API-поставщик КАД / Арбитраж"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Если поставщик включён, автоматическая проверка будет использовать его вместо экспериментального прямого запроса к сайту КАД."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="10">
+                                <TextBlock
+                                    Text="Состояние"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <CheckBox
+                                    x:Name="KadApiEnabledCheckBox"
+                                    Content="Использовать API-поставщика КАД"
+                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBox
+                            x:Name="KadProviderNameTextBox"
+                            Header="Название поставщика"
+                            PlaceholderText="Например: Контур.Фокус, СПАРК, DaData, собственный API"/>
+
+                        <TextBox
+                            x:Name="KadApiUrlTextBox"
+                            Header="URL API"
+                            PlaceholderText="Например: https://api.provider.ru/kad/search?inn={inn}"/>
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="170"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="160"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox
+                                x:Name="KadHttpMethodComboBox"
+                                Grid.Column="0"
+                                Header="Метод"
+                                SelectedIndex="1">
+                                <ComboBoxItem Content="GET"/>
+                                <ComboBoxItem Content="POST"/>
+                            </ComboBox>
+
+                            <TextBox
+                                x:Name="KadApiKeyHeaderNameTextBox"
+                                Grid.Column="1"
+                                Header="Заголовок ключа"
+                                Text="Authorization"/>
+
+                            <TextBox
+                                x:Name="KadApiKeyPrefixTextBox"
+                                Grid.Column="2"
+                                Header="Префикс"
+                                Text="Bearer"/>
+                        </Grid>
+
+                        <PasswordBox
+                            x:Name="KadApiKeyPasswordBox"
+                            Header="API key / token"
+                            PlaceholderText="Вставьте ключ API-поставщика"/>
+
+                        <TextBox
+                            x:Name="KadTestInnTextBox"
+                            Header="Тестовый ИНН"
+                            PlaceholderText="Введите ИНН для проверки подключения"/>
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button
+                                Grid.Column="0"
+                                Content="Сохранить настройки"
+                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                Click="SaveKadProviderSettingsButton_Click"/>
+
+                            <Button
+                                Grid.Column="1"
+                                Content="Проверить API"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                Click="TestKadProviderSettingsButton_Click"/>
+                        </Grid>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                x:Name="CounterpartySourcesStatusTextBlock"
+                                Text="Настройки API-поставщика КАД готовы к заполнению."
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border
+                    Grid.Column="1"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="14">
+                        <TextBlock
+                            Text="Как должен работать поставщик"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Универсальный адаптер отправляет ИНН поставщику и сохраняет ответ как внешний факт. Затем GigaChat анализирует полученные данные."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    Text="GET-вариант"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Text="URL может содержать {inn}. Приложение заменит {inn} на введённый ИНН."
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    Text="POST-вариант"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Text="Если выбран POST, приложение отправит JSON: { &quot;inn&quot;: &quot;...&quot; }."
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                Text="Если у конкретного поставщика другой формат запроса, позже добавим отдельный адаптер под него."
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+
+                        <Button
+                            Content="Вернуться в настройки"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="BackToSettingsButton_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

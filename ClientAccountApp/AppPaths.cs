@@ -15,10 +15,9 @@ namespace ClientAccountApp
         private static readonly string _backupsFolder;
         private static readonly string _clientFilesFolder;
 
-
         static AppPaths()
         {
-            _defaultStorageRoot = global::Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+            _defaultStorageRoot = GetDefaultStorageRoot();
             _storageRoot = ResolveStorageRoot();
 
             _databasePath = Path.Combine(_storageRoot, DatabaseFileName);
@@ -30,24 +29,16 @@ namespace ClientAccountApp
             Directory.CreateDirectory(_clientFilesFolder);
         }
 
-        /// <summary>
-        /// Текущая рабочая папка хранения данных.
-        /// Для совместимости старое имя AppDataFolder оставляем.
-        /// </summary>
         public static string AppDataFolder => _storageRoot;
 
-        /// <summary>
-        /// Текущая рабочая папка хранения данных.
-        /// </summary>
         public static string StorageRoot => _storageRoot;
 
-        /// <summary>
-        /// Стандартная локальная папка приложения.
-        /// </summary>
         public static string DefaultStorageRoot => _defaultStorageRoot;
 
         public static string DatabasePath => _databasePath;
+
         public static string BackupsFolder => _backupsFolder;
+
         public static string ClientFilesFolder => _clientFilesFolder;
 
         public static bool IsCustomStorage
@@ -59,6 +50,17 @@ namespace ClientAccountApp
                     _defaultStorageRoot,
                     StringComparison.OrdinalIgnoreCase);
             }
+        }
+
+        private static string GetDefaultStorageRoot()
+        {
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            string folder = Path.Combine(localAppData, "ClientAccountApp");
+
+            Directory.CreateDirectory(folder);
+
+            return folder;
         }
 
         private static string ResolveStorageRoot()
@@ -80,9 +82,6 @@ namespace ClientAccountApp
             }
             catch
             {
-                // Если сетевой диск или внешняя папка недоступны,
-                // приложение не должно падать при запуске.
-                // В этом случае временно возвращаемся к локальному хранилищу.
                 return _defaultStorageRoot;
             }
         }

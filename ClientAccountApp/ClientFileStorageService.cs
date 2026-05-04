@@ -13,9 +13,29 @@ namespace ClientAccountApp
         public static string GetFilesRootFolder()
         {
             string rootFolder = AppPaths.ClientFilesFolder;
-            Directory.CreateDirectory(rootFolder);
-            return rootFolder;
+
+            var databaseSettings = DatabaseConnectionSettingsService.Load();
+
+            if (databaseSettings.ProviderMode == DatabaseProviderMode.SqlServer &&
+                !string.IsNullOrWhiteSpace(databaseSettings.SharedClientFilesFolder))
+            {
+                rootFolder = databaseSettings.SharedClientFilesFolder.Trim().Trim('"');
+            }
+
+            try
+            {
+                Directory.CreateDirectory(rootFolder);
+                return rootFolder;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    "Не удалось получить доступ к папке файлов клиентов: " + rootFolder +
+                    ". Проверьте путь, права доступа и сетевое подключение.",
+                    ex);
+            }
         }
+
 
         public static string GetClientFolder(int clientId)
         {
@@ -172,14 +192,14 @@ namespace ClientAccountApp
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
 
-            Directory.CreateDirectory(AppPaths.ClientFilesFolder);
+            Directory.CreateDirectory(GetFilesRootFolder());
 
             var clientId = client.Id;
             var targetFolderName = BuildClientFolderName(client);
-            var targetPath = Path.Combine(AppPaths.ClientFilesFolder, targetFolderName);
+            var targetPath = Path.Combine(GetFilesRootFolder(), targetFolderName);
 
             var legacyNumericPath = clientId > 0
-                ? Path.Combine(AppPaths.ClientFilesFolder, clientId.ToString())
+                ? Path.Combine(GetFilesRootFolder(), clientId.ToString())
                 : string.Empty;
 
             if (!string.IsNullOrWhiteSpace(legacyNumericPath) &&
@@ -306,7 +326,7 @@ namespace ClientAccountApp
             var namedFolder = GetNamedClientFolderPath(client);
             DeleteFolderIfEmptyInternal(namedFolder);
 
-            var legacyNumericFolder = Path.Combine(AppPaths.ClientFilesFolder, client.Id.ToString());
+            var legacyNumericFolder = Path.Combine(GetFilesRootFolder(), client.Id.ToString());
             if (!string.Equals(namedFolder, legacyNumericFolder, StringComparison.OrdinalIgnoreCase))
             {
                 DeleteFolderIfEmptyInternal(legacyNumericFolder);
@@ -363,10 +383,10 @@ namespace ClientAccountApp
 
         private static string EnsureNamedClientFolder(ClientInfo client)
         {
-            Directory.CreateDirectory(AppPaths.ClientFilesFolder);
+            Directory.CreateDirectory(GetFilesRootFolder());
 
             var namedFolder = GetNamedClientFolderPath(client);
-            var legacyNumericFolder = Path.Combine(AppPaths.ClientFilesFolder, client.Id.ToString());
+            var legacyNumericFolder = Path.Combine(GetFilesRootFolder(), client.Id.ToString());
 
             if (Directory.Exists(legacyNumericFolder) && !Directory.Exists(namedFolder))
             {
@@ -405,7 +425,7 @@ namespace ClientAccountApp
                 folderName = $"Клиент_{client.Id}";
             }
 
-            return Path.Combine(AppPaths.ClientFilesFolder, folderName);
+            return Path.Combine(GetFilesRootFolder(), folderName);
         }
 
         private static void UpdateClientFileRelativePaths(int clientId, string oldFolderName, string newFolderName)
@@ -494,7 +514,7 @@ namespace ClientAccountApp
             if (File.Exists(markerPath))
                 return;
 
-            Directory.CreateDirectory(AppPaths.ClientFilesFolder);
+            Directory.CreateDirectory(GetFilesRootFolder());
 
             using var db = new AppDbContext();
 
@@ -515,13 +535,13 @@ namespace ClientAccountApp
         private static void MigrateLegacyClientFolder(AppDbContext db, ClientInfo client)
         {
             string oldFolderName = client.Id.ToString();
-            string oldFolderPath = Path.Combine(AppPaths.ClientFilesFolder, oldFolderName);
+            string oldFolderPath = Path.Combine(GetFilesRootFolder(), oldFolderName);
 
             if (!Directory.Exists(oldFolderPath))
                 return;
 
             string newFolderName = BuildClientFolderName(client);
-            string newFolderPath = Path.Combine(AppPaths.ClientFilesFolder, newFolderName);
+            string newFolderPath = Path.Combine(GetFilesRootFolder(), newFolderName);
 
             Directory.CreateDirectory(newFolderPath);
 
@@ -540,7 +560,7 @@ namespace ClientAccountApp
                 if (!normalizedRelativePath.StartsWith(oldPrefix, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                string sourceFullPath = Path.Combine(AppPaths.ClientFilesFolder, normalizedRelativePath);
+                string sourceFullPath = Path.Combine(GetFilesRootFolder(), normalizedRelativePath);
                 string originalFileName = Path.GetFileName(normalizedRelativePath);
 
                 if (File.Exists(sourceFullPath))

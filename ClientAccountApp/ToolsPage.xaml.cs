@@ -24,8 +24,12 @@ namespace ClientAccountApp
         private string? _sourceFilePath;
         private string? _targetPdfPath;
         private string? _taxRequirementFilePath;
+        private CounterpartyAutoCheckResult? _lastCounterpartyAutoCheckResult;
+        private string? _lastCounterpartyPdfReportPath;
         private string _taxRequirementExtractedText = "";
         private readonly ObservableCollection<ClientInfo> _taxRequirementClients = new();
+        private string _counterpartyExternalFacts = "";
+
         private enum VatCalculationMode
         {
             ExtractFromGross,
@@ -37,7 +41,9 @@ namespace ClientAccountApp
         public ToolsPage()
         {
             this.InitializeComponent();
+
             TaxRequirementClientComboBox.ItemsSource = _taxRequirementClients;
+
             LoadTaxRequirementClients();
 
             UpdateButtonsState();
@@ -46,7 +52,113 @@ namespace ClientAccountApp
             InitializeCivil395Calculator();
 
             LoadAiSettingsIntoForm();
+            GenerateCounterpartyAiReportButton.IsEnabled = false;
+            DownloadCounterpartyPdfReportButton.IsEnabled = false;
+            AiStatusTextBlock.Text = "ИИ-раздел готов к работе. Проверка контрагента выполняется автоматически по внешним источникам.";
         }
+
+
+
+        private async void RunCounterpartyAutoCheckButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                RunCounterpartyAutoCheckButton.IsEnabled = false;
+                GenerateCounterpartyAiReportButton.IsEnabled = false;
+
+                CounterpartyReportTextBox.Text = "Выполняется автоматическая внешняя проверка. Пожалуйста, подождите...";
+                AiStatusTextBlock.Text = "Проверяю контрагента по внешним источникам...";
+
+                _lastCounterpartyAutoCheckResult =
+                    await CounterpartyCheckService.RunAutomaticExternalCheckAsync(CounterpartyInnTextBox.Text);
+
+                CounterpartyReportTextBox.Text =
+                    CounterpartyCheckService.BuildPlainTextReport(_lastCounterpartyAutoCheckResult);
+
+                GenerateCounterpartyAiReportButton.IsEnabled = true;
+                
+                AiStatusTextBlock.Text =
+                    _lastCounterpartyAutoCheckResult.HasAnyRealFacts
+                        ? "Автоматическая проверка завершена. Можно сформировать ИИ-отчёт."
+                        : "Проверка завершена, но фактические сведения пока не получены. Можно сформировать отчёт о недостаточности данных.";
+            }
+            catch (Exception ex)
+            {
+                AiStatusTextBlock.Text = "Ошибка автоматической проверки: " + ex.Message;
+                CounterpartyReportTextBox.Text = "";
+            }
+            finally
+            {
+                RunCounterpartyAutoCheckButton.IsEnabled = true;
+            }
+        }
+
+        private async void GenerateCounterpartyAiReportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_lastCounterpartyAutoCheckResult == null)
+                {
+                    AiStatusTextBlock.Text = "Сначала выполните автоматическую проверку.";
+                    return;
+                }
+
+                GenerateCounterpartyAiReportButton.IsEnabled = false;
+                RunCounterpartyAutoCheckButton.IsEnabled = false;
+
+                AiStatusTextBlock.Text = "GigaChat формирует итоговый отчёт по результатам автоматической проверки...";
+
+                string aiReport =
+                    await CounterpartyCheckService.BuildAiReportFromAutomaticCheckAsync(_lastCounterpartyAutoCheckResult);
+
+                CounterpartyReportTextBox.Text = aiReport;
+                DownloadCounterpartyPdfReportButton.IsEnabled = true;
+                AiStatusTextBlock.Text = "ИИ-отчёт по контрагенту сформирован.";
+            }
+            catch (Exception ex)
+            {
+                AiStatusTextBlock.Text = "Ошибка формирования ИИ-отчёта: " + ex.Message;
+            }
+            finally
+            {
+                GenerateCounterpartyAiReportButton.IsEnabled = _lastCounterpartyAutoCheckResult != null;
+                RunCounterpartyAutoCheckButton.IsEnabled = true;
+            }
+        }
+        private void DownloadCounterpartyPdfReportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(CounterpartyReportTextBox.Text))
+                {
+                    AiStatusTextBlock.Text = "Сначала выполните проверку контрагента.";
+                    return;
+                }
+
+                _lastCounterpartyPdfReportPath = CounterpartyReportPdfService.CreatePdf(
+                    _lastCounterpartyAutoCheckResult,
+                    CounterpartyReportTextBox.Text);
+
+                AiStatusTextBlock.Text =
+                    "PDF-отчёт проверки контрагента сформирован: " +
+                    _lastCounterpartyPdfReportPath;
+
+                CounterpartyReportPdfService.OpenPdf(_lastCounterpartyPdfReportPath);
+            }
+            catch (Exception ex)
+            {
+                AiStatusTextBlock.Text = "Ошибка формирования PDF-отчёта: " + ex.Message;
+            }
+        }
+        private static void OpenUrl(string url)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        
         private void LoadTaxRequirementClients()
         {
             _taxRequirementClients.Clear();

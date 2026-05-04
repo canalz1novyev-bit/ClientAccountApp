@@ -77,6 +77,13 @@
     Foreground="White"
     FontWeight="SemiBold"
     TextWrapping="Wrap"/>
+                <TextBlock
+    x:Name="DatabaseModeFooterTextBlock"
+    Text="База: —"
+    Foreground="#8F9BB3"
+    FontSize="12"
+    TextWrapping="Wrap"
+    Margin="0,4,0,0"/>
 
                 <Button
     Content="Профиль организации"

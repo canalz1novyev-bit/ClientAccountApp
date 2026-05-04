@@ -10,10 +10,21 @@ namespace ClientAccountApp
         {
             using var db = new AppDbContext();
 
+            // SQL Server:
+            // Таблицы создаются через EF Core Database.EnsureCreated() в AppDbContext.
+            // SQLite-команды CREATE TABLE IF NOT EXISTS / PRAGMA / AUTOINCREMENT здесь не выполняем.
+            if (IsSqlServerProvider(db))
+            {
+                db.Database.EnsureCreated();
+                return;
+            }
+
+            // SQLite:
+            // Оставляем старую проверенную логику.
             db.Database.ExecuteSqlRaw(@"
 CREATE TABLE IF NOT EXISTS Invoices (
     Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-OrganizationProfileId INTEGER NULL,
+    OrganizationProfileId INTEGER NULL,
     ClientInfoId INTEGER NOT NULL,
     InvoiceNumber TEXT NOT NULL,
     InvoiceDate TEXT NOT NULL,
@@ -80,26 +91,37 @@ CREATE TABLE IF NOT EXISTS ClientRecurringServices (
     Comment TEXT NOT NULL DEFAULT '',
     LastGeneratedPeriodKey TEXT NOT NULL DEFAULT ''
 );");
-            EnsureColumnExists(db, "Invoices", "OrganizationProfileId", "INTEGER NULL");
-            EnsureColumnExists(db, "InvoiceItems", "ServiceCatalogId", "INTEGER NULL");
-            EnsureColumnExists(db, "InvoiceItems", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
 
-            EnsureColumnExists(db, "ServicesCatalog", "DefaultVatRate", "REAL NOT NULL DEFAULT 0");
-            EnsureColumnExists(db, "ServicesCatalog", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
-            EnsureColumnExists(db, "ServicesCatalog", "Comment", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExists(db, "ServicesCatalog", "CreatedAt", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "Invoices", "OrganizationProfileId", "INTEGER NULL");
 
-            EnsureColumnExists(db, "ClientRecurringServices", "ServiceName", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExists(db, "ClientRecurringServices", "Unit", "TEXT NOT NULL DEFAULT 'усл.'");
-            EnsureColumnExists(db, "ClientRecurringServices", "UnitPrice", "REAL NOT NULL DEFAULT 0");
-            EnsureColumnExists(db, "ClientRecurringServices", "VatRate", "REAL NOT NULL DEFAULT 0");
-            EnsureColumnExists(db, "ClientRecurringServices", "IsAdvanceBilling", "INTEGER NOT NULL DEFAULT 1");
-            EnsureColumnExists(db, "ClientRecurringServices", "GenerateDay", "INTEGER NOT NULL DEFAULT 1");
-            EnsureColumnExists(db, "ClientRecurringServices", "Comment", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExists(db, "ClientRecurringServices", "LastGeneratedPeriodKey", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "InvoiceItems", "ServiceCatalogId", "INTEGER NULL");
+            EnsureColumnExistsSqlite(db, "InvoiceItems", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
+
+            EnsureColumnExistsSqlite(db, "ServicesCatalog", "DefaultVatRate", "REAL NOT NULL DEFAULT 0");
+            EnsureColumnExistsSqlite(db, "ServicesCatalog", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
+            EnsureColumnExistsSqlite(db, "ServicesCatalog", "Comment", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "ServicesCatalog", "CreatedAt", "TEXT NOT NULL DEFAULT ''");
+
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "ServiceName", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "Unit", "TEXT NOT NULL DEFAULT 'усл.'");
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "UnitPrice", "REAL NOT NULL DEFAULT 0");
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "VatRate", "REAL NOT NULL DEFAULT 0");
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "IsAdvanceBilling", "INTEGER NOT NULL DEFAULT 1");
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "GenerateDay", "INTEGER NOT NULL DEFAULT 1");
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "Comment", "TEXT NOT NULL DEFAULT ''");
+            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "LastGeneratedPeriodKey", "TEXT NOT NULL DEFAULT ''");
         }
 
-        private static void EnsureColumnExists(
+        private static bool IsSqlServerProvider(AppDbContext db)
+        {
+            string providerName = db.Database.ProviderName ?? "";
+
+            return providerName.Contains(
+                "SqlServer",
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void EnsureColumnExistsSqlite(
             AppDbContext db,
             string tableName,
             string columnName,

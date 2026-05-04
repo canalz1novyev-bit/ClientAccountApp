@@ -7,32 +7,32 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="#0F1115" Padding="24">
+    <Grid
+        Background="{StaticResource NiatecBackgroundBrush}"
+        Padding="24"
+        RowSpacing="16">
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="20"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid>
+        <!-- Заголовок и фильтр -->
+        <Grid Grid.Row="0" ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="260"/>
-                <ColumnDefinition Width="12"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel>
+            <StackPanel Spacing="4">
                 <TextBlock
                     Text="ЭЦП"
-                    FontSize="32"
-                    FontWeight="SemiBold"
-                    Foreground="White"/>
+                    Style="{StaticResource NiatecPageTitleTextStyle}"/>
 
                 <TextBlock
                     Text="Контроль электронных подписей: действующие, истекающие и просроченные"
-                    FontSize="14"
-                    Foreground="#B8B8B8"/>
+                    Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
             </StackPanel>
 
             <ComboBox
@@ -47,68 +47,79 @@
             </ComboBox>
 
             <Button
-                Grid.Column="3"
+                Grid.Column="2"
                 Content="Обновить"
+                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                VerticalAlignment="Bottom"
                 Click="RefreshProblemSignaturesButton_Click"/>
         </Grid>
 
-        <Grid Grid.Row="2">
+        <!-- Основная область -->
+        <Grid Grid.Row="1" ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="1.2*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Список ЭЦП -->
             <Border
                 Grid.Column="0"
-                Background="#171A21"
-                CornerRadius="16"
-                Padding="16"
-                BorderBrush="#2B3140"
-                BorderThickness="1">
+                Style="{StaticResource NiatecCardBorderStyle}">
 
-                <Grid>
+                <Grid RowSpacing="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="12"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock
                         Text="Электронные подписи"
-                        FontSize="20"
-                        FontWeight="SemiBold"
-                        Foreground="White"/>
+                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
 
                     <ListView
                         x:Name="ProblemSignaturesListView"
-                        Grid.Row="2"
+                        Grid.Row="1"
                         SelectionMode="Single"
                         SelectionChanged="ProblemSignaturesListView_SelectionChanged"
                         Background="Transparent"
                         BorderThickness="0">
 
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0"/>
+                                <Setter Property="MinHeight" Value="0"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="local:ProblemSignatureItem">
                                 <Border
-                                    Background="#11151C"
+                                    Background="{StaticResource NiatecSurfaceAltBrush}"
+                                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                                    BorderThickness="1"
                                     CornerRadius="12"
                                     Padding="12"
                                     Margin="0,0,0,10">
+
                                     <StackPanel Spacing="4">
                                         <TextBlock
                                             Text="{x:Bind ClientName}"
                                             FontSize="16"
                                             FontWeight="SemiBold"
-                                            Foreground="White"/>
+                                            Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                            TextWrapping="Wrap"/>
 
                                         <TextBlock
                                             Text="{x:Bind Inn}"
-                                            Foreground="#B8B8B8"/>
+                                            Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                                            TextWrapping="Wrap"/>
 
                                         <TextBlock
                                             Text="{x:Bind CertificationAuthority}"
-                                            Foreground="#9FB3C8"/>
+                                            Foreground="{StaticResource NiatecAccentBlueBrush}"
+                                            TextWrapping="Wrap"/>
 
                                         <TextBlock
                                             Text="{x:Bind ExpiresDateText}"
@@ -117,7 +128,8 @@
                                         <TextBlock
                                             Text="{x:Bind StatusText}"
                                             FontWeight="SemiBold"
-                                            Foreground="{x:Bind StatusBrush}"/>
+                                            Foreground="{x:Bind StatusBrush}"
+                                            TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
@@ -126,41 +138,58 @@
                 </Grid>
             </Border>
 
+            <!-- Карточка ЭЦП -->
             <Border
-                Grid.Column="2"
-                Background="#171A21"
-                CornerRadius="16"
-                Padding="16"
-                BorderBrush="#2B3140"
-                BorderThickness="1">
+                Grid.Column="1"
+                Style="{StaticResource NiatecCardBorderStyle}">
 
                 <StackPanel Spacing="10">
                     <TextBlock
                         Text="Карточка ЭЦП"
-                        FontSize="20"
-                        FontWeight="SemiBold"
-                        Foreground="White"/>
+                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
 
-                    <TextBlock Text="Клиент" Foreground="#8F9BB3"/>
-                    <TextBlock x:Name="ProblemClientNameTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+                    <TextBlock Text="Клиент" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                    <TextBlock
+                        x:Name="ProblemClientNameTextBlock"
+                        Text="—"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                        TextWrapping="Wrap"/>
 
-                    <TextBlock Text="ИНН" Foreground="#8F9BB3"/>
-                    <TextBlock x:Name="ProblemInnTextBlock" Text="—" Foreground="White"/>
+                    <TextBlock Text="ИНН" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                    <TextBlock
+                        x:Name="ProblemInnTextBlock"
+                        Text="—"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                    <TextBlock Text="Удостоверяющий центр" Foreground="#8F9BB3"/>
-                    <TextBlock x:Name="ProblemAuthorityTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+                    <TextBlock Text="Удостоверяющий центр" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                    <TextBlock
+                        x:Name="ProblemAuthorityTextBlock"
+                        Text="—"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                        TextWrapping="Wrap"/>
 
-                    <TextBlock Text="Дата окончания" Foreground="#8F9BB3"/>
-                    <TextBlock x:Name="ProblemExpiresTextBlock" Text="—" Foreground="White"/>
+                    <TextBlock Text="Дата окончания" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                    <TextBlock
+                        x:Name="ProblemExpiresTextBlock"
+                        Text="—"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                    <TextBlock Text="Статус" Foreground="#8F9BB3"/>
-                    <TextBlock x:Name="ProblemStatusTextBlock" Text="—" Foreground="White"/>
+                    <TextBlock Text="Статус" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                    <TextBlock
+                        x:Name="ProblemStatusTextBlock"
+                        Text="—"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                    <TextBlock Text="Комментарий" Foreground="#8F9BB3"/>
-                    <TextBlock x:Name="ProblemCommentTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+                    <TextBlock Text="Комментарий" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                    <TextBlock
+                        x:Name="ProblemCommentTextBlock"
+                        Text="—"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                        TextWrapping="Wrap"/>
 
                     <Button
                         Content="Перейти к клиенту"
+                        Style="{StaticResource NiatecPrimaryButtonStyle}"
                         Click="OpenProblemClientButton_Click"/>
                 </StackPanel>
             </Border>

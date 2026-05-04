@@ -1,0 +1,181 @@
+<Page
+    x:Class="ClientAccountApp.AiSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        Background="{StaticResource NiatecBackgroundBrush}"
+        Padding="24"
+        RowSpacing="16">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="4">
+            <TextBlock
+                Text="Настройки ИИ / GigaChat"
+                Style="{StaticResource NiatecPageTitleTextStyle}"/>
+
+            <TextBlock
+                Text="Подключение ИИ-помощника для подготовки черновиков документов, ответов на требования и аналитических отчётов."
+                Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.05*"/>
+                    <ColumnDefinition Width="0.95*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border
+                    Grid.Column="0"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="14">
+                        <TextBlock
+                            Text="Подключение GigaChat"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Эти настройки используются всеми ИИ-инструментами приложения. Данные отправляются во внешний API GigaChat."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="10">
+                                <TextBlock
+                                    Text="Состояние помощника"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <CheckBox
+                                    x:Name="GigaChatEnabledCheckBox"
+                                    Content="Включить ИИ-помощник GigaChat"
+                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBox
+                            x:Name="GigaChatOAuthUrlTextBox"
+                            Header="OAuth URL"
+                            Text="https://ngw.devices.sberbank.ru:9443/api/v2/oauth"/>
+
+                        <TextBox
+                            x:Name="GigaChatApiUrlTextBox"
+                            Header="Chat API URL"
+                            Text="https://gigachat.devices.sberbank.ru/api/v1/chat/completions"/>
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox
+                                x:Name="GigaChatModelTextBox"
+                                Grid.Column="0"
+                                Header="Модель"
+                                Text="GigaChat"/>
+
+                            <ComboBox
+                                x:Name="GigaChatScopeComboBox"
+                                Grid.Column="1"
+                                Header="Версия API / Scope"
+                                SelectedIndex="0">
+                                <ComboBoxItem Content="GIGACHAT_API_PERS"/>
+                                <ComboBoxItem Content="GIGACHAT_API_B2B"/>
+                                <ComboBoxItem Content="GIGACHAT_API_CORP"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <PasswordBox
+                            x:Name="GigaChatAuthorizationKeyPasswordBox"
+                            Header="Authorization Key GigaChat"
+                            PlaceholderText="Вставьте Authorization Key из кабинета GigaChat"/>
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button
+                                Grid.Column="0"
+                                Content="Сохранить настройки"
+                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                Click="SaveAiSettingsButton_Click"/>
+
+                            <Button
+                                Grid.Column="1"
+                                Content="Проверить подключение"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                Click="TestGigaChatButton_Click"/>
+                        </Grid>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                x:Name="AiSettingsStatusTextBlock"
+                                Text="Загрузите или проверьте настройки GigaChat."
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border
+                    Grid.Column="1"
+                    Style="{StaticResource NiatecCardBorderStyle}">
+
+                    <StackPanel Spacing="14">
+                        <TextBlock
+                            Text="Где используются настройки"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Эти параметры используются рабочими ИИ-инструментами на странице «Инструменты → ИИ»."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock
+                                    Text="Сценарии"
+                                    Foreground="{StaticResource NiatecAccentBrush}"
+                                    FontWeight="SemiBold"/>
+
+                                <TextBlock
+                                    Text="• Ответ на требование ФНС"
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                                <TextBlock
+                                    Text="• Проверка контрагента"
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                                <TextBlock
+                                    Text="• Будущие ИИ-помощники по документам"
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                Text="Важно: ИИ формирует черновики и аналитические выводы. Перед отправкой документов в ФНС, клиенту или контрагенту результат нужно проверять вручную."
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+
+                        <Button
+                            Content="Вернуться в настройки"
+                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="BackToSettingsButton_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

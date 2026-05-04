@@ -33,38 +33,44 @@ namespace ClientAccountApp
             _selectedProblemSignature = null;
             ClearProblemSignatureDetails();
 
-            using (var db = new AppDbContext())
-            {
-                var items = db.DigitalSignatures
-                    .AsNoTracking()
-                    .Include(s => s.ClientInfo)
-                    .ToList()
-                    .Where(s => s.ClientInfo != null)
-                    .Select(s =>
-                    {
-                        int daysLeft = (s.ExpiresDate.Date - DateTime.Today).Days;
+            using var db = new AppDbContext();
 
-                        return new ProblemSignatureItem
-                        {
-                            ClientId = s.ClientInfoId,
-                            SignatureId = s.Id,
-                            ClientName = s.ClientInfo!.Name,
-                            Inn = s.ClientInfo!.Inn,
-                            CertificationAuthority = s.CertificationAuthority,
-                            Comment = s.Comment,
-                            ExpiresDate = s.ExpiresDate,
-                            DaysLeft = daysLeft
-                        };
-                    })
-                    .Where(MatchesProblemSignatureFilter)
-                    .OrderBy(i => i.DaysLeft)
-                    .ThenBy(i => i.ClientName)
-                    .ToList();
+            var clients = db.Clients
+                .AsNoTracking()
+                .ToDictionary(c => c.Id);
 
-                foreach (var item in items)
+            var signatures = db.DigitalSignatures
+                .AsNoTracking()
+                .ToList();
+
+            var items = signatures
+                .Where(s => clients.ContainsKey(s.ClientInfoId))
+                .Select(s =>
                 {
-                    _problemSignatures.Add(item);
-                }
+                    var client = clients[s.ClientInfoId];
+
+                    int daysLeft = (s.ExpiresDate.Date - DateTime.Today).Days;
+
+                    return new ProblemSignatureItem
+                    {
+                        ClientId = s.ClientInfoId,
+                        SignatureId = s.Id,
+                        ClientName = string.IsNullOrWhiteSpace(client.Name) ? "Клиент без названия" : client.Name,
+                        Inn = client.Inn,
+                        CertificationAuthority = s.CertificationAuthority,
+                        Comment = s.Comment,
+                        ExpiresDate = s.ExpiresDate,
+                        DaysLeft = daysLeft
+                    };
+                })
+                .Where(MatchesProblemSignatureFilter)
+                .OrderBy(i => i.DaysLeft)
+                .ThenBy(i => i.ClientName)
+                .ToList();
+
+            foreach (var item in items)
+            {
+                _problemSignatures.Add(item);
             }
         }
 
@@ -72,18 +78,18 @@ namespace ClientAccountApp
         {
             if (ProblemSignatureFilterComboBox == null)
             {
-                return item.DaysLeft <= 30;
+                return true;
             }
 
             int filterIndex = ProblemSignatureFilterComboBox.SelectedIndex;
 
             return filterIndex switch
             {
-                0 => item.DaysLeft <= 30,
+                0 => true, // Все ЭЦП
                 1 => item.DaysLeft >= 0 && item.DaysLeft <= 30,
                 2 => item.DaysLeft >= 0 && item.DaysLeft <= 7,
                 3 => item.DaysLeft < 0,
-                _ => item.DaysLeft <= 30
+                _ => true
             };
         }
 

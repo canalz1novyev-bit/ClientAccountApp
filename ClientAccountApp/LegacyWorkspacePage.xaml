@@ -10,8 +10,8 @@
         <DataTemplate x:Key="NormalClientItemTemplate" x:DataType="local:ClientInfo">
             <Border
             Tag="ClientCardRoot"
-            Background="#11151C"
-            BorderBrush="#243042"
+            Background="{StaticResource NiatecSurfaceAltBrush}"
+            BorderBrush="{StaticResource NiatecBorderBrush}"
             BorderThickness="1"
             CornerRadius="12"
             Padding="12"
@@ -36,7 +36,7 @@
                     Opacity="0.75">
                         <TextBlock
                         Text="{x:Bind StatusBadgeText}"
-                        Foreground="White"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
                         FontSize="10"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Center"
@@ -49,28 +49,28 @@
                         Text="{x:Bind Name}"
                         FontSize="16"
                         FontWeight="SemiBold"
-                        Foreground="White"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
                         TextWrapping="Wrap"/>
 
                         <TextBlock
                         Text="{x:Bind ClientListMetaText}"
-                        Foreground="#B8B8B8"
+                        Foreground="{StaticResource NiatecTextSecondaryBrush}"
                         TextWrapping="Wrap"/>
 
                         <TextBlock
                         Text="{x:Bind SignatureWarningText}"
-                        Foreground="#F0C674"
+                        Foreground="{StaticResource NiatecWarningBrush}"
                         FontWeight="SemiBold"
                         TextWrapping="Wrap"/>
 
                         <TextBlock
                         Text="{x:Bind AccountShortInfo}"
-                        Foreground="#9FB3C8"
+                        Foreground="{StaticResource NiatecAccentBlueBrush}"
                         TextWrapping="Wrap"/>
 
                         <TextBlock
                         Text="{x:Bind Address}"
-                        Foreground="#8F9BB3"
+                        Foreground="{StaticResource NiatecTextMutedBrush}"
                         TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
@@ -80,8 +80,8 @@
         <DataTemplate x:Key="CompactClientItemTemplate" x:DataType="local:ClientInfo">
             <Border
             Tag="ClientCardRoot"
-            Background="#11151C"
-            BorderBrush="#243042"
+            Background="{StaticResource NiatecSurfaceAltBrush}"
+            BorderBrush="{StaticResource NiatecBorderBrush}"
             BorderThickness="1"
             CornerRadius="10"
             Padding="10"
@@ -106,7 +106,7 @@
                     Opacity="0.75">
                         <TextBlock
                         Text="{x:Bind StatusBadgeText}"
-                        Foreground="White"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
                         FontSize="9"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Center"
@@ -119,19 +119,19 @@
                         Text="{x:Bind Name}"
                         FontSize="15"
                         FontWeight="SemiBold"
-                        Foreground="White"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
                         TextTrimming="CharacterEllipsis"/>
 
                         <TextBlock
                         Text="{x:Bind ClientListMetaText}"
                         FontSize="12"
-                        Foreground="#B8B8B8"
+                        Foreground="{StaticResource NiatecTextSecondaryBrush}"
                         TextTrimming="CharacterEllipsis"/>
 
                         <TextBlock
                         Text="{x:Bind SignatureWarningText}"
                         FontSize="12"
-                        Foreground="#F0C674"
+                        Foreground="{StaticResource NiatecWarningBrush}"
                         FontWeight="SemiBold"
                         TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
@@ -142,8 +142,8 @@
         <DataTemplate x:Key="DenseClientItemTemplate" x:DataType="local:ClientInfo">
             <Border
             Tag="ClientCardRoot"
-            Background="#11151C"
-            BorderBrush="#243042"
+            Background="{StaticResource NiatecSurfaceAltBrush}"
+            BorderBrush="{StaticResource NiatecBorderBrush}"
             BorderThickness="0,0,0,1"
             Padding="8,8"
             RightTapped="ClientCard_RightTapped">
@@ -171,7 +171,7 @@
                     Opacity="0.75">
                         <TextBlock
                         Text="{x:Bind StatusBadgeText}"
-                        Foreground="White"
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
                         FontSize="9"
                         FontWeight="SemiBold"
                         HorizontalAlignment="Center"
@@ -182,7 +182,7 @@
                     <TextBlock
                     Grid.Column="1"
                     Text="{x:Bind Name}"
-                    Foreground="White"
+                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
                     FontSize="13"
                     FontWeight="SemiBold"
                     TextTrimming="CharacterEllipsis"
@@ -191,7 +191,7 @@
                     <TextBlock
                     Grid.Column="2"
                     Text="{x:Bind ClientType}"
-                    Foreground="#B8B8B8"
+                    Foreground="{StaticResource NiatecTextSecondaryBrush}"
                     FontSize="12"
                     TextTrimming="CharacterEllipsis"
                     VerticalAlignment="Center"/>
@@ -199,7 +199,7 @@
                     <TextBlock
                     Grid.Column="3"
                     Text="{x:Bind Inn}"
-                    Foreground="#B8B8B8"
+                    Foreground="{StaticResource NiatecTextSecondaryBrush}"
                     FontSize="12"
                     TextTrimming="CharacterEllipsis"
                     VerticalAlignment="Center"/>
@@ -207,7 +207,7 @@
                     <TextBlock
                     Grid.Column="4"
                     Text="{x:Bind SignatureShortInfo}"
-                    Foreground="#F0C674"
+                    Foreground="{StaticResource NiatecWarningBrush}"
                     FontSize="11"
                     FontWeight="SemiBold"
                     TextTrimming="CharacterEllipsis"
@@ -216,7 +216,7 @@
                     <TextBlock
                     Grid.Column="5"
                     Text="{x:Bind AccountCount}"
-                    Foreground="#9FB3C8"
+                    Foreground="{StaticResource NiatecAccentBlueBrush}"
                     FontSize="12"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
@@ -224,7 +224,7 @@
                     <TextBlock
                     Grid.Column="6"
                     Text="{x:Bind NoteCount}"
-                    Foreground="#9FB3C8"
+                    Foreground="{StaticResource NiatecAccentBlueBrush}"
                     FontSize="12"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
@@ -232,7 +232,7 @@
             </Border>
         </DataTemplate>
     </Page.Resources>
-    <Grid Background="#0F1115">
+    <Grid Background="{StaticResource NiatecBackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0"/>
             <ColumnDefinition Width="0"/>
@@ -263,12 +263,12 @@
                 Text="Клиенты"
                 FontSize="30"
                 FontWeight="SemiBold"
-                Foreground="White"/>
+                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                     <TextBlock
                 Text="Рабочая база клиентов с ЭЦП, счетами, заметками и файлами"
                 FontSize="13"
-                Foreground="#9AA4B2"
+                Foreground="{StaticResource NiatecTextSecondaryBrush}"
                 TextWrapping="Wrap"/>
                 </StackPanel>
 
@@ -325,10 +325,10 @@
 
                 <Border
             Grid.Column="0"
-            Background="#171A21"
+            Background="{StaticResource NiatecSurfaceBrush}"
             CornerRadius="14"
 Padding="12"
-            BorderBrush="#2B3140"
+            BorderBrush="{StaticResource NiatecBorderBrush}"
             BorderThickness="1">
 
                     <Grid>
@@ -348,25 +348,25 @@ Padding="12"
                         Text="Список клиентов"
                         FontSize="20"
                         FontWeight="SemiBold"
-                        Foreground="White"  
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"  
                         VerticalAlignment="Center"/>
 
                             <ToggleButton
-                        x:Name="ClientViewModeToggleButton"
-                        Grid.Column="1"
-                        Width="38"
-                        Height="38"
-                        Margin="12,0,0,0"
-                        Background="#11151C"
-                        BorderBrush="#2B3140"
-                        BorderThickness="1"
-                        Click="ClientViewModeToggleButton_Click"
-                        ToolTipService.ToolTip="Включить компактный вид списка">
+    x:Name="ClientViewModeToggleButton"
+    Grid.Column="1"
+    Width="38"
+    Height="38"
+    Margin="12,0,0,0"
+    Background="{StaticResource NiatecSurfaceAltBrush}"
+    BorderBrush="{StaticResource NiatecBorderBrush}"
+    BorderThickness="1"
+    Click="ClientViewModeToggleButton_Click"
+    ToolTipService.ToolTip="Включить компактный вид списка">
                                 <TextBlock
-                            Text="≡"
-                            FontSize="18"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
+        Text="≡"
+        FontSize="18"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"/>
                             </ToggleButton>
                         </Grid>
                         <Grid
@@ -386,12 +386,12 @@ Padding="12"
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="1" Text="Клиент" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="Тип" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="3" Text="ИНН" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="4" Text="ЭЦП" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="5" Text="Счета" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="6" Text="Заметки" Foreground="#8F9BB3" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="Клиент" Foreground="{StaticResource NiatecTextMutedBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="Тип" Foreground="{StaticResource NiatecTextMutedBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Text="ИНН" Foreground="{StaticResource NiatecTextMutedBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="4" Text="ЭЦП" Foreground="{StaticResource NiatecTextMutedBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="5" Text="Счета" Foreground="{StaticResource NiatecTextMutedBrush}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="6" Text="Заметки" Foreground="{StaticResource NiatecTextMutedBrush}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Grid>
                         <ListView
     x:Name="ClientsListView"
@@ -425,10 +425,10 @@ Padding="12"
                             <StackPanel Spacing="12" Padding="0">
                                 <Border
     Grid.Column="0"
-    Background="#171A21"
+    Background="{StaticResource NiatecSurfaceBrush}"
     CornerRadius="14"
     Padding="12"
-    BorderBrush="#2B3140"
+    BorderBrush="{StaticResource NiatecBorderBrush}"
     BorderThickness="1">
 
                                     <Grid ColumnSpacing="16">
@@ -443,21 +443,21 @@ Padding="12"
                 Text="Новый клиент"
                 FontSize="18"
                 FontWeight="SemiBold"
-                Foreground="White"
+                Foreground="{StaticResource NiatecTextPrimaryBrush}"
                 TextWrapping="Wrap"/>
 
                                             <TextBlock
     x:Name="ClientHeaderMetaTextBlock"
     Text="Заполните реквизиты или используйте автозаполнение по ИНН"
     FontSize="12"
-    Foreground="#9AA4B2"
+    Foreground="{StaticResource NiatecTextSecondaryBrush}"
     TextWrapping="Wrap"/>
 
                                             <TextBlock
     x:Name="ClientHeaderSignatureTextBlock"
     Text="ЭЦП: —"
     FontSize="12"
-    Foreground="#D7BA7D"
+    Foreground="{StaticResource NiatecAccentBrush}"
     TextWrapping="Wrap"/>
                                         </StackPanel>
 
@@ -471,7 +471,7 @@ Padding="12"
                                             <TextBlock
                 x:Name="ClientHeaderStatusTextBlock"
                 Text="Новый"
-                Foreground="White"
+                Foreground="{StaticResource NiatecTextPrimaryBrush}"
                 FontSize="12"
                 FontWeight="SemiBold"/>
                                         </Border>
@@ -479,10 +479,10 @@ Padding="12"
                                 </Border>
 
                                 <Border
-                Background="#171A21"
+                Background="{StaticResource NiatecSurfaceBrush}"
                 CornerRadius="14"
 Padding="12"
-                BorderBrush="#2B3140"
+                BorderBrush="{StaticResource NiatecBorderBrush}"
                 BorderThickness="1">
 
                                     <StackPanel Spacing="8">
@@ -490,13 +490,13 @@ Padding="12"
     Text="Реквизиты клиента"
     FontSize="17"
     FontWeight="SemiBold"
-    Foreground="White"/>
+    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <TextBlock
     x:Name="FormModeTextBlock"
     Text="Режим: добавление нового клиента"
     FontSize="12"
-    Foreground="#D7BA7D"
+    Foreground="{StaticResource NiatecAccentBrush}"
     TextWrapping="Wrap"/>
 
                                         <ComboBox
@@ -545,13 +545,14 @@ Padding="12"
     FontSize="12"
     Height="34"
     VerticalAlignment="Bottom"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
     Click="FillByInnButton_Click"/>
                                         </Grid>
 
                                         <TextBlock
                         Text="Наименование организации / ФИО"
                                             FontSize="12"
-                        Foreground="#C9D1D9"/>
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <TextBox
                         x:Name="ClientNameTextBox"
@@ -563,7 +564,7 @@ Padding="12"
                         x:Name="DirectorLabelTextBlock"
                         Text="ФИО руководителя организации"
                                             FontSize="12"
-                        Foreground="#C9D1D9"/>
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <TextBox
                         x:Name="DirectorTextBox"
@@ -576,7 +577,7 @@ Padding="12"
                         x:Name="OgrnLabelTextBlock"
                         Text="ОГРН"
                                             FontSize="12"
-                        Foreground="#C9D1D9"/>
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <TextBox
                         x:Name="OgrnTextBox"
@@ -587,7 +588,7 @@ Padding="12"
                                         <TextBlock
                         Text="Юридический адрес"
                                             FontSize="12"
-                        Foreground="#C9D1D9"/>
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <TextBox
                         x:Name="AddressTextBox"
@@ -599,11 +600,11 @@ Padding="12"
     x:Name="ClientFormValidationTextBlock"
     Text=""
     FontSize="12"
-    Foreground="#D7BA7D"
+    Foreground="{StaticResource NiatecAccentBrush}"
     TextWrapping="Wrap"/>
 
                                         <Border
-    Background="#11151C"
+    Background="{StaticResource NiatecSurfaceAltBrush}"
     CornerRadius="10"
     Padding="8">
 
@@ -612,7 +613,7 @@ Padding="12"
     Text="Действия"
     FontSize="14"
     FontWeight="SemiBold"
-    Foreground="White"/>
+    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -622,20 +623,22 @@ Padding="12"
                                                     </Grid.ColumnDefinitions>
 
                                                     <Button
-                                    x:Name="SaveClientButton"
-                                    Grid.Column="0"
-                                    Content="Сохранить нового клиента"
-                                                        FontSize="12"
+    x:Name="SaveClientButton"
+    Grid.Column="0"
+    Content="Сохранить нового клиента"
+    FontSize="12"
     Height="32"
-                                    Click="SaveClientButton_Click"/>
+    Style="{StaticResource NiatecPrimaryButtonStyle}"
+    Click="SaveClientButton_Click"/>
 
                                                     <Button
-                                    x:Name="UpdateSelectedClientButton"
-                                    Grid.Column="2"
-                                    Content="Обновить выбранного"
-                                                                                                            FontSize="12"
-Height="32"
-                                    Click="UpdateSelectedClientButton_Click"/>
+    x:Name="UpdateSelectedClientButton"
+    Grid.Column="2"
+    Content="Обновить выбранного"
+    FontSize="12"
+    Height="32"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="UpdateSelectedClientButton_Click"/>
                                                 </Grid>
 
                                                 <Grid>
@@ -646,18 +649,20 @@ Height="32"
                                                     </Grid.ColumnDefinitions>
 
                                                     <Button
-                                    Grid.Column="0"
-                                    Content="Удалить выбранного"
-                                                                                                            FontSize="12"
-Height="32"
-                                    Click="DeleteSelectedClientButton_Click"/>
+    Grid.Column="0"
+    Content="Удалить выбранного"
+    FontSize="12"
+    Height="32"
+    Style="{StaticResource NiatecDangerButtonStyle}"
+    Click="DeleteSelectedClientButton_Click"/>
 
                                                     <Button
-                                    Grid.Column="2"
-                                    Content="Очистить форму"
-                                                                                                            FontSize="12"
-Height="32"
-                                    Click="ClearFormButton_Click"/>
+    Grid.Column="2"
+    Content="Очистить форму"
+    FontSize="12"
+    Height="32"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="ClearFormButton_Click"/>
                                                 </Grid>
 
                                                 <Grid>
@@ -668,18 +673,20 @@ Height="32"
                                                     </Grid.ColumnDefinitions>
 
                                                     <Button
-                                    Grid.Column="0"
-                                    Content="Экспорт карточки в Word"
-                                                                                                            FontSize="12"
-Height="32"
-                                    Click="ExportClientCardToWordButton_Click"/>
+    Grid.Column="0"
+    Content="Экспорт карточки в Word"
+    FontSize="12"
+    Height="32"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="ExportClientCardToWordButton_Click"/>
 
                                                     <Button
-                                    Grid.Column="2"
-                                    Content="Выписка"
-                                                                                                            FontSize="12"
-Height="32"
-                                    Click="DownloadEgrulExtractButton_Click"/>
+    Grid.Column="2"
+    Content="Выписка"
+    FontSize="12"
+    Height="32"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="DownloadEgrulExtractButton_Click"/>
                                                    
                                                 </Grid>
                                 
@@ -690,17 +697,17 @@ Height="32"
     x:Name="StatusTextBlock"
     Text=""
     FontSize="12"
-    Foreground="#D7BA7D"
+    Foreground="{StaticResource NiatecAccentBrush}"
     TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Border>
 
                                 <Border
     Visibility="Collapsed"
-    Background="#171A21"
+    Background="{StaticResource NiatecSurfaceBrush}"
     CornerRadius="16"
     Padding="16"
-    BorderBrush="#2B3140"
+    BorderBrush="{StaticResource NiatecBorderBrush}"
     BorderThickness="1">
 
                                     <StackPanel Spacing="10">
@@ -708,46 +715,46 @@ Height="32"
             Text="Карточка клиента"
             FontSize="20"
             FontWeight="SemiBold"
-            Foreground="White"/>
+            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Статус" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedStatusTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="Статус" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedStatusTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Тип" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedTypeTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="Тип" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedTypeTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Наименование / ФИО" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedNameTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+                                        <TextBlock Text="Наименование / ФИО" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedNameTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
 
-                                        <TextBlock Text="ФИО руководителя" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedDirectorTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+                                        <TextBlock Text="ФИО руководителя" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedDirectorTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
 
-                                        <TextBlock Text="ИНН" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedInnTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="ИНН" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedInnTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="ОГРН / ОГРНИП" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedOgrnTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="ОГРН / ОГРНИП" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedOgrnTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Юридический адрес" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedAddressTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+                                        <TextBlock Text="Юридический адрес" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedAddressTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
 
-                                        <TextBlock Text="Количество ЭЦП" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedSignatureCountTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="Количество ЭЦП" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedSignatureCountTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Ближайшее окончание ЭЦП" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedNearestSignatureTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="Ближайшее окончание ЭЦП" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedNearestSignatureTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Количество счетов" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedAccountCountTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="Количество счетов" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedAccountCountTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Основной банк" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedPrimaryBankTextBlock" Text="—" Foreground="White" TextWrapping="Wrap"/>
+                                        <TextBlock Text="Основной банк" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedPrimaryBankTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
 
-                                        <TextBlock Text="Количество заметок" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedNoteCountTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="Количество заметок" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedNoteCountTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                                        <TextBlock Text="Последняя заметка" Foreground="#8F9BB3"/>
-                                        <TextBlock x:Name="SelectedLatestNoteTextBlock" Text="—" Foreground="White"/>
+                                        <TextBlock Text="Последняя заметка" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                        <TextBlock x:Name="SelectedLatestNoteTextBlock" Text="—" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                                     </StackPanel>
                                 </Border>
 
@@ -760,10 +767,10 @@ Height="32"
                             <StackPanel Spacing="12" Padding="0">
 
                                 <Border
-                    Background="#171A21"
+                    Background="{StaticResource NiatecSurfaceBrush}"
                     CornerRadius="14"
 Padding="12"
-                    BorderBrush="#2B3140"
+                    BorderBrush="{StaticResource NiatecBorderBrush}"
                     BorderThickness="1">
 
                                     <StackPanel Spacing="12">
@@ -771,7 +778,7 @@ Padding="12"
                             Text="ЭЦП выбранного клиента"
                             FontSize="20"
                             FontWeight="SemiBold"
-                            Foreground="White"/>
+                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <ListView
                             x:Name="SignaturesListView"
@@ -783,7 +790,7 @@ Padding="12"
                                             <ListView.ItemTemplate>
                                                 <DataTemplate x:DataType="local:DigitalSignature">
                                                     <Border
-                                        Background="#11151C"
+                                        Background="{StaticResource NiatecSurfaceAltBrush}"
                                         CornerRadius="12"
                                         Padding="12"
                                         Margin="0,0,0,10">
@@ -792,15 +799,15 @@ Padding="12"
                                                 Text="{x:Bind CertificationAuthority}"
                                                 FontSize="15"
                                                 FontWeight="SemiBold"
-                                                Foreground="White"/>
+                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                                             <TextBlock
                                                 Text="{x:Bind DisplayText}"
-                                                Foreground="#B8B8B8"/>
+                                                Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
 
                                                             <TextBlock
                                                 Text="{x:Bind Comment}"
-                                                Foreground="#8F9BB3"
+                                                Foreground="{StaticResource NiatecTextMutedBrush}"
                                                 TextWrapping="Wrap"/>
                                                         </StackPanel>
                                                     </Border>
@@ -827,12 +834,14 @@ Padding="12"
                             Header="ЭЦП действует до"/>
 
                                         <Button
-                            Content="Добавить ЭЦП выбранному клиенту"
-                            Click="AddSignatureButton_Click"/>
+    Content="Добавить ЭЦП выбранному клиенту"
+    Style="{StaticResource NiatecPrimaryButtonStyle}"
+    Click="AddSignatureButton_Click"/>
 
                                         <Button
-                            Content="Удалить выбранную ЭЦП"
-                            Click="DeleteSelectedSignatureButton_Click"/>
+    Content="Удалить выбранную ЭЦП"
+    Style="{StaticResource NiatecDangerButtonStyle}"
+    Click="DeleteSelectedSignatureButton_Click"/>
                                     </StackPanel>
                                 </Border>
 
@@ -845,10 +854,10 @@ Padding="12"
                             <StackPanel Spacing="12" Padding="0">
 
                                 <Border
-                Background="#171A21"
+                Background="{StaticResource NiatecSurfaceBrush}"
                 CornerRadius="14"
 Padding="12"
-                BorderBrush="#2B3140"
+                BorderBrush="{StaticResource NiatecBorderBrush}"
                 BorderThickness="1">
 
                                     <StackPanel Spacing="12">
@@ -856,7 +865,7 @@ Padding="12"
                         Text="Банковские счета выбранного клиента"
                         FontSize="20"
                         FontWeight="SemiBold"
-                        Foreground="White"/>
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <ListView
                         x:Name="AccountsListView"
@@ -868,7 +877,7 @@ Padding="12"
                                             <ListView.ItemTemplate>
                                                 <DataTemplate x:DataType="local:BankAccount">
                                                     <Border
-                                    Background="#11151C"
+                                    Background="{StaticResource NiatecSurfaceAltBrush}"
                                     CornerRadius="12"
                                     Padding="12"
                                     Margin="0,0,0,10">
@@ -877,23 +886,23 @@ Padding="12"
                                             Text="{x:Bind BankName}"
                                             FontSize="15"
                                             FontWeight="SemiBold"
-                                            Foreground="White"/>
+                                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                                             <TextBlock
                                             Text="{x:Bind BIC}"
-                                            Foreground="#9FB3C8"/>
+                                            Foreground="{StaticResource NiatecAccentBlueBrush}"/>
 
                                                             <TextBlock
                                             Text="{x:Bind CorrespondentAccount}"
-                                            Foreground="#9FB3C8"/>
+                                            Foreground="{StaticResource NiatecAccentBlueBrush}"/>
 
                                                             <TextBlock
                                             Text="{x:Bind AccountNumber}"
-                                            Foreground="#B8B8B8"/>
+                                            Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
 
                                                             <TextBlock
                                             Text="{x:Bind Comment}"
-                                            Foreground="#8F9BB3"
+                                            Foreground="{StaticResource NiatecTextMutedBrush}"
                                             TextWrapping="Wrap"/>
                                                         </StackPanel>
                                                     </Border>
@@ -928,12 +937,14 @@ Padding="12"
                         PlaceholderText="Например: основной счет / резервный / зарплатный"/>
 
                                         <Button
-                        Content="Добавить счет выбранному клиенту"
-                        Click="AddBankAccountButton_Click"/>
+    Content="Добавить счет выбранному клиенту"
+    Style="{StaticResource NiatecPrimaryButtonStyle}"
+    Click="AddBankAccountButton_Click"/>
 
                                         <Button
-                        Content="Удалить выбранный счет"
-                        Click="DeleteSelectedBankAccountButton_Click"/>
+    Content="Удалить выбранный счет"
+    Style="{StaticResource NiatecDangerButtonStyle}"
+    Click="DeleteSelectedBankAccountButton_Click"/>
                                     </StackPanel>
                                 </Border>
 
@@ -946,10 +957,10 @@ Padding="12"
                             <StackPanel Spacing="12" Padding="0">
 
                                 <Border
-                    Background="#171A21"
+                    Background="{StaticResource NiatecSurfaceBrush}"
                     CornerRadius="14"
 Padding="12"
-                    BorderBrush="#2B3140"
+                    BorderBrush="{StaticResource NiatecBorderBrush}"
                     BorderThickness="1">
 
                                     <StackPanel Spacing="12">
@@ -957,7 +968,7 @@ Padding="12"
                             Text="Заметки выбранного клиента"
                             FontSize="20"
                             FontWeight="SemiBold"
-                            Foreground="White"/>
+                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <ListView
                             x:Name="NotesListView"
@@ -969,7 +980,7 @@ Padding="12"
                                             <ListView.ItemTemplate>
                                                 <DataTemplate x:DataType="local:ClientNote">
                                                     <Border
-                                        Background="#11151C"
+                                        Background="{StaticResource NiatecSurfaceAltBrush}"
                                         CornerRadius="12"
                                         Padding="12"
                                         Margin="0,0,0,10">
@@ -978,11 +989,11 @@ Padding="12"
                                                 Text="{x:Bind CreatedAtText}"
                                                 FontSize="14"
                                                 FontWeight="SemiBold"
-                                                Foreground="White"/>
+                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                                             <TextBlock
                                                 Text="{x:Bind NoteText}"
-                                                Foreground="#B8B8B8"
+                                                Foreground="{StaticResource NiatecTextSecondaryBrush}"
                                                 TextWrapping="Wrap"/>
                                                         </StackPanel>
                                                     </Border>
@@ -999,8 +1010,9 @@ Padding="12"
                             Height="100"/>
 
                                         <Button
-                            Content="Добавить заметку выбранному клиенту"
-                            Click="AddNoteButton_Click"/>
+    Content="Добавить заметку выбранному клиенту"
+    Style="{StaticResource NiatecPrimaryButtonStyle}"
+    Click="AddNoteButton_Click"/>
 
                                         <Button
                             Content="Удалить выбранную заметку"
@@ -1017,10 +1029,10 @@ Padding="12"
                             <StackPanel Spacing="12" Padding="0">
 
                                 <Border
-                Background="#171A21"
+                Background="{StaticResource NiatecSurfaceBrush}"
                 CornerRadius="14"
 Padding="12"
-                BorderBrush="#2B3140"
+                BorderBrush="{StaticResource NiatecBorderBrush}"
                 BorderThickness="1">
 
                                     <StackPanel Spacing="12">
@@ -1028,7 +1040,7 @@ Padding="12"
                         Text="Файлы выбранного клиента"
                         FontSize="20"
                         FontWeight="SemiBold"
-                        Foreground="White"/>
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                                         <Grid ColumnSpacing="12" RowSpacing="12">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
@@ -1043,8 +1055,9 @@ Padding="12"
 
                                             <Grid x:Name="AddClientFileTopButtonHost" Grid.Row="0" Grid.Column="0" Background="Transparent">
                                                 <Button
-            x:Name="AddClientFileTopButton"
-            Click="AddClientFileButton_Click">
+    x:Name="AddClientFileTopButton"
+    Style="{StaticResource NiatecPrimaryButtonStyle}"
+    Click="AddClientFileButton_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <SymbolIcon Symbol="Add"/>
                                                         <TextBlock Text="Прикрепить" VerticalAlignment="Center"/>
@@ -1055,8 +1068,9 @@ Padding="12"
                                             <Grid x:Name="OpenSelectedClientFileTopButtonHost" Grid.Row="0" Grid.Column="1" Background="Transparent">
 
                                                 <Button
-            x:Name="OpenSelectedClientFileTopButton"
-            Click="OpenSelectedClientFileButton_Click">
+    x:Name="OpenSelectedClientFileTopButton"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="OpenSelectedClientFileButton_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <SymbolIcon Symbol="OpenFile"/>
                                                         <TextBlock Text="Открыть" VerticalAlignment="Center"/>
@@ -1067,8 +1081,9 @@ Padding="12"
                                             <Grid x:Name="RevealSelectedClientFileTopButtonHost" Grid.Row="1" Grid.Column="0" Background="Transparent">
 
                                                 <Button
-            x:Name="RevealSelectedClientFileTopButton"
-            Click="RevealSelectedClientFileButton_Click">
+    x:Name="RevealSelectedClientFileTopButton"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="RevealSelectedClientFileButton_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <SymbolIcon Symbol="Folder"/>
                                                         <TextBlock Text="В папке" VerticalAlignment="Center"/>
@@ -1078,8 +1093,9 @@ Padding="12"
 
                                             <Grid x:Name="OpenClientFilesFolderTopButtonHost" Grid.Row="1" Grid.Column="1" Background="Transparent">
                                                 <Button
-            x:Name="OpenClientFilesFolderTopButton"
-            Click="OpenClientFilesFolderButton_Click">
+    x:Name="OpenClientFilesFolderTopButton"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="OpenClientFilesFolderButton_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <SymbolIcon Symbol="Folder"/>
                                                         <TextBlock Text="Папка клиента" VerticalAlignment="Center"/>
@@ -1090,8 +1106,9 @@ Padding="12"
                                             <Grid x:Name="ConvertSelectedClientFileToPdfTopButtonHost" Grid.Row="2" Grid.Column="0" Background="Transparent">
 
                                                 <Button
-            x:Name="ConvertSelectedClientFileToPdfTopButton"
-            Click="ConvertSelectedClientFileToPdfButton_Click">
+    x:Name="ConvertSelectedClientFileToPdfTopButton"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="ConvertSelectedClientFileToPdfButton_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <SymbolIcon Symbol="Document"/>
                                                         <TextBlock Text="PDF" VerticalAlignment="Center"/>
@@ -1101,8 +1118,9 @@ Padding="12"
 
                                             <Grid x:Name="DeleteSelectedClientFileTopButtonHost" Grid.Row="2" Grid.Column="1" Background="Transparent">
                                                 <Button
-            x:Name="DeleteSelectedClientFileTopButton"
-            Click="DeleteSelectedClientFileButton_Click">
+    x:Name="DeleteSelectedClientFileTopButton"
+    Style="{StaticResource NiatecDangerButtonStyle}"
+    Click="DeleteSelectedClientFileButton_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                                         <SymbolIcon Symbol="Delete"/>
                                                         <TextBlock Text="Удалить" VerticalAlignment="Center"/>
@@ -1116,16 +1134,16 @@ Padding="12"
                         Text="Предпросмотр выбранного файла"
                         FontSize="18"
                         FontWeight="SemiBold"
-                        Foreground="White"/>
+                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
                                         <TextBlock
                         x:Name="FilePreviewStatusTextBlock"
                         Text="Выбери файл для предпросмотра."
-                        Foreground="#B8B8B8"
+                        Foreground="{StaticResource NiatecTextSecondaryBrush}"
                         TextWrapping="Wrap"/>
 
                                         <Border
-                        Background="#11151C"
+                        Background="{StaticResource NiatecSurfaceAltBrush}"
                         CornerRadius="12"
                         Padding="8"
                         Height="320">
@@ -1156,14 +1174,14 @@ Padding="12"
                                                     <TextBlock
                                     x:Name="FilePreviewFallbackTitleTextBlock"
                                     Text="Предпросмотр недоступен"
-                                    Foreground="White"
+                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                     FontSize="18"
                                     FontWeight="SemiBold"
                                     HorizontalAlignment="Center"/>
                                                     <TextBlock
                                     x:Name="FilePreviewFallbackTextBlock"
                                     Text="Для этого типа файла пока доступно открытие внешней программой."
-                                    Foreground="#B8B8B8"
+                                    Foreground="{StaticResource NiatecTextSecondaryBrush}"
                                     TextWrapping="Wrap"
                                     HorizontalAlignment="Center"
                                     TextAlignment="Center"/>
@@ -1195,8 +1213,9 @@ Padding="12"
                         TextChanged="ClientFileSearchTextBox_TextChanged"/>
 
                                         <Button
-                        Content="Очистить поиск файлов"
-                        Click="ClearClientFileSearchButton_Click"/>
+    Content="Очистить поиск файлов"
+    Style="{StaticResource NiatecSecondaryButtonStyle}"
+    Click="ClearClientFileSearchButton_Click"/>
 
                                         <ListView
                         x:Name="ClientFilesListView"
@@ -1209,7 +1228,7 @@ Padding="12"
                                             <ListView.ItemTemplate>
                                                 <DataTemplate x:DataType="local:ClientFile">
                                                     <Border
-    Background="#11151C"
+    Background="{StaticResource NiatecSurfaceAltBrush}"
     CornerRadius="12"
     Padding="12"
     Margin="0,0,0,10"
@@ -1220,7 +1239,7 @@ Padding="12"
                                             Text="{x:Bind OriginalFileName}"
                                             FontSize="15"
                                             FontWeight="SemiBold"
-                                            Foreground="White"
+                                            Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                             TextWrapping="Wrap"/>
 
                                                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -1230,28 +1249,28 @@ Padding="12"
                                                 Padding="8,2">
                                                                     <TextBlock
                                                     Text="{x:Bind FileTypeLabel}"
-                                                    Foreground="White"
+                                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                                     FontSize="12"
                                                     FontWeight="SemiBold"/>
                                                                 </Border>
 
                                                                 <TextBlock
                                                 Text="{x:Bind Category}"
-                                                Foreground="#D7BA7D"
+                                                Foreground="{StaticResource NiatecAccentBrush}"
                                                 VerticalAlignment="Center"/>
                                                             </StackPanel>
 
                                                             <TextBlock
                                             Text="{x:Bind FileTypeDescription}"
-                                            Foreground="#B8B8B8"/>
+                                            Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
 
                                                             <TextBlock
                                             Text="{x:Bind AddedAtText}"
-                                            Foreground="#9FB3C8"/>
+                                            Foreground="{StaticResource NiatecAccentBlueBrush}"/>
 
                                                             <TextBlock
                                             Text="{x:Bind FileSizeText}"
-                                            Foreground="#8F9BB3"/>
+                                            Foreground="{StaticResource NiatecTextMutedBrush}"/>
                                                         </StackPanel>
                                                     </Border>
                                                 </DataTemplate>

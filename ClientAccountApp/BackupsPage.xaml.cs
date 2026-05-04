@@ -1,7 +1,9 @@
-using System;
-using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ClientAccountApp
 {
@@ -11,12 +13,71 @@ namespace ClientAccountApp
         {
             this.InitializeComponent();
 
-            BackupFolderPathTextBlock.Text = BackupService.GetBackupFolder();
-            BackupStatusTextBlock.Text = "Раздел резервных копий готов к работе.";
+            RefreshBackupPageState();
         }
 
-        private void CreateBackupButton_Click(object sender, RoutedEventArgs e)
+        private void RefreshBackupPageState()
         {
+            var databaseSettings = DatabaseConnectionSettingsService.Load();
+
+            if (databaseSettings.ProviderMode == DatabaseProviderMode.SqlServer)
+            {
+                BackupFolderPathTextBlock.Text = SqlServerBackupService.GetBackupRootFolder();
+                BackupStatusTextBlock.Text =
+                    "Серверный режим SQL Server. Резервная копия создаёт .bak базы и копию общей папки файлов.";
+            }
+            else
+            {
+                BackupFolderPathTextBlock.Text = BackupService.GetBackupFolder();
+                BackupStatusTextBlock.Text = "Локальный режим SQLite. Раздел резервных копий готов к работе.";
+            }
+        }
+
+        private async void CreateBackupButton_Click(object sender, RoutedEventArgs e)
+        {
+            var databaseSettings = DatabaseConnectionSettingsService.Load();
+
+            if (databaseSettings.ProviderMode == DatabaseProviderMode.SqlServer)
+            {
+                Button? clickedButton = sender as Button;
+
+                try
+                {
+                    if (clickedButton != null)
+                        clickedButton.IsEnabled = false;
+
+                    BackupStatusTextBlock.Text = "Создаётся резервная копия SQL Server...";
+
+                    string backupFolder = await SqlServerBackupService.CreateSqlServerBackupAsync();
+
+                    BackupFolderPathTextBlock.Text = backupFolder;
+                    BackupStatusTextBlock.Text = $"Резервная копия SQL Server создана: {backupFolder}";
+
+                    await ShowBackupDialogAsync(
+                        "Резервная копия создана",
+                        "Резервная копия SQL Server успешно создана.\n\n" +
+                        $"Папка:\n{backupFolder}");
+
+                    OpenFolderIfExists(backupFolder);
+                }
+                catch (Exception ex)
+                {
+                    BackupStatusTextBlock.Text = $"Ошибка резервного копирования SQL Server: {ex.Message}";
+
+                    await ShowBackupDialogAsync(
+                        "Ошибка резервного копирования",
+                        "Не удалось создать резервную копию SQL Server.\n\n" +
+                        ex.Message);
+                }
+                finally
+                {
+                    if (clickedButton != null)
+                        clickedButton.IsEnabled = true;
+                }
+
+                return;
+            }
+
             try
             {
                 string backupPath = BackupService.CreateBackup();
@@ -29,8 +90,25 @@ namespace ClientAccountApp
             }
         }
 
-        private void RestoreLatestBackupButton_Click(object sender, RoutedEventArgs e)
+        private async void RestoreLatestBackupButton_Click(object sender, RoutedEventArgs e)
         {
+            var databaseSettings = DatabaseConnectionSettingsService.Load();
+
+            if (databaseSettings.ProviderMode == DatabaseProviderMode.SqlServer)
+            {
+                BackupStatusTextBlock.Text =
+                    "Автоматическое восстановление SQL Server пока отключено для безопасности.";
+
+                await ShowBackupDialogAsync(
+                    "Восстановление SQL Server",
+                    "Сейчас приложение работает в SQL Server-режиме.\n\n" +
+                    "Старую SQLite-команду восстановления здесь запускать нельзя, потому что она не восстановит серверную базу.\n\n" +
+                    "Для SQL Server нужно отдельное безопасное восстановление из .bak-файла: с отключением активных подключений, восстановлением базы и возвратом общей папки файлов.\n\n" +
+                    "Этот мастер восстановления лучше добавить отдельным следующим этапом.");
+
+                return;
+            }
+
             try
             {
                 string restoredFrom = BackupService.RestoreLatestBackup();
@@ -47,7 +125,13 @@ namespace ClientAccountApp
         {
             try
             {
-                string backupsFolder = BackupService.GetBackupFolder();
+                var databaseSettings = DatabaseConnectionSettingsService.Load();
+
+                string backupsFolder = databaseSettings.ProviderMode == DatabaseProviderMode.SqlServer
+                    ? SqlServerBackupService.GetBackupRootFolder()
+                    : BackupService.GetBackupFolder();
+
+                Directory.CreateDirectory(backupsFolder);
 
                 Process.Start(new ProcessStartInfo
                 {
@@ -67,6 +151,34 @@ namespace ClientAccountApp
         private void OpenLegacyWorkspaceButton_Click(object sender, RoutedEventArgs e)
         {
             Frame?.Navigate(typeof(LegacyWorkspacePage));
+        }
+
+        private async Task ShowBackupDialogAsync(string title, string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "ОК",
+                XamlRoot = this.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        private static void OpenFolderIfExists(string folderPath)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath))
+                return;
+
+            if (!Directory.Exists(folderPath))
+                return;
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = folderPath,
+                UseShellExecute = true
+            });
         }
     }
 }
