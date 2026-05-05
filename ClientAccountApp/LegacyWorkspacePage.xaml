@@ -687,9 +687,9 @@ Padding="12"
     Height="32"
     Style="{StaticResource NiatecSecondaryButtonStyle}"
     Click="DownloadEgrulExtractButton_Click"/>
-                                                   
+
                                                 </Grid>
-                                
+
                                             </StackPanel>
                                         </Border>
 
@@ -1008,6 +1008,17 @@ Padding="12"
                             AcceptsReturn="True"
                             TextWrapping="Wrap"
                             Height="100"/>
+
+                                        <CheckBox
+                            x:Name="NoteReminderCheckBox"
+                            Content="Добавить напоминание"
+                            Checked="NoteReminderCheckBox_Changed"
+                            Unchecked="NoteReminderCheckBox_Changed"/>
+
+                                        <DatePicker
+                            x:Name="NoteReminderDatePicker"
+                            Header="Дата напоминания"
+                            Visibility="Collapsed"/>
 
                                         <Button
     Content="Добавить заметку выбранному клиенту"

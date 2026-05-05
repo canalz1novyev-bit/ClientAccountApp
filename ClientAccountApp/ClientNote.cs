@@ -17,13 +17,30 @@ namespace ClientAccountApp
 
         public DateTime CreatedAt { get; set; }
 
+        // Дата напоминания — если null, напоминание не установлено
+        public DateTime? ReminderDate { get; set; }
+
         [NotMapped]
-        public string CreatedAtText
-        {
-            get
-            {
-                return CreatedAt.ToString("dd.MM.yyyy HH:mm");
-            }
-        }
+        public string CreatedAtText =>
+            CreatedAt.ToString("dd.MM.yyyy HH:mm");
+
+        [NotMapped]
+        public bool HasReminder => ReminderDate.HasValue;
+
+        [NotMapped]
+        public bool IsReminderDue =>
+            ReminderDate.HasValue && ReminderDate.Value.Date <= DateTime.Today;
+
+        [NotMapped]
+        public string ReminderDateText =>
+            ReminderDate.HasValue
+                ? $"Напоминание: {ReminderDate.Value:dd.MM.yyyy}"
+                : "";
+
+        [NotMapped]
+        public string ReminderBadgeText =>
+            ReminderDate.HasValue && IsReminderDue
+                ? "! Напоминание сегодня"
+                : ReminderDateText;
     }
 }

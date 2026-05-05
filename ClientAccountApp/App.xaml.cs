@@ -1,32 +1,13 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-
-
-
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace ClientAccountApp
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
         // Главное окно приложения. Используется в ToolsPage и LegacyWorkspacePage
@@ -36,15 +17,15 @@ namespace ClientAccountApp
         public App()
         {
             InitializeComponent();
-        }   
+        }
 
-        /// <summary>
-        /// Invoked when the application is launched. 
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             WriteAppLog("OnLaunched start");
+
+            // Регистрируем менеджер уведомлений как можно раньше — до создания окна.
+            // Если регистрация упадёт, приложение всё равно запустится нормально.
+            RegisterNotifications();
 
             try
             {
@@ -63,7 +44,105 @@ namespace ClientAccountApp
                 WriteAppLog("ShellWindow error: " + ex);
                 throw;
             }
+
+            // Показываем уведомления уже после того как окно открылось.
+            // Небольшая задержка через DispatcherQueue чтобы не тормозить запуск.
+            MainAppWindow?.DispatcherQueue.TryEnqueue(() =>
+            {
+                ShowStartupReminders();
+            });
         }
+
+        // ─── Уведомления ────────────────────────────────────────────────────────
+
+        private static void RegisterNotifications()
+        {
+            try
+            {
+                AppNotificationManager.Default.Register();
+                WriteAppLog("Notifications registered");
+            }
+            catch (Exception ex)
+            {
+                // Регистрация могла уже пройти ранее — это нормально, игнорируем
+                WriteAppLog("Notifications register skipped: " + ex.Message);
+            }
+        }
+
+        private static void ShowStartupReminders()
+        {
+            try
+            {
+                DateTime today = DateTime.Today;
+
+                using var db = new AppDbContext();
+
+                // Берём только просроченные и сегодняшние, максимум 5 штук
+                var dueNotes = db.ClientNotes
+                    .AsNoTracking()
+                    .Where(n => n.ReminderDate.HasValue && n.ReminderDate.Value <= today)
+                    .OrderBy(n => n.ReminderDate)
+                    .Take(5)
+                    .ToList();
+
+                if (dueNotes.Count == 0)
+                    return;
+
+                // Загружаем имена клиентов одним запросом
+                var clientIds = dueNotes.Select(n => n.ClientInfoId).Distinct().ToList();
+                var clientMap = db.Clients
+                    .AsNoTracking()
+                    .Where(c => clientIds.Contains(c.Id))
+                    .ToDictionary(c => c.Id, c => c.Name);
+
+                if (dueNotes.Count <= 3)
+                {
+                    // До трёх напоминаний — показываем каждое отдельным уведомлением
+                    foreach (var note in dueNotes)
+                    {
+                        clientMap.TryGetValue(note.ClientInfoId, out string? clientName);
+
+                        int daysOverdue = (today - note.ReminderDate!.Value.Date).Days;
+
+                        string title = daysOverdue == 0
+                            ? "Напоминание на сегодня"
+                            : $"Просрочено на {daysOverdue} дн.";
+
+                        // Обрезаем длинный текст заметки чтобы он влез в уведомление
+                        string noteText = note.NoteText.Length > 120
+                            ? note.NoteText.Substring(0, 120) + "…"
+                            : note.NoteText;
+
+                        var notification = new AppNotificationBuilder()
+                            .AddText(title)
+                            .AddText(clientName ?? "Клиент")
+                            .AddText(noteText)
+                            .BuildNotification();
+
+                        AppNotificationManager.Default.Show(notification);
+                    }
+                }
+                else
+                {
+                    // Четыре и больше — показываем одно сводное уведомление
+                    var notification = new AppNotificationBuilder()
+                        .AddText($"Напоминаний: {dueNotes.Count}")
+                        .AddText("Откройте дашборд для просмотра всех напоминаний")
+                        .BuildNotification();
+
+                    AppNotificationManager.Default.Show(notification);
+                }
+
+                WriteAppLog($"Showed {dueNotes.Count} reminder notification(s)");
+            }
+            catch (Exception ex)
+            {
+                // Уведомления не должны ломать приложение
+                WriteAppLog("Reminder notifications error: " + ex.Message);
+            }
+        }
+
+        // ─── Логирование запуска ─────────────────────────────────────────────────
 
         private static void WriteAppLog(string message)
         {
@@ -87,8 +166,5 @@ namespace ClientAccountApp
                 // логирование не должно ломать запуск
             }
         }
-        
     }
-
-
 }

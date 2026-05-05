@@ -1029,8 +1029,10 @@ namespace ClientAccountApp
                 code = GetJsonString(root, "code");
                 message = GetJsonString(root, "message");
             }
-            catch
+            catch (Exception ex)
             {
+                // JSON не распарсился — используем сырой текст ответа как сообщение об ошибке
+                AppLogger.LogWarning("CounterpartyCheckService.ParseErrorResponse", $"Не удалось разобрать JSON ответа: {ex.Message}");
                 message = responseText;
             }
 

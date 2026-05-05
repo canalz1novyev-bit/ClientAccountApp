@@ -1001,9 +1001,10 @@ namespace ClientAccountApp
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Если не получилось определить через базу — вернём нули.
+                AppLogger.LogError("BillingPage.TryFindInvoiceIdentity", ex);
             }
 
             return (0, 0);
@@ -1103,9 +1104,10 @@ namespace ClientAccountApp
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Если не получилось определить клиента через базу — вернём 0.
+                AppLogger.LogError("BillingPage.TryFindClientIdForInvoice", ex);
             }
 
             return 0;
@@ -1297,9 +1299,10 @@ namespace ClientAccountApp
                 else
                     property.SetValue(target, value);
             }
-            catch
+            catch (Exception ex)
             {
                 // Если свойство есть, но тип не совпал — не ломаем генерацию документа.
+                AppLogger.LogWarning("BillingPage.SetPropertyValue", $"Не удалось установить свойство: {ex.Message}");
             }
         }
 

@@ -38,7 +38,38 @@ namespace ClientAccountApp
                 EnsureClientStatusColumn();
                 EnsureBankAccountCorrespondentAccountColumn();
                 EnsureClientContractColumns();
-                EnsureOgrnColumn(); // ← добавили
+                EnsureOgrnColumn();
+                EnsureNoteReminderDateColumn(); // ← добавили
+            }
+        }
+        private void EnsureNoteReminderDateColumn()
+        {
+            using var connection = Database.GetDbConnection();
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA table_info(ClientNotes);";
+
+            bool hasReminderDate = false;
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var columnName = reader["name"]?.ToString();
+
+                    if (string.Equals(columnName, "ReminderDate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasReminderDate = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasReminderDate)
+            {
+                Database.ExecuteSqlRaw(
+                    "ALTER TABLE ClientNotes ADD COLUMN ReminderDate TEXT NULL;");
             }
         }
 

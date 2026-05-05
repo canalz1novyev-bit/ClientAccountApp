@@ -13,7 +13,7 @@ namespace ClientAccountApp
             // SQL Server:
             // Таблицы создаются через EF Core Database.EnsureCreated() в AppDbContext.
             // SQLite-команды CREATE TABLE IF NOT EXISTS / PRAGMA / AUTOINCREMENT здесь не выполняем.
-            if (IsSqlServerProvider(db))
+            if (SchemaHelper.IsSqlServerProvider(db))
             {
                 db.Database.EnsureCreated();
                 return;
@@ -92,71 +92,25 @@ CREATE TABLE IF NOT EXISTS ClientRecurringServices (
     LastGeneratedPeriodKey TEXT NOT NULL DEFAULT ''
 );");
 
-            EnsureColumnExistsSqlite(db, "Invoices", "OrganizationProfileId", "INTEGER NULL");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "Invoices", "OrganizationProfileId", "INTEGER NULL");
 
-            EnsureColumnExistsSqlite(db, "InvoiceItems", "ServiceCatalogId", "INTEGER NULL");
-            EnsureColumnExistsSqlite(db, "InvoiceItems", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "InvoiceItems", "ServiceCatalogId", "INTEGER NULL");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "InvoiceItems", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
 
-            EnsureColumnExistsSqlite(db, "ServicesCatalog", "DefaultVatRate", "REAL NOT NULL DEFAULT 0");
-            EnsureColumnExistsSqlite(db, "ServicesCatalog", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
-            EnsureColumnExistsSqlite(db, "ServicesCatalog", "Comment", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExistsSqlite(db, "ServicesCatalog", "CreatedAt", "TEXT NOT NULL DEFAULT ''");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ServicesCatalog", "DefaultVatRate", "REAL NOT NULL DEFAULT 0");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ServicesCatalog", "SortOrder", "INTEGER NOT NULL DEFAULT 0");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ServicesCatalog", "Comment", "TEXT NOT NULL DEFAULT ''");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ServicesCatalog", "CreatedAt", "TEXT NOT NULL DEFAULT ''");
 
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "ServiceName", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "Unit", "TEXT NOT NULL DEFAULT 'усл.'");
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "UnitPrice", "REAL NOT NULL DEFAULT 0");
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "VatRate", "REAL NOT NULL DEFAULT 0");
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "IsAdvanceBilling", "INTEGER NOT NULL DEFAULT 1");
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "GenerateDay", "INTEGER NOT NULL DEFAULT 1");
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "Comment", "TEXT NOT NULL DEFAULT ''");
-            EnsureColumnExistsSqlite(db, "ClientRecurringServices", "LastGeneratedPeriodKey", "TEXT NOT NULL DEFAULT ''");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "ServiceName", "TEXT NOT NULL DEFAULT ''");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "Unit", "TEXT NOT NULL DEFAULT 'усл.'");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "UnitPrice", "REAL NOT NULL DEFAULT 0");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "VatRate", "REAL NOT NULL DEFAULT 0");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "IsAdvanceBilling", "INTEGER NOT NULL DEFAULT 1");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "GenerateDay", "INTEGER NOT NULL DEFAULT 1");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "Comment", "TEXT NOT NULL DEFAULT ''");
+            SchemaHelper.EnsureColumnExistsSqlite(db, "ClientRecurringServices", "LastGeneratedPeriodKey", "TEXT NOT NULL DEFAULT ''");
         }
 
-        private static bool IsSqlServerProvider(AppDbContext db)
-        {
-            string providerName = db.Database.ProviderName ?? "";
-
-            return providerName.Contains(
-                "SqlServer",
-                StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static void EnsureColumnExistsSqlite(
-            AppDbContext db,
-            string tableName,
-            string columnName,
-            string columnDefinition)
-        {
-            var connection = db.Database.GetDbConnection();
-
-            if (connection.State != ConnectionState.Open)
-                connection.Open();
-
-            using var command = connection.CreateCommand();
-            command.CommandText = $"PRAGMA table_info({tableName});";
-
-            using var reader = command.ExecuteReader();
-
-            bool exists = false;
-
-            while (reader.Read())
-            {
-                var existingColumnName = reader["name"]?.ToString();
-
-                if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
-                {
-                    exists = true;
-                    break;
-                }
-            }
-
-            reader.Close();
-
-            if (!exists)
-            {
-                db.Database.ExecuteSqlRaw(
-                    $"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnDefinition};");
-            }
-        }
     }
 }

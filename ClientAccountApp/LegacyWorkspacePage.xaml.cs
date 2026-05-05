@@ -27,6 +27,9 @@ namespace ClientAccountApp
 {
     public sealed partial class LegacyWorkspacePage : Page
     {
+        // Минимальная дата для DatePicker — сегодня (нельзя поставить напоминание в прошлом)
+        public DateTimeOffset MinReminderDate { get; } = DateTimeOffset.Now;
+
         private readonly ObservableCollection<ClientInfo> _clients = new();
         private readonly ObservableCollection<DigitalSignature> _signatures = new();
         private readonly ObservableCollection<BankAccount> _bankAccounts = new();
@@ -601,7 +604,7 @@ namespace ClientAccountApp
 
             if (client == null)
             {
-                ClientHeaderTitleTextBlock.Text = "Новый клиент";   
+                ClientHeaderTitleTextBlock.Text = "Новый клиент";
                 ClientHeaderMetaTextBlock.Text = "Заполните реквизиты или используйте автозаполнение по ИНН";
                 ClientHeaderSignatureTextBlock.Text = "ЭЦП: —";
                 ClientHeaderStatusTextBlock.Text = "Новый";
@@ -920,8 +923,8 @@ namespace ClientAccountApp
             return "Активный";
         }
 
-       
-        
+
+
 
         private void SetClientStatusComboBox(string status)
         {
@@ -942,7 +945,7 @@ namespace ClientAccountApp
             ClientStatusComboBox.SelectedIndex = 0;
         }
 
-        
+
 
         private bool IsEntrepreneurType(string clientType)
         {
@@ -1156,7 +1159,7 @@ namespace ClientAccountApp
             ClientFileCategoryComboBox.SelectedIndex = 5;
         }
 
-        
+
         private void RevealSelectedClientFileButton_Click(object sender, RoutedEventArgs e)
         {
             if (ClientFilesListView.SelectedItem is not ClientFile selectedFile)
@@ -1404,15 +1407,6 @@ namespace ClientAccountApp
 
 
         }
-        public static void RevealFileInExplorer(string fullPath)
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = $"/select,\"{fullPath}\"",
-                UseShellExecute = true
-            });
-        }
         private void ClearFilesSection()
         {
             _clientFiles.Clear();
@@ -1589,7 +1583,7 @@ namespace ClientAccountApp
             LoadFilesForSelectedClient();
             StatusTextBlock.Text = "Выбранный файл удален.";
         }
-        
+
 
         private string GetSelectedStatusFilter()
         {
@@ -1601,10 +1595,6 @@ namespace ClientAccountApp
             return "Все статусы";
         }
 
-        private bool MatchesStatusFilter(ClientInfo client)
-        {
-            return true;
-        }
         private static void ApplyActiveOrganizationContractStateToClient(
     ClientInfo client,
     Dictionary<int, ClientContract> contractMap)
@@ -1758,62 +1748,11 @@ namespace ClientAccountApp
             Frame?.Navigate(typeof(ProblemSignaturesPage));
         }
 
-       
-        private void FillClientBankInfo(ClientInfo client, List<BankAccount> accounts)
-        {
-            client.AccountCount = accounts.Count;
 
-            if (accounts.Count == 0)
-            {
-                client.PrimaryBankName = "—";
-                return;
-            }
-
-            client.PrimaryBankName = accounts.First().BankName;
-        }
-
-        private void FillClientNoteInfo(ClientInfo client, List<ClientNote> notes)
-        {
-            client.NoteCount = notes.Count;
-
-            if (notes.Count == 0)
-            {
-                client.LatestNoteCreatedAt = null;
-                return;
-            }
-
-            client.LatestNoteCreatedAt = notes
-                .OrderByDescending(n => n.CreatedAt)
-                .First()
-                .CreatedAt;
-        }
         private void OpenBackupsPageButton_Click(object sender, RoutedEventArgs e)
         {
             Frame?.Navigate(typeof(BackupsPage));
         }
-        private bool MatchesSignatureFilter(ClientInfo client)
-        {
-            int filterIndex = SignatureFilterComboBox?.SelectedIndex ?? 0;
-
-            if (filterIndex < 0)
-            {
-                filterIndex = 0;
-            }
-
-            DateTime today = DateTime.Today;
-            DateTime? nearestExpires = client.NearestSignatureExpiresDate;
-
-            return filterIndex switch
-            {
-                0 => true,
-                1 => nearestExpires.HasValue && nearestExpires.Value.Date >= today && nearestExpires.Value.Date <= today.AddDays(30),
-                2 => nearestExpires.HasValue && nearestExpires.Value.Date >= today && nearestExpires.Value.Date <= today.AddDays(7),
-                3 => nearestExpires.HasValue && nearestExpires.Value.Date < today,
-                _ => true
-            };
-        }
-
-
         private void LoadSignaturesForSelectedClient()
         {
             _signatures.Clear();
@@ -2037,11 +1976,6 @@ namespace ClientAccountApp
                 return false;
             }
 
-            if (!MatchesStatusFilter(client))
-            {
-                return false;
-            }
-
             DateTime today = DateTime.Today;
             DateTime? nearestExpires = client.NearestSignatureExpiresDate;
 
@@ -2135,11 +2069,19 @@ namespace ClientAccountApp
                 return;
             }
 
+            DateTime? reminderDate = null;
+
+            if (NoteReminderCheckBox.IsChecked == true && NoteReminderDatePicker != null)
+            {
+                reminderDate = NoteReminderDatePicker.Date.Date;
+            }
+
             var note = new ClientNote
             {
                 ClientInfoId = selectedClient.Id,
                 NoteText = noteText,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                ReminderDate = reminderDate
             };
 
             using (var db = new AppDbContext())
@@ -2301,7 +2243,7 @@ namespace ClientAccountApp
             }
 
             LoadClientsFromDatabase(selectedClient.Id);
-            
+
             ClearSignatureInputFields();
             StatusTextBlock.Text = $"ЭЦП добавлена клиенту «{selectedClient.Name}».";
         }
@@ -2336,7 +2278,7 @@ namespace ClientAccountApp
             }
 
             LoadClientsFromDatabase(selectedClientId);
-            
+
             StatusTextBlock.Text = "Выбранная ЭЦП удалена.";
         }
 
@@ -2384,30 +2326,6 @@ namespace ClientAccountApp
                 SaveWorkspaceState();
         }
 
-        private string GetSelectedClientType()
-        {
-            if (ClientTypeComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                return selectedItem.Content?.ToString() ?? "";
-            }
-
-            return "";
-        }
-
-        private bool ValidateClientForm(string clientType, string clientName, string inn, string address)
-        {
-            if (string.IsNullOrWhiteSpace(clientType) ||
-                string.IsNullOrWhiteSpace(clientName) ||
-                string.IsNullOrWhiteSpace(inn) ||
-                string.IsNullOrWhiteSpace(address))
-            {
-                StatusTextBlock.Text = "Заполни обязательные поля: тип клиента, наименование, ИНН и адрес.";
-                return false;
-            }
-
-            return true;
-        }
-
         private void LoadClientIntoForm(ClientInfo client)
         {
             SetClientTypeComboBox(client.ClientType);
@@ -2450,9 +2368,27 @@ namespace ClientAccountApp
             BankCommentTextBox.Text = "";
         }
 
+        private void NoteReminderCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (NoteReminderDatePicker == null) return;
+
+            bool isChecked = NoteReminderCheckBox.IsChecked == true;
+
+            NoteReminderDatePicker.Visibility = isChecked
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            if (isChecked)
+            {
+                NoteReminderDatePicker.Date = DateTimeOffset.Now;
+            }
+        }
+
         private void ClearNoteInputFields()
         {
             NoteTextBox.Text = "";
+            NoteReminderCheckBox.IsChecked = false;
+            NoteReminderDatePicker.Visibility = Visibility.Collapsed;
         }
 
         private void ShowClientCard(ClientInfo client)
@@ -2542,7 +2478,7 @@ namespace ClientAccountApp
             SelectedLatestNoteTextBlock.Text = "—";
         }
 
-       
+
 
         private void ClearSignatureSection()
         {
@@ -2567,29 +2503,8 @@ namespace ClientAccountApp
             SelectedNoteCountTextBlock.Text = "—";
             SelectedLatestNoteTextBlock.Text = "—";
         }
-        
-        
-        private bool MatchesSearch(ClientInfo client, List<ClientNote> notes, string searchText)
-        {
-            if (string.IsNullOrWhiteSpace(searchText))
-            {
-                return true;
-            }
 
-            string search = searchText.ToLowerInvariant();
 
-            bool clientMatches =
-                (client.Name?.ToLowerInvariant().Contains(search) ?? false) ||
-                (client.DirectorFullName?.ToLowerInvariant().Contains(search) ?? false) ||
-                (client.Inn?.ToLowerInvariant().Contains(search) ?? false) ||
-                (client.Address?.ToLowerInvariant().Contains(search) ?? false) ||
-                (client.PrimaryBankName?.ToLowerInvariant().Contains(search) ?? false);
-
-            bool noteMatches = notes.Any(n =>
-                (n.NoteText?.ToLowerInvariant().Contains(search) ?? false));
-
-            return clientMatches || noteMatches;
-        }
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!_workspaceStateReady)
@@ -2675,8 +2590,7 @@ namespace ClientAccountApp
             }
 
         }
-       
+
     }
 
 }
-
