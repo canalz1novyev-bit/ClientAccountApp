@@ -83,7 +83,37 @@ namespace ClientAccountApp
             }
 
             string currentDatabasePath = AppPaths.DatabasePath;
+            string currentFilesFolder = AppPaths.ClientFilesFolder;
+            string backupFilesFolder = Path.Combine(latestBackupFolder, "ClientFiles");
 
+            // Временная папка рядом с текущей — туда сначала всё копируем
+            string tempFolder = currentFilesFolder + "_restore_temp";
+
+            // Шаг 1: Копируем файлы из бэкапа во ВРЕМЕННУЮ папку
+            // Если что-то пойдёт не так — текущие данные ещё не тронуты!
+            try
+            {
+                DeleteDirectoryIfExists(tempFolder);
+
+                if (Directory.Exists(backupFilesFolder))
+                {
+                    CopyDirectory(backupFilesFolder, tempFolder);
+                }
+                else
+                {
+                    Directory.CreateDirectory(tempFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Копирование не удалось — удаляем мусор и выходим.
+                // Текущие данные при этом целы!
+                DeleteDirectoryIfExists(tempFolder);
+                throw new InvalidOperationException(
+                    "Не удалось скопировать файлы из резервной копии. Текущие данные не затронуты.", ex);
+            }
+
+            // Шаг 2: Копирование прошло успешно — теперь безопасно заменяем данные
             SqliteConnection.ClearAllPools();
 
             DeleteFileIfExists(currentDatabasePath);
@@ -92,19 +122,10 @@ namespace ClientAccountApp
 
             File.Copy(backupDatabasePath, currentDatabasePath, true);
 
-            string backupFilesFolder = Path.Combine(latestBackupFolder, "ClientFiles");
-            string currentFilesFolder = AppPaths.ClientFilesFolder;
-
+            // Шаг 3: Убираем старую папку файлов и ставим на её место готовую временную
             DeleteDirectoryIfExists(currentFilesFolder);
 
-            if (Directory.Exists(backupFilesFolder))
-            {
-                CopyDirectory(backupFilesFolder, currentFilesFolder);
-            }
-            else
-            {
-                Directory.CreateDirectory(currentFilesFolder);
-            }
+            Directory.Move(tempFolder, currentFilesFolder);
 
             return latestBackupFolder;
         }

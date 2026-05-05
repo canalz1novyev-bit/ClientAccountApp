@@ -15,7 +15,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Microsoft.EntityFrameworkCore;
+
 
 
 
@@ -29,36 +29,22 @@ namespace ClientAccountApp
     /// </summary>
     public partial class App : Application
     {
-        private Window? _window;
-        public static Window? MainWindow { get; private set; }
+        // Главное окно приложения. Используется в ToolsPage и LegacyWorkspacePage
+        // для получения дескриптора окна при открытии файловых диалогов.
+        public static Window? MainAppWindow { get; private set; }
 
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
         public App()
         {
             InitializeComponent();
-        }
-        public static Window? MainAppWindow { get; private set; }
+        }   
 
         /// <summary>
-        /// Invoked when the application is launched.
+        /// Invoked when the application is launched. 
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             WriteAppLog("OnLaunched start");
-
-            try
-            {
-                EnsureDatabaseSchema();
-                WriteAppLog("EnsureDatabaseSchema ok");
-            }
-            catch (Exception ex)
-            {
-                WriteAppLog("EnsureDatabaseSchema error: " + ex);
-            }
 
             try
             {
@@ -101,30 +87,7 @@ namespace ClientAccountApp
                 // логирование не должно ломать запуск
             }
         }
-        private void EnsureDatabaseSchema()
-        {
-            using var db = new AppDbContext();
-
-            db.Database.EnsureCreated();
-
-            string providerName = db.Database.ProviderName ?? "";
-
-            if (providerName.Contains("SqlServer", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            try
-            {
-                db.Database.ExecuteSqlRaw(@"
-ALTER TABLE Clients
-ADD COLUMN Ogrn TEXT NOT NULL DEFAULT '';
-");
-            }
-            catch
-            {
-            }
-        }
+        
     }
 
 

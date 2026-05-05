@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ClientAccountApp
@@ -11,6 +12,9 @@ namespace ClientAccountApp
     public static class GigaChatAiService
     {
         private static readonly HttpClient HttpClient = new();
+
+        // Турникет: только один поток одновременно может обновлять токен
+        private static readonly SemaphoreSlim _tokenLock = new SemaphoreSlim(1, 1);
 
         private static string? _accessToken;
         private static DateTimeOffset _accessTokenExpiresAt;
@@ -81,60 +85,86 @@ namespace ClientAccountApp
 
         private static async Task<string> GetAccessTokenAsync(AiSettings settings)
         {
+            // Быстрая проверка БЕЗ блокировки — токен ещё валиден?
+            // Если да — сразу возвращаем, никого не задерживаем
             if (!string.IsNullOrWhiteSpace(_accessToken) &&
                 _accessTokenExpiresAt > DateTimeOffset.Now.AddMinutes(2))
             {
                 return _accessToken;
             }
 
-            string authorizationKey = AiSettingsService.GetGigaChatAuthorizationKey();
+            // Токен устарел — входим в турникет.
+            // Если другой поток уже зашёл — ждём здесь пока он не выйдет.
+            await _tokenLock.WaitAsync();
 
-            if (string.IsNullOrWhiteSpace(authorizationKey))
-                throw new InvalidOperationException("Authorization Key GigaChat не указан.");
-            authorizationKey = authorizationKey.Trim();
-
-            if (authorizationKey.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                authorizationKey = authorizationKey.Substring("Basic ".Length).Trim();
+                // ВАЖНО: проверяем ещё раз уже внутри турникета.
+                // Пока мы ждали — другой поток мог уже обновить токен.
+                // Тогда нам не нужно делать лишний запрос.
+                if (!string.IsNullOrWhiteSpace(_accessToken) &&
+                    _accessTokenExpiresAt > DateTimeOffset.Now.AddMinutes(2))
+                {
+                    return _accessToken;
+                }
+
+                // Токен точно устарел — запрашиваем новый
+                string authorizationKey = AiSettingsService.GetGigaChatAuthorizationKey();
+
+                if (string.IsNullOrWhiteSpace(authorizationKey))
+                    throw new InvalidOperationException("Authorization Key GigaChat не указан.");
+
+                authorizationKey = authorizationKey.Trim();
+
+                if (authorizationKey.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+                {
+                    authorizationKey = authorizationKey.Substring("Basic ".Length).Trim();
+                }
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, settings.GigaChatOAuthUrl);
+
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authorizationKey);
+                request.Headers.Add("RqUID", Guid.NewGuid().ToString());
+
+                request.Content = new StringContent(
+                    $"scope={Uri.EscapeDataString(settings.GigaChatScope)}",
+                    Encoding.UTF8,
+                    "application/x-www-form-urlencoded");
+
+                using HttpResponseMessage response = await HttpClient.SendAsync(request);
+                string responseJson = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new InvalidOperationException(
+                        $"Ошибка получения токена GigaChat: {(int)response.StatusCode} {response.ReasonPhrase}. {responseJson}");
+                }
+
+                var parsed = JsonSerializer.Deserialize<GigaChatTokenResponse>(responseJson);
+
+                if (string.IsNullOrWhiteSpace(parsed?.access_token))
+                    throw new InvalidOperationException("GigaChat не вернул access_token.");
+
+                _accessToken = parsed.access_token;
+
+                // expires_at у GigaChat приходит как Unix timestamp в миллисекундах.
+                if (parsed.expires_at > 0)
+                {
+                    _accessTokenExpiresAt = DateTimeOffset.FromUnixTimeMilliseconds(parsed.expires_at);
+                }
+                else
+                {
+                    _accessTokenExpiresAt = DateTimeOffset.Now.AddMinutes(25);
+                }
+
+                return _accessToken;
             }
-
-            using var request = new HttpRequestMessage(HttpMethod.Post, settings.GigaChatOAuthUrl);
-
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authorizationKey);
-            request.Headers.Add("RqUID", Guid.NewGuid().ToString());
-
-            request.Content = new StringContent(
-                $"scope={Uri.EscapeDataString(settings.GigaChatScope)}",
-                Encoding.UTF8,
-                "application/x-www-form-urlencoded");
-
-            using HttpResponseMessage response = await HttpClient.SendAsync(request);
-            string responseJson = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+            finally
             {
-                throw new InvalidOperationException(
-                    $"Ошибка получения токена GigaChat: {(int)response.StatusCode} {response.ReasonPhrase}. {responseJson}");
+                // Выходим из турникета — ВСЕГДА, даже если выбросилось исключение.
+                // Без этого турникет навсегда заблокируется и приложение зависнет.
+                _tokenLock.Release();
             }
-
-            var parsed = JsonSerializer.Deserialize<GigaChatTokenResponse>(responseJson);
-
-            if (string.IsNullOrWhiteSpace(parsed?.access_token))
-                throw new InvalidOperationException("GigaChat не вернул access_token.");
-
-            _accessToken = parsed.access_token;
-
-            // expires_at у GigaChat приходит как Unix timestamp в миллисекундах.
-            if (parsed.expires_at > 0)
-            {
-                _accessTokenExpiresAt = DateTimeOffset.FromUnixTimeMilliseconds(parsed.expires_at);
-            }
-            else
-            {
-                _accessTokenExpiresAt = DateTimeOffset.Now.AddMinutes(25);
-            }
-
-            return _accessToken;
         }
 
         private sealed class GigaChatTokenResponse

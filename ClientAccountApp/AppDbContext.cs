@@ -38,6 +38,7 @@ namespace ClientAccountApp
                 EnsureClientStatusColumn();
                 EnsureBankAccountCorrespondentAccountColumn();
                 EnsureClientContractColumns();
+                EnsureOgrnColumn(); // ← добавили
             }
         }
 
@@ -255,7 +256,36 @@ namespace ClientAccountApp
                     "ALTER TABLE BankAccounts ADD COLUMN CorrespondentAccount TEXT NOT NULL DEFAULT '';");
             }
         }
+        private void EnsureOgrnColumn()
+        {
+            using var connection = Database.GetDbConnection();
+            connection.Open();
 
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA table_info(Clients);";
+
+            bool hasOgrn = false;
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var columnName = reader["name"]?.ToString();
+
+                    if (string.Equals(columnName, "Ogrn", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasOgrn = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasOgrn)
+            {
+                Database.ExecuteSqlRaw(
+                    "ALTER TABLE Clients ADD COLUMN Ogrn TEXT NOT NULL DEFAULT '';");
+            }
+        }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (optionsBuilder.IsConfigured)
