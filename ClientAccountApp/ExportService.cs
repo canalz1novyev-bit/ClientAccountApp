@@ -41,78 +41,86 @@ namespace ClientAccountApp
                 .ThenBy(a => a.AccountNumber)
                 .FirstOrDefault();
 
-            string safeClientName = MakeSafeFileName(client.Name);
-            string fileName = $"Карточка_контрагента_{safeClientName}_{DateTime.Now:yyyyMMdd_HHmmss}.docx";
-            string exportPath = Path.Combine(GetExportFolder(), fileName);
+            string tempPath = Path.Combine(Path.GetTempPath(),
+                $"Карточка_контрагента_{MakeSafeFileName(client.Name)}_{DateTime.Now:yyyyMMdd_HHmmss}.docx");
 
-            using var wordDocument = WordprocessingDocument.Create(exportPath, WordprocessingDocumentType.Document);
-            MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
-            mainPart.Document = new Document();
-            Body body = new Body();
-
-            body.Append(CreateParagraph("КАРТОЧКА КОНТРАГЕНТА", bold: true, fontSize: "28", justify: JustificationValues.Center));
-            body.Append(CreateEmptyParagraph());
-
-            string organizationHeader = BuildOrganizationHeader(client);
-            body.Append(CreateParagraph(organizationHeader, bold: true, fontSize: "26"));
-            body.Append(CreateEmptyParagraph());
-
-            body.Append(CreateParagraph($"ИНН: {GetValueOrDash(client.Inn)}"));
-
-            string kpp = GetOptionalStringProperty(client, "Kpp", "KPP");
-            body.Append(CreateParagraph($"КПП: {GetValueOrDash(kpp)}"));
-
-            body.Append(CreateParagraph($"ОГРН: {GetValueOrDash(client.Ogrn)}"));
-
-            string ogrnAssignedDate = GetOptionalDatePropertyAsText(
-                client,
-                "OgrnAssignedDate",
-                "OgrnAssignedAt",
-                "OgrnDate",
-                "RegistrationDate");
-
-            if (!string.IsNullOrWhiteSpace(ogrnAssignedDate))
+            // Создаём документ
+            using (var wordDocument = WordprocessingDocument.Create(tempPath, WordprocessingDocumentType.Document))
             {
-                body.Append(CreateParagraph($"Дата присвоения ОГРН: {ogrnAssignedDate}"));
+                MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
+                mainPart.Document = new Document();
+                Body body = new Body();
+
+                body.Append(CreateParagraph("КАРТОЧКА КОНТРАГЕНТА", bold: true, fontSize: "28", justify: JustificationValues.Center));
+                body.Append(CreateEmptyParagraph());
+
+                string organizationHeader = BuildOrganizationHeader(client);
+                body.Append(CreateParagraph(organizationHeader, bold: true, fontSize: "26"));
+                body.Append(CreateEmptyParagraph());
+
+                body.Append(CreateParagraph($"ИНН: {GetValueOrDash(client.Inn)}"));
+
+                string kpp = GetOptionalStringProperty(client, "Kpp", "KPP");
+                body.Append(CreateParagraph($"КПП: {GetValueOrDash(kpp)}"));
+
+                body.Append(CreateParagraph($"ОГРН: {GetValueOrDash(client.Ogrn)}"));
+
+                string ogrnAssignedDate = GetOptionalDatePropertyAsText(
+                    client, "OgrnAssignedDate", "OgrnAssignedAt", "OgrnDate", "RegistrationDate");
+
+                if (!string.IsNullOrWhiteSpace(ogrnAssignedDate))
+                    body.Append(CreateParagraph($"Дата присвоения ОГРН: {ogrnAssignedDate}"));
+
+                body.Append(CreateEmptyParagraph());
+
+                if (primaryBankAccount != null)
+                {
+                    body.Append(CreateParagraph($"Расчётный счёт: {GetValueOrDash(primaryBankAccount.AccountNumber)}"));
+                    body.Append(CreateParagraph($"Наименование: {GetValueOrDash(primaryBankAccount.BankName)}", preserveLineBreaks: true));
+                    body.Append(CreateParagraph($"БИК: {GetValueOrDash(primaryBankAccount.BIC)}"));
+
+                    string corr = GetOptionalStringProperty(primaryBankAccount, "CorrespondentAccount", "CorrAccount", "CorAccount");
+                    body.Append(CreateParagraph($"Корсчёт: {GetValueOrDash(corr)}"));
+                }
+                else
+                {
+                    body.Append(CreateParagraph("Расчётный счёт: —"));
+                    body.Append(CreateParagraph("Наименование: —"));
+                    body.Append(CreateParagraph("БИК: —"));
+                    body.Append(CreateParagraph("Корсчёт: —"));
+                }
+
+                body.Append(CreateEmptyParagraph());
+                body.Append(CreateParagraph($"Юр. адрес : {GetValueOrDash(client.Address)}", preserveLineBreaks: true));
+                body.Append(CreateEmptyParagraph());
+
+                string directorLabel = GetDirectorLabel(client.ClientType);
+                body.Append(CreateParagraph($"{directorLabel} :"));
+                body.Append(CreateParagraph($"{GetValueOrDash(client.DirectorFullName)}, действует на основании Устава"));
+
+                mainPart.Document.Append(body);
+                mainPart.Document.Save();
             }
 
-            body.Append(CreateEmptyParagraph());
+            // Теперь документ закрыт — можно копировать
+            var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
 
-            if (primaryBankAccount != null)
+            var clientFile = new ClientFile
             {
-                body.Append(CreateParagraph($"Расчётный счёт: {GetValueOrDash(primaryBankAccount.AccountNumber)}"));
+                ClientInfoId = client.Id,
+                OriginalFileName = Path.GetFileName(copyResult.RelativePath),
+                RelativePath = copyResult.RelativePath,
+                FileSizeBytes = copyResult.FileSizeBytes,
+                AddedAt = DateTime.Now,
+                Category = "Карточка контрагента"
+            };
 
-                body.Append(CreateParagraph(
-                    $"Наименование: {GetValueOrDash(primaryBankAccount.BankName)}",
-                    preserveLineBreaks: true));
+            db.ClientFiles.Add(clientFile);
+            db.SaveChanges();
 
-                body.Append(CreateParagraph($"БИК: {GetValueOrDash(primaryBankAccount.BIC)}"));
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
 
-                string corr = GetOptionalStringProperty(primaryBankAccount, "CorrespondentAccount", "CorrAccount", "CorAccount");
-                body.Append(CreateParagraph($"Корсчёт: {GetValueOrDash(corr)}"));
-            }
-            else
-            {
-                body.Append(CreateParagraph("Расчётный счёт: —"));
-                body.Append(CreateParagraph("Наименование: —"));
-                body.Append(CreateParagraph("БИК: —"));
-                body.Append(CreateParagraph("Корсчёт: —"));
-            }
-
-            body.Append(CreateEmptyParagraph());
-
-            body.Append(CreateParagraph($"Юр. адрес : {GetValueOrDash(client.Address)}", preserveLineBreaks: true));
-            body.Append(CreateEmptyParagraph());
-
-            string directorLabel = GetDirectorLabel(client.ClientType);
-            body.Append(CreateParagraph($"{directorLabel} :"));
-            body.Append(CreateParagraph($"{GetValueOrDash(client.DirectorFullName)}, действует на основании Устава"));
-            body.Append(CreateEmptyParagraph());
-
-            mainPart.Document.Append(body);
-            mainPart.Document.Save();
-
-            return exportPath;
+            return ClientFileStorageService.GetFullPath(copyResult.RelativePath);
         }
 
         private static string BuildOrganizationHeader(ClientInfo client)

@@ -22,19 +22,47 @@ namespace ClientAccountApp
                 PaneFooterContent.Visibility = Visibility.Collapsed;
             }
 
-            OrganizationSchemaService.EnsureOrganizationTables();
-            ActiveOrganizationService.Initialize();
-            ContractSchemaService.EnsureContractTables();
-
-            ClientFileStorageService.MigrateLegacyClientFoldersOnce();
+            bool startupOk = InitializeStartupServicesSafely();
 
             this.Title = "ClientAccountApp — Версия 2";
 
-            RefreshOrganizationFooter();
-            RefreshDatabaseFooter();
+            try
+            {
+                RefreshOrganizationFooter();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                RefreshDatabaseFooter();
+            }
+            catch
+            {
+            }
+
+            if (!startupOk)
+            {
+                RootFrame.Navigate(typeof(SettingsPage));
+                return;
+            }
+
             if (ActiveOrganizationService.Current == null)
             {
-                if (ActiveOrganizationService.HasAnyOrganizations())
+                bool hasOrganizations = false;
+
+                try
+                {
+                    hasOrganizations = ActiveOrganizationService.HasAnyOrganizations();
+                }
+                catch
+                {
+                    RootFrame.Navigate(typeof(SettingsPage));
+                    return;
+                }
+
+                if (hasOrganizations)
                 {
                     RootFrame.Navigate(typeof(OrganizationSelectPage));
                 }
@@ -47,6 +75,72 @@ namespace ClientAccountApp
             }
 
             EnterMainApplication();
+        }
+        private bool InitializeStartupServicesSafely()
+        {
+            try
+            {
+                OrganizationSchemaService.EnsureOrganizationTables();
+            }
+            catch (Exception ex)
+            {
+                WriteShellStartupLog("OrganizationSchemaService error: " + ex);
+                return false;
+            }
+
+            try
+            {
+                ActiveOrganizationService.Initialize();
+            }
+            catch (Exception ex)
+            {
+                WriteShellStartupLog("ActiveOrganizationService error: " + ex);
+                return false;
+            }
+
+            try
+            {
+                ContractSchemaService.EnsureContractTables();
+            }
+            catch (Exception ex)
+            {
+                WriteShellStartupLog("ContractSchemaService error: " + ex);
+                return false;
+            }
+
+            try
+            {
+                ClientFileStorageService.MigrateLegacyClientFoldersOnce();
+            }
+            catch (Exception ex)
+            {
+                WriteShellStartupLog("ClientFileStorageService migration warning: " + ex);
+                // Это не критично для запуска окна.
+            }
+
+            return true;
+        }
+
+        private static void WriteShellStartupLog(string message)
+        {
+            try
+            {
+                string folder = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "ClientAccountApp",
+                    "Logs");
+
+                System.IO.Directory.CreateDirectory(folder);
+
+                string path = System.IO.Path.Combine(folder, "startup-log.txt");
+
+                System.IO.File.AppendAllText(
+                    path,
+                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine);
+            }
+            catch
+            {
+            }
         }
         public void RefreshDatabaseFooter()
         {

@@ -126,6 +126,6 @@ ADD COLUMN Ogrn TEXT NOT NULL DEFAULT '';
             }
         }
     }
-    
-    
+
+
 }

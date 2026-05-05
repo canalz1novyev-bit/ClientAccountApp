@@ -38,7 +38,7 @@ namespace ClientAccountApp
         private static UiState? _cache;
 
         private static string FilePath =>
-            Path.Combine(ApplicationData.Current.LocalFolder.Path, "ui-state.json");
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClientAccountApp");
 
         public static UiState Load()
         {
@@ -70,8 +70,28 @@ namespace ClientAccountApp
             var state = Load();
             updateAction(state);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(state, JsonOptions));
+            try
+            {
+                var directory = Path.GetDirectoryName(FilePath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Если файл существует — удаляем его перед записью (решает проблему прав)
+                if (File.Exists(FilePath))
+                {
+                    File.Delete(FilePath);
+                }
+
+                File.WriteAllText(FilePath, JsonSerializer.Serialize(state, JsonOptions));
+                _cache = state;
+            }
+            catch (Exception ex)
+            {
+                // На время отладки просто пишем в консоль
+                System.Diagnostics.Debug.WriteLine($"Ошибка сохранения UiState: {ex.Message}");
+            }
         }
     }
 }
