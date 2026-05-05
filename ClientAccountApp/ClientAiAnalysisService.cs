@@ -14,7 +14,6 @@ namespace ClientAccountApp
 
         public static async Task<string> AnalyzeClientAsync(int clientId)
         {
-            ContractSchemaService.EnsureContractTables();
 
             var organization = ActiveOrganizationService.GetRequired();
 

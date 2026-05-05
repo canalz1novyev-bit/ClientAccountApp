@@ -34,7 +34,7 @@ namespace ClientAccountApp
         };
 
         private static string FilePath =>
-            Path.Combine(ApplicationData.Current.LocalFolder.Path, "ai-settings.json");
+            Path.Combine(AppPaths.AppDataFolder, "ai-settings.json");
 
         public static AiSettings Load()
         {

@@ -8,7 +8,6 @@ namespace ClientAccountApp
     {
         public static void EnsureContractsForActiveOrganization()
         {
-            ContractSchemaService.EnsureContractTables();
 
             var organization = ActiveOrganizationService.GetRequired();
 
@@ -69,7 +68,6 @@ namespace ClientAccountApp
         }
         public static int ResetContractsForActiveOrganizationToEmpty()
         {
-            ContractSchemaService.EnsureContractTables();
 
             var organization = ActiveOrganizationService.GetRequired();
 

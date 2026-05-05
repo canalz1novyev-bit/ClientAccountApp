@@ -30,7 +30,7 @@ namespace ClientAccountApp
         };
 
         private static string FilePath =>
-            Path.Combine(ApplicationData.Current.LocalFolder.Path, "organization-settings.json");
+            Path.Combine(AppPaths.AppDataFolder, "organization-settings.json");
 
         public static OrganizationSettings Load()
         {

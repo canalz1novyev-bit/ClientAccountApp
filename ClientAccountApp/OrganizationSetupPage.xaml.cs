@@ -197,7 +197,6 @@ namespace ClientAccountApp
                 return;
             }
 
-            OrganizationSchemaService.EnsureOrganizationTables();
 
             using var db = new AppDbContext();
 

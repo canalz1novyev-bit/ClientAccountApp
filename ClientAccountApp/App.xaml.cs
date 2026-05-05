@@ -10,8 +10,6 @@ namespace ClientAccountApp
 {
     public partial class App : Application
     {
-        // Главное окно приложения. Используется в ToolsPage и LegacyWorkspacePage
-        // для получения дескриптора окна при открытии файловых диалогов.
         public static Window? MainAppWindow { get; private set; }
 
         public App()
@@ -23,20 +21,24 @@ namespace ClientAccountApp
         {
             WriteAppLog("OnLaunched start");
 
-            // Регистрируем менеджер уведомлений как можно раньше — до создания окна.
-            // Если регистрация упадёт, приложение всё равно запустится нормально.
             RegisterNotifications();
 
             try
             {
+                DatabaseInitializer.Initialize();
+                WriteAppLog("DatabaseInitializer ok");
+            }
+            catch (Exception ex)
+            {
+                WriteAppLog("DatabaseInitializer error: " + ex);
+            }
+
+            try
+            {
                 WriteAppLog("Before ShellWindow");
-
                 MainAppWindow = new ShellWindow();
-
                 WriteAppLog("After ShellWindow");
-
                 MainAppWindow.Activate();
-
                 WriteAppLog("After Activate");
             }
             catch (Exception ex)
@@ -45,15 +47,11 @@ namespace ClientAccountApp
                 throw;
             }
 
-            // Показываем уведомления уже после того как окно открылось.
-            // Небольшая задержка через DispatcherQueue чтобы не тормозить запуск.
             MainAppWindow?.DispatcherQueue.TryEnqueue(() =>
             {
                 ShowStartupReminders();
             });
         }
-
-        // ─── Уведомления ────────────────────────────────────────────────────────
 
         private static void RegisterNotifications()
         {
@@ -64,7 +62,6 @@ namespace ClientAccountApp
             }
             catch (Exception ex)
             {
-                // Регистрация могла уже пройти ранее — это нормально, игнорируем
                 WriteAppLog("Notifications register skipped: " + ex.Message);
             }
         }
@@ -74,10 +71,8 @@ namespace ClientAccountApp
             try
             {
                 DateTime today = DateTime.Today;
-
                 using var db = new AppDbContext();
 
-                // Берём только просроченные и сегодняшние, максимум 5 штук
                 var dueNotes = db.ClientNotes
                     .AsNoTracking()
                     .Where(n => n.ReminderDate.HasValue && n.ReminderDate.Value <= today)
@@ -85,10 +80,8 @@ namespace ClientAccountApp
                     .Take(5)
                     .ToList();
 
-                if (dueNotes.Count == 0)
-                    return;
+                if (dueNotes.Count == 0) return;
 
-                // Загружаем имена клиентов одним запросом
                 var clientIds = dueNotes.Select(n => n.ClientInfoId).Distinct().ToList();
                 var clientMap = db.Clients
                     .AsNoTracking()
@@ -97,52 +90,37 @@ namespace ClientAccountApp
 
                 if (dueNotes.Count <= 3)
                 {
-                    // До трёх напоминаний — показываем каждое отдельным уведомлением
                     foreach (var note in dueNotes)
                     {
                         clientMap.TryGetValue(note.ClientInfoId, out string? clientName);
-
                         int daysOverdue = (today - note.ReminderDate!.Value.Date).Days;
+                        string title = daysOverdue == 0 ? "Напоминание на сегодня" : $"Просрочено на {daysOverdue} дн.";
+                        string noteText = note.NoteText.Length > 120 ? note.NoteText.Substring(0, 120) + "…" : note.NoteText;
 
-                        string title = daysOverdue == 0
-                            ? "Напоминание на сегодня"
-                            : $"Просрочено на {daysOverdue} дн.";
-
-                        // Обрезаем длинный текст заметки чтобы он влез в уведомление
-                        string noteText = note.NoteText.Length > 120
-                            ? note.NoteText.Substring(0, 120) + "…"
-                            : note.NoteText;
-
-                        var notification = new AppNotificationBuilder()
-                            .AddText(title)
-                            .AddText(clientName ?? "Клиент")
-                            .AddText(noteText)
-                            .BuildNotification();
-
-                        AppNotificationManager.Default.Show(notification);
+                        AppNotificationManager.Default.Show(
+                            new AppNotificationBuilder()
+                                .AddText(title)
+                                .AddText(clientName ?? "Клиент")
+                                .AddText(noteText)
+                                .BuildNotification());
                     }
                 }
                 else
                 {
-                    // Четыре и больше — показываем одно сводное уведомление
-                    var notification = new AppNotificationBuilder()
-                        .AddText($"Напоминаний: {dueNotes.Count}")
-                        .AddText("Откройте дашборд для просмотра всех напоминаний")
-                        .BuildNotification();
-
-                    AppNotificationManager.Default.Show(notification);
+                    AppNotificationManager.Default.Show(
+                        new AppNotificationBuilder()
+                            .AddText($"Напоминаний: {dueNotes.Count}")
+                            .AddText("Откройте дашборд для просмотра всех напоминаний")
+                            .BuildNotification());
                 }
 
                 WriteAppLog($"Showed {dueNotes.Count} reminder notification(s)");
             }
             catch (Exception ex)
             {
-                // Уведомления не должны ломать приложение
                 WriteAppLog("Reminder notifications error: " + ex.Message);
             }
         }
-
-        // ─── Логирование запуска ─────────────────────────────────────────────────
 
         private static void WriteAppLog(string message)
         {
@@ -150,21 +128,13 @@ namespace ClientAccountApp
             {
                 string folder = System.IO.Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "ClientAccountApp",
-                    "Logs");
-
+                    "ClientAccountApp", "Logs");
                 Directory.CreateDirectory(folder);
-
-                string path = System.IO.Path.Combine(folder, "startup-log.txt");
-
                 File.AppendAllText(
-                    path,
+                    System.IO.Path.Combine(folder, "startup-log.txt"),
                     DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine);
             }
-            catch
-            {
-                // логирование не должно ломать запуск
-            }
+            catch { }
         }
     }
 }

@@ -7,7 +7,7 @@ namespace ClientAccountApp
     public static class OrganizationLogoStorageService
     {
         private static string RootFolder =>
-            Path.Combine(ApplicationData.Current.LocalFolder.Path, "OrganizationFiles");
+            Path.Combine(AppPaths.AppDataFolder, "OrganizationFiles");
 
         public static string SaveLogoForOrganization(int organizationId, string sourcePath)
         {

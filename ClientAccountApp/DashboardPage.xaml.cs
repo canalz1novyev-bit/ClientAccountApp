@@ -44,7 +44,6 @@ namespace ClientAccountApp
 
                 if (organization != null)
                 {
-                    ContractSchemaService.EnsureContractTables();
                     ClientContractService.EnsureContractsForActiveOrganization();
                 }
 
@@ -100,21 +99,13 @@ namespace ClientAccountApp
 
                 decimal unpaidAmount = unpaidInvoices.Sum(i => i.TotalWithVat);
 
-                // Заметки с напоминанием на сегодня или просроченные
-                var dueNotes = db.ClientNotes
-                    .AsNoTracking()
-                    .Where(n => n.ReminderDate.HasValue && n.ReminderDate.Value <= today)
-                    .OrderBy(n => n.ReminderDate)
-                    .ToList();
-
                 ClientsTotalTextBlock.Text = clients.Count.ToString();
                 SignaturesAttentionTextBlock.Text = attentionSignatures.Count.ToString();
                 ContractsWorkTextBlock.Text = contractsInWork.Count.ToString();
                 UnpaidInvoicesTextBlock.Text = unpaidInvoices.Count.ToString();
                 UnpaidInvoicesAmountTextBlock.Text = $"К оплате: {FormatMoney(unpaidAmount)}";
 
-                // ← dueNotes теперь передаётся в метод
-                FillAttentionPanel(attentionSignatures, contractsInWork, unpaidInvoices, dueNotes, clientMap, today);
+                FillAttentionPanel(attentionSignatures, contractsInWork, unpaidInvoices, clientMap, today);
                 FillRecentPanel(clients, invoices, contracts, clientMap);
             }
             catch (Exception ex)
@@ -131,7 +122,6 @@ namespace ClientAccountApp
             List<DigitalSignature> attentionSignatures,
             List<ClientContract> contractsInWork,
             List<Invoice> unpaidInvoices,
-            List<ClientNote> dueNotes,        // ← новый параметр
             Dictionary<int, string> clientMap,
             DateTime today)
         {
@@ -139,29 +129,6 @@ namespace ClientAccountApp
 
             bool hasItems = false;
 
-            // Напоминания из заметок — показываем первыми, они самые срочные
-            foreach (var note in dueNotes.Take(3))
-            {
-                hasItems = true;
-
-                clientMap.TryGetValue(note.ClientInfoId, out string? clientName);
-
-                int daysOverdue = (today - note.ReminderDate!.Value.Date).Days;
-
-                string reminderStatus = daysOverdue == 0
-                    ? "Напоминание на сегодня"
-                    : $"Напоминание просрочено на {daysOverdue} дн.";
-
-                // Сегодня — жёлтый, просрочено — красный
-                string color = daysOverdue == 0 ? "#7A5A22" : "#7A2E2E";
-
-                AttentionPanel.Children.Add(CreateInfoRow(
-                    clientName ?? "Клиент",
-                    $"{reminderStatus}: {note.NoteText}",
-                    color));
-            }
-
-            // ЭЦП истекающие в течение 30 дней
             foreach (var signature in attentionSignatures.Take(4))
             {
                 hasItems = true;
@@ -279,15 +246,15 @@ namespace ClientAccountApp
                 {
                     ColumnSpacing = 10,
                     ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = new GridLength(6) },
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
-                    },
+            {
+                new ColumnDefinition { Width = new GridLength(6) },
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
+            },
                     Children =
-                    {
-                        CreateAccentBar(colorHex),
-                        CreateTextStack(title, description)
-                    }
+            {
+                CreateAccentBar(colorHex),
+                CreateTextStack(title, description)
+            }
                 }
             };
         }
@@ -332,7 +299,6 @@ namespace ClientAccountApp
             Grid.SetColumn(panel, 1);
             return panel;
         }
-
         private static Brush ThemeBrush(string resourceKey, string fallbackHex)
         {
             if (Application.Current.Resources.TryGetValue(resourceKey, out object value) &&
@@ -343,7 +309,6 @@ namespace ClientAccountApp
 
             return BrushFromHex(fallbackHex);
         }
-
         private static SolidColorBrush BrushFromHex(string hex)
         {
             hex = hex.Replace("#", "");

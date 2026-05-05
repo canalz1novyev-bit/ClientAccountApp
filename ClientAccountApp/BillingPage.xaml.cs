@@ -60,8 +60,6 @@ namespace ClientAccountApp
 
         public BillingPage()
         {
-            BillingSchemaService.EnsureBillingTables();
-            InvoiceDocumentSchemaService.EnsureInvoiceDocumentTables();
             this.InitializeComponent();
             InvoiceDocumentsListView.ItemsSource = _invoiceDocuments;
             InvoicesListView.ItemsSource = _invoices;
@@ -139,7 +137,6 @@ namespace ClientAccountApp
             if (!invoiceId.HasValue)
                 return;
 
-            InvoiceDocumentSchemaService.EnsureInvoiceDocumentTables();
 
             using var db = new AppDbContext();
 

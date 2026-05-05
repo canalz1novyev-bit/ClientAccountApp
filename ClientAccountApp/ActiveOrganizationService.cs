@@ -20,17 +20,14 @@ namespace ClientAccountApp
             WriteIndented = true
         };
 
-        private static string StateFilePath => Path.Combine(
-     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-     "ClientAccountApp",
-     "active-organization.json");
+        private static string StateFilePath =>
+            Path.Combine(AppPaths.AppDataFolder, "active-organization.json");
 
         public static int? CurrentOrganizationId { get; private set; }
         public static OrganizationProfile? Current { get; private set; }
 
         public static void Initialize()
         {
-            OrganizationSchemaService.EnsureOrganizationTables();
 
             int? activeId = LoadActiveOrganizationId();
 

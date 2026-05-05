@@ -42,7 +42,6 @@ namespace ClientAccountApp
             if (_pageReady)
                 return;
 
-            ContractSchemaService.EnsureContractTables();
             ClientContractService.EnsureContractsForActiveOrganization();
 
             RestorePageState();
@@ -131,7 +130,7 @@ namespace ClientAccountApp
             LoadContracts();
         }
 
-        
+
         private void ToggleContractsViewButton_Click(object sender, RoutedEventArgs e)
         {
             SetContractsListViewMode(!_isContractsCompactView);
@@ -202,7 +201,6 @@ namespace ClientAccountApp
         {
             _items.Clear();
 
-            ContractSchemaService.EnsureContractTables();
             ClientContractService.EnsureContractsForActiveOrganization();
 
             var organization = ActiveOrganizationService.GetRequired();
@@ -342,7 +340,6 @@ namespace ClientAccountApp
 
             try
             {
-                ContractSchemaService.EnsureContractTables();
 
                 var organization = ActiveOrganizationService.GetRequired();
 
@@ -516,7 +513,6 @@ namespace ClientAccountApp
 
             try
             {
-                ContractSchemaService.EnsureContractTables();
 
                 var organization = ActiveOrganizationService.GetRequired();
 
@@ -534,7 +530,7 @@ namespace ClientAccountApp
                     organization.Id,
                     client.Id);
 
-                
+
 
                 if (string.Equals(contract.Status, "Договор подписан", StringComparison.OrdinalIgnoreCase))
                 {

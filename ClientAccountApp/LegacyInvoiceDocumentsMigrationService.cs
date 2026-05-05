@@ -18,7 +18,6 @@ namespace ClientAccountApp
     {
         public static LegacyInvoiceDocumentsMigrationResult Run()
         {
-            InvoiceDocumentSchemaService.EnsureInvoiceDocumentTables();
 
             var result = new LegacyInvoiceDocumentsMigrationResult();
 

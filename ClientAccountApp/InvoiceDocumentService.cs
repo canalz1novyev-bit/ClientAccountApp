@@ -15,7 +15,6 @@ namespace ClientAccountApp
             string relativePath,
             long fileSizeBytes)
         {
-            InvoiceDocumentSchemaService.EnsureInvoiceDocumentTables();
 
             var existing = db.InvoiceDocuments.FirstOrDefault(x =>
                 x.InvoiceId == invoice.Id &&

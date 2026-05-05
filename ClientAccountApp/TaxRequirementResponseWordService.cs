@@ -23,7 +23,7 @@ namespace ClientAccountApp
                 throw new ArgumentException("Текст ответа пустой.", nameof(responseText));
 
             string folder = Path.Combine(
-                ApplicationData.Current.LocalFolder.Path,
+                AppPaths.AppDataFolder,
                 "AiResponses");
 
             Directory.CreateDirectory(folder);
