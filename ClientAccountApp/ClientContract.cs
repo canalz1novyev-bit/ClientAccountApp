@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ClientAccountApp
 {
@@ -22,5 +23,9 @@ namespace ClientAccountApp
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        // === НОВОЕ: Навигационное свойство для счетов ===
+        public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+        // ================================================
     }
+
 }

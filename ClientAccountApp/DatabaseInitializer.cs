@@ -103,5 +103,11 @@ namespace ClientAccountApp
             SchemaHelper.EnsureColumnExistsSqlite(
                 db, "ClientNotes", "ReminderDate", "TEXT NULL");
         }
+
+        private static void EnsureInvoiceItemVatIncludedColumn(AppDbContext db)
+        {
+            SchemaHelper.EnsureColumnExistsSqlite(
+                db, "InvoiceItems", "IsVatIncluded", "INTEGER NOT NULL DEFAULT 0");
+        }
     }
 }

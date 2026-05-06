@@ -36,12 +36,34 @@ namespace ClientAccountApp
 
             public bool HasDocument { get; set; }
             public bool CanMarkPaid { get; set; }
+            public bool CanMarkIssued { get; set; }
+
+            public string DueDateText { get; set; } = "";
+
+            // Просроченный = срок прошёл, но не оплачен и не отменён
+            public bool IsOverdue { get; set; }
+            public string OverdueBadgeText { get; set; } = "";
 
             public Brush StatusBackgroundBrush { get; set; } =
                 new SolidColorBrush(ColorHelper.FromArgb(255, 47, 79, 111));
 
             public Brush StatusForegroundBrush { get; set; } =
                 new SolidColorBrush(ColorHelper.FromArgb(255, 255, 255, 255));
+
+            // Рамка карточки — красная если просрочен, обычная если нет
+            public Brush CardBorderBrush => IsOverdue
+                ? new SolidColorBrush(ColorHelper.FromArgb(255, 162, 45, 45))
+                : new SolidColorBrush(ColorHelper.FromArgb(255, 43, 49, 64));
+
+            // Visibility-свойства — без конвертеров в XAML
+            public Visibility OverdueBadgeVisibility =>
+                IsOverdue ? Visibility.Visible : Visibility.Collapsed;
+
+            public Visibility QuickPaidButtonVisibility =>
+                CanMarkPaid ? Visibility.Visible : Visibility.Collapsed;
+
+            public Visibility QuickIssuedButtonVisibility =>
+                CanMarkIssued ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private readonly ObservableCollection<BillingListItem> _invoices = new();
@@ -56,6 +78,7 @@ namespace ClientAccountApp
         private int? _selectedInvoiceItemId;
         private bool _isInvoicesCompactView = false;
         private bool _syncingInvoiceSelection = false;
+        private bool _loadingItemFromDb = false;  // флаг: загружаем строку из базы, не трогать поля
 
 
         public BillingPage()
@@ -137,6 +160,7 @@ namespace ClientAccountApp
             if (!invoiceId.HasValue)
                 return;
 
+            InvoiceDocumentSchemaService.EnsureInvoiceDocumentTables();
 
             using var db = new AppDbContext();
 
@@ -384,6 +408,7 @@ namespace ClientAccountApp
                 "Черновик" => new SolidColorBrush(ColorHelper.FromArgb(255, 47, 79, 111)),
                 "Выставлен" => new SolidColorBrush(ColorHelper.FromArgb(255, 140, 110, 40)),
                 "Оплачен" => new SolidColorBrush(ColorHelper.FromArgb(255, 58, 110, 72)),
+                "Просрочен" => new SolidColorBrush(ColorHelper.FromArgb(255, 162, 45, 45)),
                 "Отменен" => new SolidColorBrush(ColorHelper.FromArgb(255, 100, 55, 55)),
                 "Отменён" => new SolidColorBrush(ColorHelper.FromArgb(255, 100, 55, 55)),
                 _ => new SolidColorBrush(ColorHelper.FromArgb(255, 80, 80, 80))
@@ -998,10 +1023,9 @@ namespace ClientAccountApp
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 // Если не получилось определить через базу — вернём нули.
-                AppLogger.LogError("BillingPage.TryFindInvoiceIdentity", ex);
             }
 
             return (0, 0);
@@ -1101,10 +1125,9 @@ namespace ClientAccountApp
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 // Если не получилось определить клиента через базу — вернём 0.
-                AppLogger.LogError("BillingPage.TryFindClientIdForInvoice", ex);
             }
 
             return 0;
@@ -1296,10 +1319,9 @@ namespace ClientAccountApp
                 else
                     property.SetValue(target, value);
             }
-            catch (Exception ex)
+            catch
             {
                 // Если свойство есть, но тип не совпал — не ломаем генерацию документа.
-                AppLogger.LogWarning("BillingPage.SetPropertyValue", $"Не удалось установить свойство: {ex.Message}");
             }
         }
 
@@ -1432,10 +1454,17 @@ namespace ClientAccountApp
 
                     _syncingInvoiceSelection = false;
 
-                    if (compact)
-                        InvoicesCompactListView.ScrollIntoView(selectedItem);
-                    else
-                        InvoicesListView.ScrollIntoView(selectedItem);
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        try
+                        {
+                            if (compact)
+                                InvoicesCompactListView.ScrollIntoView(selectedItem);
+                            else
+                                InvoicesListView.ScrollIntoView(selectedItem);
+                        }
+                        catch { }
+                    });
                 }
             }
         }
@@ -2284,6 +2313,9 @@ namespace ClientAccountApp
 
         private void InvoiceServiceCatalogComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // Если загружаем данные из базы — не перезаписываем поля, это уже сделано
+            if (_loadingItemFromDb) return;
+
             if (InvoiceServiceCatalogComboBox.SelectedItem is not ServiceCatalog service)
                 return;
 
@@ -2320,16 +2352,21 @@ namespace ClientAccountApp
                 if (itemToSelect != null)
                 {
                     _syncingInvoiceSelection = true;
-
                     InvoicesListView.SelectedItem = itemToSelect;
                     InvoicesCompactListView.SelectedItem = itemToSelect;
-
                     _syncingInvoiceSelection = false;
 
-                    if (_isInvoicesCompactView)
-                        InvoicesCompactListView.ScrollIntoView(itemToSelect);
-                    else
-                        InvoicesListView.ScrollIntoView(itemToSelect);
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        try
+                        {
+                            if (_isInvoicesCompactView)
+                                InvoicesCompactListView.ScrollIntoView(itemToSelect);
+                            else
+                                InvoicesListView.ScrollIntoView(itemToSelect);
+                        }
+                        catch { }
+                    });
                 }
             }
         }
@@ -2345,6 +2382,19 @@ namespace ClientAccountApp
             InvoiceItemUnitTextBox.Text = "усл.";
             InvoiceItemUnitPriceTextBox.Text = "0";
             InvoiceItemVatRateTextBox.Text = "0";
+            InvoiceItemVatModeToggle.IsChecked = false;
+            UpdateVatModeLabel();
+        }
+
+        private void UpdateVatModeLabel()
+        {
+            bool isIncluded = InvoiceItemVatModeToggle.IsChecked == true;
+            InvoiceItemVatModeLabel.Text = isIncluded ? "Выделить" : "Начислить";
+        }
+
+        private void InvoiceItemVatModeToggle_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateVatModeLabel();
         }
 
         private void UpdateInvoiceTotalsFromItems()
@@ -2384,15 +2434,29 @@ namespace ClientAccountApp
                 return;
 
             _selectedInvoiceItemId = selectedItem.Id;
-            InvoiceServiceCatalogComboBox.SelectedItem =
-    selectedItem.ServiceCatalogId.HasValue
-        ? _servicesCatalog.FirstOrDefault(x => x.Id == selectedItem.ServiceCatalogId.Value)
-        : null;
+
+            // Восстанавливаем выбор типовой услуги из справочника
+            // Флаг _loadingItemFromDb предотвращает перезапись полей из SelectionChanged
+            _loadingItemFromDb = true;
+            if (selectedItem.ServiceCatalogId.HasValue)
+            {
+                var catalogItem = _servicesCatalog.FirstOrDefault(x => x.Id == selectedItem.ServiceCatalogId.Value);
+                InvoiceServiceCatalogComboBox.SelectedItem = catalogItem;
+            }
+            else
+            {
+                InvoiceServiceCatalogComboBox.SelectedItem = null;
+            }
+            _loadingItemFromDb = false;
             InvoiceItemNameTextBox.Text = selectedItem.ServiceName;
             InvoiceItemQuantityTextBox.Text = selectedItem.Quantity.ToString();
             InvoiceItemUnitTextBox.Text = selectedItem.Unit;
             InvoiceItemUnitPriceTextBox.Text = selectedItem.UnitPrice.ToString();
             InvoiceItemVatRateTextBox.Text = selectedItem.VatRate.ToString();
+
+            // Восстанавливаем режим НДС
+            InvoiceItemVatModeToggle.IsChecked = selectedItem.IsVatIncluded;
+            UpdateVatModeLabel();
         }
 
         private void NewInvoiceItemButton_Click(object sender, RoutedEventArgs e)
@@ -2508,26 +2572,70 @@ namespace ClientAccountApp
                 }
             }
             item.ServiceCatalogId = InvoiceServiceCatalogComboBox.SelectedItem is ServiceCatalog selectedService
-    ? selectedService.Id
-    : null;
+                ? selectedService.Id
+                : null;
             item.ServiceName = serviceName;
             item.Quantity = quantity;
             item.Unit = unit;
             item.UnitPrice = unitPrice;
             item.VatRate = vatRate;
 
-            item.AmountWithoutVat = Math.Round(quantity * unitPrice, 2, MidpointRounding.AwayFromZero);
-            item.VatAmount = Math.Round(item.AmountWithoutVat * vatRate / 100m, 2, MidpointRounding.AwayFromZero);
-            item.AmountWithVat = Math.Round(item.AmountWithoutVat + item.VatAmount, 2, MidpointRounding.AwayFromZero);
+            // Определяем режим НДС из переключателя
+            bool isVatIncluded = InvoiceItemVatModeToggle.IsChecked == true;
+            item.IsVatIncluded = isVatIncluded;
+
+            if (isVatIncluded)
+            {
+                // "Выделить": цена уже включает НДС
+                // AmountWithVat = quantity * unitPrice
+                // AmountWithoutVat = AmountWithVat / (1 + vatRate/100)
+                // VatAmount = AmountWithVat - AmountWithoutVat
+                decimal amountWithVat = Math.Round(quantity * unitPrice, 2, MidpointRounding.AwayFromZero);
+                decimal amountWithoutVat = vatRate > 0
+                    ? Math.Round(amountWithVat / (1m + vatRate / 100m), 2, MidpointRounding.AwayFromZero)
+                    : amountWithVat;
+                item.AmountWithVat = amountWithVat;
+                item.AmountWithoutVat = amountWithoutVat;
+                item.VatAmount = Math.Round(amountWithVat - amountWithoutVat, 2, MidpointRounding.AwayFromZero);
+            }
+            else
+            {
+                // "Начислить": НДС добавляется сверх цены
+                item.AmountWithoutVat = Math.Round(quantity * unitPrice, 2, MidpointRounding.AwayFromZero);
+                item.VatAmount = Math.Round(item.AmountWithoutVat * vatRate / 100m, 2, MidpointRounding.AwayFromZero);
+                item.AmountWithVat = Math.Round(item.AmountWithoutVat + item.VatAmount, 2, MidpointRounding.AwayFromZero);
+            }
 
             db.SaveChanges();
 
             RecalculateInvoiceTotalsInDatabase(_selectedInvoiceId.Value);
-            LoadInvoiceItems(_selectedInvoiceId.Value, item.Id);
-            LoadInvoices(_selectedInvoiceId.Value);
+
+            // Загружаем строки БЕЗ selectItemId — не выделяем только что сохранённую строку.
+            // Это предотвращает цепочку SelectionChanged → LoadInvoiceIntoForm
+            // которая мешала добавлять вторую и последующие строки.
+            LoadInvoiceItems(_selectedInvoiceId.Value);
+
+            // Обновляем реестр счетов без передачи selectInvoiceId
+            // чтобы не вызывать LoadInvoiceIntoForm через SelectionChanged.
+            UpdateBillingStats();
+            var currentBillingItem = _invoices.FirstOrDefault(x => x.InvoiceId == _selectedInvoiceId.Value);
+            if (currentBillingItem != null)
+            {
+                // Обновляем только суммовые поля карточки в реестре
+                using var dbRefresh = new AppDbContext();
+                var refreshed = dbRefresh.Invoices.AsNoTracking()
+                    .FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
+                if (refreshed != null)
+                {
+                    currentBillingItem.TotalText = FormatMoney(refreshed.TotalWithVat);
+                }
+            }
+
+            // Сбрасываем редактор — следующее нажатие "Сохранить" создаст новую строку
+            ClearInvoiceItemsEditor();
 
             BillingStatusTextBlock.Text = isNew
-                ? "Строка услуги добавлена."
+                ? "Строка услуги добавлена. Можно добавить ещё одну."
                 : "Строка услуги обновлена.";
         }
 
@@ -2601,8 +2709,105 @@ namespace ClientAccountApp
             }
         }
 
+        private void UpdateBillingStats()
+        {
+            try
+            {
+                using var db = new AppDbContext();
+                int organizationId = GetRequiredActiveOrganizationId();
+
+                var invoices = db.Invoices
+                    .AsNoTracking()
+                    .Where(x => x.OrganizationProfileId == organizationId)
+                    .Select(x => new { x.Status, x.TotalWithVat, x.DueDate })
+                    .ToList();
+
+                DateTime today = DateTime.Today;
+
+                int total = invoices.Count;
+
+                decimal paid = invoices
+                    .Where(x => string.Equals(x.Status, InvoiceStatusNames.Paid, StringComparison.OrdinalIgnoreCase))
+                    .Sum(x => x.TotalWithVat);
+
+                decimal issued = invoices
+                    .Where(x => string.Equals(x.Status, InvoiceStatusNames.Issued, StringComparison.OrdinalIgnoreCase))
+                    .Sum(x => x.TotalWithVat);
+
+                decimal overdue = invoices
+                    .Where(x =>
+                        !string.Equals(x.Status, InvoiceStatusNames.Paid, StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(x.Status, InvoiceStatusNames.Cancelled, StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(x.Status, "Отменён", StringComparison.OrdinalIgnoreCase) &&
+                        x.DueDate.HasValue && x.DueDate.Value.Date < today)
+                    .Sum(x => x.TotalWithVat);
+
+                StatTotalCountTextBlock.Text = total.ToString();
+                StatPaidTextBlock.Text = FormatMoney(paid);
+                StatIssuedTextBlock.Text = FormatMoney(issued);
+                StatOverdueTextBlock.Text = overdue > 0 ? FormatMoney(overdue) : "—";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("BillingPage.UpdateBillingStats", ex);
+            }
+        }
+
+        private void QuickMarkPaidButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement el || el.DataContext is not BillingListItem item)
+                return;
+
+            try
+            {
+                using var db = new AppDbContext();
+                var invoice = db.Invoices.FirstOrDefault(x => x.Id == item.InvoiceId);
+                if (invoice == null) return;
+
+                invoice.Status = InvoiceStatusNames.Paid;
+                invoice.UpdatedAt = DateTime.Now;
+                db.SaveChanges();
+
+                LoadInvoices(item.InvoiceId);
+                BillingStatusTextBlock.Text = $"Счёт {item.InvoiceNumber} отмечен как оплаченный.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("BillingPage.QuickMarkPaid", ex);
+                BillingStatusTextBlock.Text = "Ошибка при сохранении статуса.";
+            }
+        }
+
+        private void QuickMarkIssuedButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement el || el.DataContext is not BillingListItem item)
+                return;
+
+            try
+            {
+                using var db = new AppDbContext();
+                var invoice = db.Invoices.FirstOrDefault(x => x.Id == item.InvoiceId);
+                if (invoice == null) return;
+
+                invoice.Status = InvoiceStatusNames.Issued;
+                invoice.UpdatedAt = DateTime.Now;
+                db.SaveChanges();
+
+                LoadInvoices(item.InvoiceId);
+                BillingStatusTextBlock.Text = $"Счёт {item.InvoiceNumber} отмечен как выставленный.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("BillingPage.QuickMarkIssued", ex);
+                BillingStatusTextBlock.Text = "Ошибка при сохранении статуса.";
+            }
+        }
+
+
         private void LoadInvoices(int? selectInvoiceId = null)
         {
+            UpdateBillingStats();
+
             _invoices.Clear();
 
             using var db = new AppDbContext();
@@ -2726,6 +2931,19 @@ namespace ClientAccountApp
                     documentStateText = "Документы не сформированы";
                 }
 
+                bool isPaidOrCancelled =
+                    string.Equals(status, InvoiceStatusNames.Paid, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(status, InvoiceStatusNames.Cancelled, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(status, "Отменён", StringComparison.OrdinalIgnoreCase);
+
+                bool isOverdue = !isPaidOrCancelled &&
+                    invoice.DueDate.HasValue &&
+                    invoice.DueDate.Value.Date < DateTime.Today;
+
+                int overdueDays = isOverdue
+                    ? (DateTime.Today - invoice.DueDate!.Value.Date).Days
+                    : 0;
+
                 items.Add(new BillingListItem
                 {
                     InvoiceId = invoice.Id,
@@ -2733,16 +2951,22 @@ namespace ClientAccountApp
                     InvoiceNumber = invoiceNumber,
                     ClientName = clientName,
                     InvoiceDateText = invoice.InvoiceDate.ToString("dd.MM.yyyy"),
+                    DueDateText = invoice.DueDate.HasValue
+                        ? $"до {invoice.DueDate.Value:dd.MM.yyyy}"
+                        : "",
                     Status = status,
                     SourceType = sourceType,
                     PeriodText = periodText,
                     TotalText = FormatMoney(invoice.TotalWithVat),
                     HasDocument = hasDocument,
                     DocumentStateText = documentStateText,
-                    CanMarkPaid =
-                        !string.Equals(status, InvoiceStatusNames.Paid, StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(status, InvoiceStatusNames.Cancelled, StringComparison.OrdinalIgnoreCase),
-                    StatusBackgroundBrush = GetInvoiceStatusBrush(status)
+                    IsOverdue = isOverdue,
+                    OverdueBadgeText = isOverdue ? $"Просрочен {overdueDays} дн." : "",
+                    CanMarkPaid = !isPaidOrCancelled,
+                    CanMarkIssued =
+                        !string.Equals(status, InvoiceStatusNames.Issued, StringComparison.OrdinalIgnoreCase) &&
+                        !isPaidOrCancelled,
+                    StatusBackgroundBrush = GetInvoiceStatusBrush(isOverdue ? "Просрочен" : status)
                 });
             }
 
@@ -2758,7 +2982,15 @@ namespace ClientAccountApp
                 if (itemToSelect != null)
                 {
                     InvoicesListView.SelectedItem = itemToSelect;
-                    InvoicesListView.ScrollIntoView(itemToSelect);
+                    InvoicesCompactListView.SelectedItem = itemToSelect;
+
+                    // ScrollIntoView нужно откладывать — WinUI 3 ещё не успел
+                    // отрисовать новые элементы, прямой вызов даёт COMException
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        try { InvoicesListView.ScrollIntoView(itemToSelect); } catch { }
+                        try { InvoicesCompactListView.ScrollIntoView(itemToSelect); } catch { }
+                    });
                 }
             }
 
@@ -2802,6 +3034,17 @@ namespace ClientAccountApp
             UpdateInvoiceTotalsFromItems();
             UpdateInvoiceDocumentActionsState();
             LoadInvoiceDocuments(null);
+        }
+
+
+        private void InvoiceClientComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Если уже загружен счёт — не трогаем, смена клиента идёт через SaveInvoiceButton
+            // Если счёт новый (_selectedInvoiceId == null) — просто обновляем отображение
+            if (!_pageReady) return;
+            if (_selectedInvoiceId.HasValue) return;
+
+            // Новый счёт: автообновляем номер при смене клиента (ничего не ломаем)
         }
 
         private string GenerateNextInvoiceNumber()
@@ -3025,18 +3268,15 @@ namespace ClientAccountApp
             invoice.SourceType = InvoiceSourceTypeNames.Manual;
             invoice.Comment = InvoiceCommentTextBox.Text.Trim();
 
-            invoice.TotalWithoutVat = 0m;
-            invoice.VatAmount = 0m;
-            invoice.TotalWithVat = 0m;
-
             invoice.UpdatedAt = DateTime.Now;
 
             db.SaveChanges();
 
             _selectedInvoiceId = invoice.Id;
 
-
-
+            // Пересчитываем итоги из уже существующих строк услуг
+            // (не обнуляем — иначе теряем суммы при редактировании шапки)
+            RecalculateInvoiceTotalsInDatabase(invoice.Id);
 
             LoadInvoices(invoice.Id);
             LoadInvoiceIntoForm(invoice.Id);
@@ -3063,6 +3303,14 @@ namespace ClientAccountApp
                 BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных.";
                 return;
             }
+
+            // Удаляем в правильном порядке чтобы не нарушать внешние ключи:
+            // сначала InvoiceDocuments, потом InvoiceItems, потом Invoice
+            var documents = db.InvoiceDocuments
+                .Where(x => x.InvoiceId == invoice.Id)
+                .ToList();
+
+            db.InvoiceDocuments.RemoveRange(documents);
 
             var items = db.InvoiceItems
                 .Where(x => x.InvoiceId == invoice.Id)

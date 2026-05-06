@@ -11,6 +11,8 @@ namespace ClientAccountApp
         public ClientInfo? Client { get; set; }
         public int? OrganizationProfileId { get; set; }
         public OrganizationProfile? OrganizationProfile { get; set; }
+        public int? ClientContractId { get; set; }
+        public ClientContract? ClientContract { get; set; }
 
         public string InvoiceNumber { get; set; } = "";
         public DateTime InvoiceDate { get; set; } = DateTime.Today;

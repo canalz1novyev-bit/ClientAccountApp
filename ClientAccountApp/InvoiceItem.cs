@@ -17,6 +17,10 @@
         public decimal UnitPrice { get; set; }
         public decimal VatRate { get; set; }
 
+        // true = НДС выделяется из цены (цена включает НДС)
+        // false = НДС начисляется сверх (по умолчанию)
+        public bool IsVatIncluded { get; set; } = false;
+
         public decimal AmountWithoutVat { get; set; }
         public decimal VatAmount { get; set; }
         public decimal AmountWithVat { get; set; }

@@ -47,6 +47,20 @@ namespace ClientAccountApp
 
             var organization = ResolveOrganization(db, invoice);
 
+            // Ищем подписанный договор с этим клиентом для текущей организации
+            var signedContract = db.ClientContracts
+                .AsNoTracking()
+                .Where(c =>
+                    c.ClientInfoId == client.Id &&
+                    c.OrganizationProfileId == invoice.OrganizationProfileId &&
+                    string.Equals(c.Status, "Договор подписан", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(c => c.SignedAt)
+                .FirstOrDefault();
+
+            string contractBasis = signedContract != null && !string.IsNullOrWhiteSpace(signedContract.ContractNumber)
+                ? $"Договор № {signedContract.ContractNumber} от {(signedContract.SignedAt.HasValue ? signedContract.SignedAt.Value.ToString("dd.MM.yyyy") : signedContract.GeneratedAt?.ToString("dd.MM.yyyy") ?? "—")}"
+                : null;
+
             var items = db.InvoiceItems
                 .AsNoTracking()
                 .Where(x => x.InvoiceId == invoice.Id)
@@ -107,6 +121,18 @@ namespace ClientAccountApp
                 JustificationValues.Left,
                 80,
                 80));
+
+            if (!string.IsNullOrWhiteSpace(contractBasis))
+            {
+                body.Append(CreateParagraph(
+                    $"Основание: {contractBasis}",
+                    false,
+                    11,
+                    "374151",
+                    JustificationValues.Left,
+                    80,
+                    80));
+            }
 
             if (!string.IsNullOrWhiteSpace(invoice.Comment))
             {
@@ -248,9 +274,9 @@ namespace ClientAccountApp
             table.Append(row);
             return table;
         }
-        
 
-        
+
+
         private static Table CreateItemsTable(List<InvoiceItem> items)
         {
             var table = CreateBaseTable();
@@ -621,7 +647,7 @@ namespace ClientAccountApp
                 ? "Клиент без названия"
                 : client.Name.Trim();
         }
-       
+
         private static string FormatMoney(decimal value)
         {
             return value.ToString("N2", RuCulture) + " ₽";

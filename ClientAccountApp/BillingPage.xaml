@@ -10,6 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -27,7 +28,69 @@
                 TextWrapping="Wrap"/>
         </StackPanel>
 
-        <Grid Grid.Row="1" ColumnSpacing="14">
+        <!-- Карточки статистики -->
+        <Grid Grid.Row="1" ColumnSpacing="10" Margin="0,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Всего счетов" FontSize="12"
+                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatTotalCountTextBlock" Text="—"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Оплачено" FontSize="12"
+                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatPaidTextBlock" Text="—"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="#5A9E6E"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2"
+                    Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Выставлено" FontSize="12"
+                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatIssuedTextBlock" Text="—"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="#D7BA7D"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="3"
+                    Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="#4A2020"
+                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Просрочено" FontSize="12"
+                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatOverdueTextBlock" Text="—"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="#E24B4A"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnSpacing="14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="180"/>
@@ -75,7 +138,7 @@
     Click="NewInvoiceButton_Click"/>
         </Grid>
 
-        <Grid Grid.Row="2" ColumnSpacing="20">
+        <Grid Grid.Row="3" ColumnSpacing="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.35*"/>
                 <ColumnDefinition Width="1*"/>
@@ -164,7 +227,7 @@
                                 <DataTemplate>
                                     <Border
                     Background="{StaticResource NiatecSurfaceAltBrush}"
-                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                    BorderBrush="{Binding CardBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="10"
@@ -172,6 +235,8 @@
 
                                         <Grid RowSpacing="6" ColumnSpacing="10">
                                             <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
@@ -272,6 +337,50 @@
                                 HorizontalAlignment="Right"
                                 TextTrimming="CharacterEllipsis"/>
                                             </Grid>
+
+                                            <!-- Бейдж просрочки -->
+                                            <Border
+                                Grid.Row="3"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Background="#3A1A1A"
+                                CornerRadius="6"
+                                Padding="8,3"
+                                Margin="0,2,0,0"
+                                HorizontalAlignment="Left"
+                                Visibility="{Binding OverdueBadgeVisibility}">
+                                                <TextBlock
+                                    Text="{Binding OverdueBadgeText}"
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Foreground="#E24B4A"/>
+                                            </Border>
+
+                                            <!-- Быстрые кнопки смены статуса -->
+                                            <StackPanel
+                                Grid.Row="4"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Orientation="Horizontal"
+                                Spacing="6"
+                                Margin="0,4,0,0">
+
+                                                <Button
+                                    Content="✓ Оплачен"
+                                    FontSize="11"
+                                    Height="28"
+                                    Padding="10,0"
+                                    Click="QuickMarkPaidButton_Click"
+                                    Visibility="{Binding QuickPaidButtonVisibility}"/>
+
+                                                <Button
+                                    Content="Выставить"
+                                    FontSize="11"
+                                    Height="28"
+                                    Padding="10,0"
+                                    Click="QuickMarkIssuedButton_Click"
+                                    Visibility="{Binding QuickIssuedButtonVisibility}"/>
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -456,7 +565,8 @@
                                     <ComboBox
                             x:Name="InvoiceClientComboBox"
                             Header="Клиент"
-                            DisplayMemberPath="Name"/>
+                            DisplayMemberPath="Name"
+                            SelectionChanged="InvoiceClientComboBox_SelectionChanged"/>
 
                                     <TextBox
                             x:Name="InvoiceNumberTextBox"
@@ -674,6 +784,47 @@
                                         Header="НДС %"
                                         Text="0"/>
                                             </Grid>
+
+                                            <!-- Переключатель режима НДС -->
+                                            <Border
+                                    Background="{StaticResource NiatecBackgroundBrush}"
+                                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="10,8">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <ToggleButton
+                                        x:Name="InvoiceItemVatModeToggle"
+                                        Grid.Column="0"
+                                        Width="100"
+                                        Height="32"
+                                        Click="InvoiceItemVatModeToggle_Click">
+                                                        <TextBlock
+                                            x:Name="InvoiceItemVatModeLabel"
+                                            Text="Начислить"
+                                            FontSize="12"
+                                            FontWeight="SemiBold"/>
+                                                    </ToggleButton>
+
+                                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                                        <TextBlock
+                                            Text="Режим НДС"
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                                        <TextBlock
+                                            Text="Начислить — НДС добавляется к цене · Выделить — НДС включён в цену"
+                                            FontSize="11"
+                                            Foreground="{StaticResource NiatecTextMutedBrush}"
+                                            TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
 
                                             <Grid ColumnSpacing="8">
                                                 <Grid.ColumnDefinitions>
@@ -967,7 +1118,7 @@
             <StackPanel Visibility="Collapsed">
 
                 <!-- Документы по счету -->
-                
+
                 <!-- Справочник услуг -->
                 <ListView
         x:Name="ServicesCatalogListView"
