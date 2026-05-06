@@ -83,7 +83,7 @@ namespace ClientAccountApp
 
         public BillingPage()
         {
-            this.InitializeComponent();
+this.InitializeComponent();
             InvoiceDocumentsListView.ItemsSource = _invoiceDocuments;
             InvoicesListView.ItemsSource = _invoices;
             InvoicesCompactListView.ItemsSource = _invoices;
@@ -2132,9 +2132,20 @@ namespace ClientAccountApp
 
             BillingStatusTextBlock.Text = $"Создана копия счета {newInvoice.InvoiceNumber}.";
         }
+        protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            // Перезагружаем справочник при каждом переходе на страницу
+            // чтобы подхватывать услуги добавленные через "Справочник услуг"
+            if (_pageReady)
+                LoadServicesCatalog();
+        }
+
         private void BillingPage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadClients();
+            // Перезагружаем справочник при каждом открытии страницы
+            // чтобы отображались услуги добавленные через страницу "Справочник услуг"
             LoadServicesCatalog();
 
             AttachLegacyInvoicesToCurrentOrganization();
@@ -2384,6 +2395,47 @@ namespace ClientAccountApp
             InvoiceItemVatRateTextBox.Text = "0";
             InvoiceItemVatModeToggle.IsChecked = false;
             UpdateVatModeLabel();
+            UpdateItemEditorMode(isEditing: false);
+        }
+
+        private void UpdateItemEditorMode(bool isEditing)
+        {
+            if (SaveInvoiceItemMainButton == null) return;
+
+            if (isEditing)
+            {
+                SaveInvoiceItemMainButton.Content = "Сохранить изменения";
+                if (DeleteInvoiceItemMainButton != null)
+                    DeleteInvoiceItemMainButton.IsEnabled = true;
+                if (InvoiceItemEditorModeLabel != null)
+                    InvoiceItemEditorModeLabel.Text = "✎ Редактирование";
+                if (InvoiceItemEditorHint != null)
+                    InvoiceItemEditorHint.Text = "Измени поля и нажми «Сохранить изменения»";
+                if (InvoiceItemEditorModeBorder != null)
+                {
+                    InvoiceItemEditorModeBorder.Background =
+                        new SolidColorBrush(ColorHelper.FromArgb(255, 26, 26, 10));
+                    InvoiceItemEditorModeBorder.BorderBrush =
+                        new SolidColorBrush(ColorHelper.FromArgb(255, 74, 74, 10));
+                }
+            }
+            else
+            {
+                SaveInvoiceItemMainButton.Content = "Добавить строку";
+                if (DeleteInvoiceItemMainButton != null)
+                    DeleteInvoiceItemMainButton.IsEnabled = false;
+                if (InvoiceItemEditorModeLabel != null)
+                    InvoiceItemEditorModeLabel.Text = "+ Новая строка";
+                if (InvoiceItemEditorHint != null)
+                    InvoiceItemEditorHint.Text = "Заполни поля и нажми «Добавить строку»";
+                if (InvoiceItemEditorModeBorder != null)
+                {
+                    InvoiceItemEditorModeBorder.Background =
+                        new SolidColorBrush(ColorHelper.FromArgb(255, 10, 26, 10));
+                    InvoiceItemEditorModeBorder.BorderBrush =
+                        new SolidColorBrush(ColorHelper.FromArgb(255, 10, 74, 10));
+                }
+            }
         }
 
         private void UpdateVatModeLabel()
@@ -2434,6 +2486,7 @@ namespace ClientAccountApp
                 return;
 
             _selectedInvoiceItemId = selectedItem.Id;
+            UpdateItemEditorMode(isEditing: true);
 
             // Восстанавливаем выбор типовой услуги из справочника
             // Флаг _loadingItemFromDb предотвращает перезапись полей из SelectionChanged
@@ -2462,7 +2515,8 @@ namespace ClientAccountApp
         private void NewInvoiceItemButton_Click(object sender, RoutedEventArgs e)
         {
             ClearInvoiceItemsEditor();
-            BillingStatusTextBlock.Text = "Заполни строку услуги и сохрани ее.";
+            UpdateItemEditorMode(isEditing: false);
+            BillingStatusTextBlock.Text = "Заполни поля и нажми «Добавить строку».";
         }
         private bool EnsureInvoiceDraftExists()
         {

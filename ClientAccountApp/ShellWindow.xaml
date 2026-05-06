@@ -59,6 +59,14 @@
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
 
+            <NavigationViewItem
+    Tag="catalog"
+    Content="Справочник услуг">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="List"/>
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
             <StackPanel

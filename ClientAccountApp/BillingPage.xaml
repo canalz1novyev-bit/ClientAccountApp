@@ -826,6 +826,42 @@
                                                 </Grid>
                                             </Border>
 
+                                            <!-- Индикатор режима редактора -->
+                                            <Border
+                                    x:Name="InvoiceItemEditorModeBorder"
+                                    Background="#1A2A1A"
+                                    BorderBrush="#2A4A2A"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="10,6">
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border
+                                        Grid.Column="0"
+                                        Background="#2A5A2A"
+                                        CornerRadius="4"
+                                        Padding="6,2">
+                                                        <TextBlock
+                                            x:Name="InvoiceItemEditorModeLabel"
+                                            Text="+ Новая строка"
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Foreground="#7AE07A"/>
+                                                    </Border>
+                                                    <TextBlock
+                                        Grid.Column="1"
+                                        x:Name="InvoiceItemEditorHint"
+                                        Text="Заполни поля и нажми «Добавить строку»"
+                                        FontSize="11"
+                                        Foreground="#6A9A6A"
+                                        VerticalAlignment="Center"
+                                        TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </Border>
+
                                             <Grid ColumnSpacing="8">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
@@ -834,18 +870,19 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <Button
+                                        x:Name="SaveInvoiceItemMainButton"
                                         Grid.Column="0"
-                                        Content="Новая строка"
-                                        Click="NewInvoiceItemButton_Click"/>
-
-                                                <Button
-                                        Grid.Column="1"
-                                        Content="Сохранить"
+                                        Grid.ColumnSpan="2"
+                                        Content="Добавить строку"
+                                        Style="{StaticResource NiatecPrimaryButtonStyle}"
                                         Click="SaveInvoiceItemButton_Click"/>
 
                                                 <Button
+                                        x:Name="DeleteInvoiceItemMainButton"
                                         Grid.Column="2"
                                         Content="Удалить"
+                                        Style="{StaticResource NiatecDangerButtonStyle}"
+                                        IsEnabled="False"
                                         Click="DeleteInvoiceItemButton_Click"/>
                                             </Grid>
                                         </StackPanel>

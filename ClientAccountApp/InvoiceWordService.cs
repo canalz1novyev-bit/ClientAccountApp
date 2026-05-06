@@ -48,12 +48,15 @@ namespace ClientAccountApp
             var organization = ResolveOrganization(db, invoice);
 
             // Ищем подписанный договор с этим клиентом для текущей организации
+            // AsEnumerable() переносит фильтрацию статуса в память —
+            // EF Core не поддерживает string.Equals с StringComparison в SQL
             var signedContract = db.ClientContracts
                 .AsNoTracking()
                 .Where(c =>
                     c.ClientInfoId == client.Id &&
-                    c.OrganizationProfileId == invoice.OrganizationProfileId &&
-                    string.Equals(c.Status, "Договор подписан", StringComparison.OrdinalIgnoreCase))
+                    c.OrganizationProfileId == invoice.OrganizationProfileId)
+                .AsEnumerable()
+                .Where(c => string.Equals(c.Status, "Договор подписан", StringComparison.OrdinalIgnoreCase))
                 .OrderByDescending(c => c.SignedAt)
                 .FirstOrDefault();
 

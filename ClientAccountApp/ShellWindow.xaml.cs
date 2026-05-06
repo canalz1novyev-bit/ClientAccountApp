@@ -193,6 +193,7 @@ namespace ClientAccountApp
                 "problem-signatures" => typeof(ProblemSignaturesPage),
                 "tools" => typeof(ToolsPage),
                 "billing" => typeof(BillingPage),
+                "catalog" => typeof(ServiceCatalogPage),
                 _ => typeof(DashboardPage)
             };
 
