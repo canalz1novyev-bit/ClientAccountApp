@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="ClientAccountApp.BillingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="16">
+    <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -15,77 +15,44 @@
         </Grid.RowDefinitions>
 
         <StackPanel Spacing="4">
-            <TextBlock
-                Text="Начисления"
-                FontSize="30"
-                FontWeight="SemiBold"
-                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-            <TextBlock
-                Text="Реестр счетов, ручное выставление и будущие автоначисления"
-                FontSize="13"
-                Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                TextWrapping="Wrap"/>
+            <TextBlock Text="Начисления" FontSize="30" FontWeight="SemiBold"
+                       Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+            <TextBlock Text="Реестр счетов, ручное выставление и будущие автоначисления"
+                       FontSize="13" Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
         </StackPanel>
 
-        <!-- Карточки статистики -->
-        <Grid Grid.Row="1" ColumnSpacing="10" Margin="0,0,0,0">
+        <Grid Grid.Row="1" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0"
-                    Background="{StaticResource NiatecSurfaceAltBrush}"
-                    BorderBrush="{StaticResource NiatecBorderBrush}"
-                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+            <Border Grid.Column="0" Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
-                    <TextBlock Text="Всего счетов" FontSize="12"
-                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatTotalCountTextBlock" Text="—"
-                               FontSize="20" FontWeight="SemiBold"
+                    <TextBlock Text="Всего счетов" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatTotalCountTextBlock" Text="—" FontSize="20" FontWeight="SemiBold"
                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                 </StackPanel>
             </Border>
-
-            <Border Grid.Column="1"
-                    Background="{StaticResource NiatecSurfaceAltBrush}"
-                    BorderBrush="{StaticResource NiatecBorderBrush}"
-                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+            <Border Grid.Column="1" Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
-                    <TextBlock Text="Оплачено" FontSize="12"
-                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatPaidTextBlock" Text="—"
-                               FontSize="20" FontWeight="SemiBold"
-                               Foreground="#5A9E6E"/>
+                    <TextBlock Text="Оплачено" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatPaidTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="#5A9E6E"/>
                 </StackPanel>
             </Border>
-
-            <Border Grid.Column="2"
-                    Background="{StaticResource NiatecSurfaceAltBrush}"
-                    BorderBrush="{StaticResource NiatecBorderBrush}"
-                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+            <Border Grid.Column="2" Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
-                    <TextBlock Text="Выставлено" FontSize="12"
-                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatIssuedTextBlock" Text="—"
-                               FontSize="20" FontWeight="SemiBold"
-                               Foreground="#D7BA7D"/>
+                    <TextBlock Text="Выставлено" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatIssuedTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="#D7BA7D"/>
                 </StackPanel>
             </Border>
-
-            <Border Grid.Column="3"
-                    Background="{StaticResource NiatecSurfaceAltBrush}"
-                    BorderBrush="#4A2020"
-                    BorderThickness="1" CornerRadius="12" Padding="12,10">
+            <Border Grid.Column="3" Background="{StaticResource NiatecSurfaceAltBrush}"
+                    BorderBrush="#4A2020" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
-                    <TextBlock Text="Просрочено" FontSize="12"
-                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatOverdueTextBlock" Text="—"
-                               FontSize="20" FontWeight="SemiBold"
-                               Foreground="#E24B4A"/>
+                    <TextBlock Text="Просрочено" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                    <TextBlock x:Name="StatOverdueTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="#E24B4A"/>
                 </StackPanel>
             </Border>
         </Grid>
@@ -97,123 +64,64 @@
                 <ColumnDefinition Width="180"/>
                 <ColumnDefinition Width="160"/>
             </Grid.ColumnDefinitions>
-
-            <TextBox
-                x:Name="BillingSearchTextBox"
-                Grid.Column="0"
-                Header="Поиск"
-                PlaceholderText="Поиск по клиенту, номеру счета, периоду"
-                TextChanged="BillingSearchTextBox_TextChanged"/>
-
-            <ComboBox
-                x:Name="BillingStatusFilterComboBox"
-                Grid.Column="1"
-                Header="Статус"
-                SelectedIndex="0"
-                SelectionChanged="BillingStatusFilterComboBox_SelectionChanged">
+            <TextBox x:Name="BillingSearchTextBox" Grid.Column="0" Header="Поиск"
+                     PlaceholderText="Поиск по клиенту, номеру счета, периоду"
+                     TextChanged="BillingSearchTextBox_TextChanged"/>
+            <ComboBox x:Name="BillingStatusFilterComboBox" Grid.Column="1" Header="Статус"
+                      SelectedIndex="0" SelectionChanged="BillingStatusFilterComboBox_SelectionChanged">
                 <ComboBoxItem Content="Все статусы"/>
                 <ComboBoxItem Content="Черновик"/>
                 <ComboBoxItem Content="Выставлен"/>
                 <ComboBoxItem Content="Оплачен"/>
                 <ComboBoxItem Content="Отменен"/>
             </ComboBox>
-
-            <ComboBox
-                x:Name="BillingSourceFilterComboBox"
-                Grid.Column="2"
-                Header="Источник"
-                SelectedIndex="0"
-                SelectionChanged="BillingSourceFilterComboBox_SelectionChanged">
+            <ComboBox x:Name="BillingSourceFilterComboBox" Grid.Column="2" Header="Источник"
+                      SelectedIndex="0" SelectionChanged="BillingSourceFilterComboBox_SelectionChanged">
                 <ComboBoxItem Content="Все"/>
                 <ComboBoxItem Content="Ручной"/>
                 <ComboBoxItem Content="Авто"/>
             </ComboBox>
-
-            <Button
-    Grid.Column="3"
-    Content="Новый счет"
-    Height="40"
-    VerticalAlignment="Bottom"
-    Style="{StaticResource NiatecPrimaryButtonStyle}"
-    Click="NewInvoiceButton_Click"/>
+            <Button Grid.Column="3" Content="Новый счёт" Height="40" VerticalAlignment="Bottom"
+                    Style="{StaticResource NiatecPrimaryButtonStyle}" Click="NewInvoiceButton_Click"/>
         </Grid>
 
-        <Grid Grid.Row="3" ColumnSpacing="20">
+        <Grid Grid.Row="3" ColumnSpacing="16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.35*"/>
+                <ColumnDefinition Width="1.3*"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <Border
-    Grid.Column="0"
-    Background="{StaticResource NiatecSurfaceBrush}"
-    BorderBrush="{StaticResource NiatecBorderBrush}"
-    BorderThickness="1"
-    CornerRadius="16"
-    Padding="12">
-
+            <Border Grid.Column="0" Background="{StaticResource NiatecSurfaceBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="12">
                 <Grid RowSpacing="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-
-                    <!-- Заголовок реестра -->
-                    <Grid Grid.Row="0">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
                         <StackPanel Spacing="2">
-                            <TextBlock
-            Text="Реестр счетов"
-            FontSize="18"
-            FontWeight="SemiBold"
-            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                            <TextBlock
-            Text="Выберите счёт для просмотра и редактирования"
-            FontSize="12"
-            Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                            <TextBlock Text="Реестр счетов" FontSize="18" FontWeight="SemiBold"
+                                       Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            <TextBlock Text="Выберите счёт для редактирования" FontSize="12"
+                                       Foreground="{StaticResource NiatecTextMutedBrush}"/>
                         </StackPanel>
-
-                        <StackPanel
-    Grid.Column="1"
-    Orientation="Horizontal"
-    Spacing="6"
-    VerticalAlignment="Center">
-
-                            <Button
-    x:Name="ToggleInvoicesViewButton"
-    Style="{StaticResource NiatecSmallIconButtonStyle}"
-    HorizontalAlignment="Right"
-    VerticalAlignment="Center"
-    ToolTipService.ToolTip="Компактный вид списка"
-    Click="ToggleInvoicesViewButton_Click">
-
-                                <TextBlock
-        Text="☰"
-        FontSize="16"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"/>
-                            </Button>
-                        </StackPanel>
+                        <Button x:Name="ToggleInvoicesViewButton" Grid.Column="1"
+                                Style="{StaticResource NiatecSmallIconButtonStyle}"
+                                ToolTipService.ToolTip="Компактный вид"
+                                Click="ToggleInvoicesViewButton_Click">
+                            <TextBlock Text="☰" FontSize="16"/>
+                        </Button>
                     </Grid>
-
-                    <!-- Список счетов -->
                     <Grid Grid.Row="1">
-
-                        <!-- Обычный карточный вид -->
-                        <ListView
-        x:Name="InvoicesListView"
-        SelectionMode="Single"
-        SelectionChanged="InvoicesListView_SelectionChanged"
-        Background="Transparent"
-        BorderThickness="0"
-        ScrollViewer.VerticalScrollBarVisibility="Auto"
-        ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-
+                        <ListView x:Name="InvoicesListView" SelectionMode="Single"
+                                  SelectionChanged="InvoicesListView_SelectionChanged"
+                                  Background="Transparent" BorderThickness="0"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -222,18 +130,13 @@
                                     <Setter Property="MinHeight" Value="0"/>
                                 </Style>
                             </ListView.ItemContainerStyle>
-
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border
-                    Background="{StaticResource NiatecSurfaceAltBrush}"
-                    BorderBrush="{Binding CardBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="10"
-                    Margin="0,0,0,8">
-
-                                        <Grid RowSpacing="6" ColumnSpacing="10">
+                                    <Border Background="{StaticResource NiatecSurfaceAltBrush}"
+                                            BorderBrush="{Binding CardBorderBrush}"
+                                            BorderThickness="1" CornerRadius="12"
+                                            Padding="10" Margin="0,0,0,8">
+                                        <Grid RowSpacing="5" ColumnSpacing="10">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
@@ -241,145 +144,55 @@
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
-
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="120"/>
                                             </Grid.ColumnDefinitions>
-
-                                            <StackPanel
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Orientation="Horizontal"
-                            Spacing="8"
-                            VerticalAlignment="Center">
-
-                                                <TextBlock
-                                Text="{Binding InvoiceNumber}"
-                                FontSize="15"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                TextTrimming="CharacterEllipsis"/>
-
-                                                <Border
-                                Background="{Binding StatusBackgroundBrush}"
-                                CornerRadius="8"
-                                Padding="8,2"
-                                VerticalAlignment="Center">
-
-                                                    <TextBlock
-                                    Text="{Binding Status}"
-                                    Foreground="{Binding StatusForegroundBrush}"
-                                    FontSize="11"
-                                    FontWeight="SemiBold"/>
+                                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding InvoiceNumber}" FontSize="15" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource NiatecTextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <Border Background="{Binding StatusBackgroundBrush}" CornerRadius="8" Padding="8,2">
+                                                    <TextBlock Text="{Binding Status}" Foreground="{Binding StatusForegroundBrush}"
+                                                               FontSize="11" FontWeight="SemiBold"/>
                                                 </Border>
                                             </StackPanel>
-
-                                            <TextBlock
-                            Grid.Row="0"
-                            Grid.Column="1"
-                            Text="{Binding TotalText}"
-                            FontSize="15"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource NiatecAccentBrush}"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            TextTrimming="CharacterEllipsis"/>
-
-                                            <TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Grid.ColumnSpan="2"
-                            Text="{Binding ClientName}"
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            Foreground="#C9D1D9"
-                            TextTrimming="CharacterEllipsis"/>
-
-                                            <Grid
-                            Grid.Row="2"
-                            Grid.Column="0"
-                            Grid.ColumnSpan="2"
-                            ColumnSpacing="8">
-
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalText}"
+                                                       FontSize="15" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                                       Text="{Binding ClientName}" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="#C9D1D9" TextTrimming="CharacterEllipsis"/>
+                                            <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="8">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
-
-                                                <TextBlock
-                                Grid.Column="0"
-                                Text="{Binding InvoiceDateText}"
-                                FontSize="12"
-                                Foreground="{StaticResource NiatecTextMutedBrush}"
-                                TextTrimming="CharacterEllipsis"/>
-
-                                                <TextBlock
-                                Grid.Column="1"
-                                Text="·"
-                                FontSize="12"
-                                Foreground="#586174"/>
-
-                                                <TextBlock
-                                Grid.Column="2"
-                                Text="{Binding SourceType}"
-                                FontSize="12"
-                                Foreground="{StaticResource NiatecTextMutedBrush}"
-                                TextTrimming="CharacterEllipsis"/>
-
-                                                <TextBlock
-                                Grid.Column="3"
-                                Text="{Binding DocumentStateText}"
-                                FontSize="12"
-                                Foreground="{StaticResource NiatecAccentBrush}"
-                                HorizontalAlignment="Right"
-                                TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Grid.Column="0" Text="{Binding InvoiceDateText}" FontSize="12"
+                                                           Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                                <TextBlock Grid.Column="1" Text="·" FontSize="12" Foreground="#586174"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding DueDateText}" FontSize="12"
+                                                           Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                                <TextBlock Grid.Column="3" Text="{Binding DocumentStateText}" FontSize="12"
+                                                           Foreground="{StaticResource NiatecAccentBrush}" HorizontalAlignment="Right"/>
                                             </Grid>
-
-                                            <!-- Бейдж просрочки -->
-                                            <Border
-                                Grid.Row="3"
-                                Grid.Column="0"
-                                Grid.ColumnSpan="2"
-                                Background="#3A1A1A"
-                                CornerRadius="6"
-                                Padding="8,3"
-                                Margin="0,2,0,0"
-                                HorizontalAlignment="Left"
-                                Visibility="{Binding OverdueBadgeVisibility}">
-                                                <TextBlock
-                                    Text="{Binding OverdueBadgeText}"
-                                    FontSize="11"
-                                    FontWeight="SemiBold"
-                                    Foreground="#E24B4A"/>
+                                            <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                                    Background="#3A1A1A" CornerRadius="6" Padding="8,3"
+                                                    Margin="0,2,0,0" HorizontalAlignment="Left"
+                                                    Visibility="{Binding OverdueBadgeVisibility}">
+                                                <TextBlock Text="{Binding OverdueBadgeText}" FontSize="11"
+                                                           FontWeight="SemiBold" Foreground="#E24B4A"/>
                                             </Border>
-
-                                            <!-- Быстрые кнопки смены статуса -->
-                                            <StackPanel
-                                Grid.Row="4"
-                                Grid.Column="0"
-                                Grid.ColumnSpan="2"
-                                Orientation="Horizontal"
-                                Spacing="6"
-                                Margin="0,4,0,0">
-
-                                                <Button
-                                    Content="✓ Оплачен"
-                                    FontSize="11"
-                                    Height="28"
-                                    Padding="10,0"
-                                    Click="QuickMarkPaidButton_Click"
-                                    Visibility="{Binding QuickPaidButtonVisibility}"/>
-
-                                                <Button
-                                    Content="Выставить"
-                                    FontSize="11"
-                                    Height="28"
-                                    Padding="10,0"
-                                    Click="QuickMarkIssuedButton_Click"
-                                    Visibility="{Binding QuickIssuedButtonVisibility}"/>
+                                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                                        Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+                                                <Button Content="✓ Оплачен" FontSize="11" Height="28" Padding="10,0"
+                                                        Visibility="{Binding QuickPaidButtonVisibility}"
+                                                        Click="QuickMarkPaidButton_Click"/>
+                                                <Button Content="Выставить" FontSize="11" Height="28" Padding="10,0"
+                                                        Visibility="{Binding QuickIssuedButtonVisibility}"
+                                                        Click="QuickMarkIssuedButton_Click"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -387,17 +200,10 @@
                             </ListView.ItemTemplate>
                         </ListView>
 
-                        <!-- Компактный вид -->
-                        <ListView
-    x:Name="InvoicesCompactListView"
-    Visibility="Collapsed"
-    SelectionMode="Single"
-    SelectionChanged="InvoicesCompactListView_SelectionChanged"
-    Background="Transparent"
-    BorderThickness="0"
-    ScrollViewer.VerticalScrollBarVisibility="Auto"
-    ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-
+                        <ListView x:Name="InvoicesCompactListView" Visibility="Collapsed"
+                                  SelectionMode="Single" SelectionChanged="InvoicesCompactListView_SelectionChanged"
+                                  Background="Transparent" BorderThickness="0"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -406,86 +212,33 @@
                                     <Setter Property="MinHeight" Value="0"/>
                                 </Style>
                             </ListView.ItemContainerStyle>
-
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border
-                Background="{StaticResource NiatecSurfaceAltBrush}"
-                BorderBrush="{StaticResource NiatecBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="7"
-                Margin="0,0,0,4">
-
+                                    <Border Background="{StaticResource NiatecSurfaceAltBrush}"
+                                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                                            BorderThickness="1" CornerRadius="8" Padding="7" Margin="0,0,0,4">
                                         <Grid ColumnSpacing="8">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="112"/>
-                                                <ColumnDefinition Width="78"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="105"/>
-                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="112"/><ColumnDefinition Width="78"/>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="105"/>
                                             </Grid.ColumnDefinitions>
-
                                             <StackPanel Grid.Column="0" Spacing="1">
-                                                <TextBlock
-                            Text="{Binding InvoiceNumber}"
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                            TextTrimming="CharacterEllipsis"/>
-
-                                                <TextBlock
-                            Text="{Binding InvoiceDateText}"
-                            FontSize="11"
-                            Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                                <TextBlock Text="{Binding InvoiceNumber}" FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource NiatecTextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding InvoiceDateText}" FontSize="11"
+                                                           Foreground="{StaticResource NiatecTextMutedBrush}"/>
                                             </StackPanel>
-
-                                            <Border
-                        Grid.Column="1"
-                        Background="{Binding StatusBackgroundBrush}"
-                        CornerRadius="7"
-                        Padding="6,1"
-                        MinWidth="68"
-                        Height="22"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center">
-
-                                                <TextBlock
-                            Text="{Binding Status}"
-                            Foreground="{Binding StatusForegroundBrush}"
-                            FontSize="10"
-                            FontWeight="SemiBold"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1" Background="{Binding StatusBackgroundBrush}"
+                                                    CornerRadius="7" Padding="6,1" Height="22"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Status}" Foreground="{Binding StatusForegroundBrush}"
+                                                           FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                                             </Border>
-
-                                            <TextBlock
-                        Grid.Column="2"
-                        Text="{Binding ClientName}"
-                        FontSize="12"
-                        Foreground="#C9D1D9"
-                        VerticalAlignment="Center"
-                        TextTrimming="CharacterEllipsis"/>
-
-                                            <TextBlock
-                        Grid.Column="3"
-                        Text="{Binding TotalText}"
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource NiatecAccentBrush}"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        TextTrimming="CharacterEllipsis"/>
-
-                                            <TextBlock
-                        Grid.Column="4"
-                        Text="{Binding DocumentStateText}"
-                        FontSize="11"
-                        Foreground="{StaticResource NiatecAccentBrush}"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        TextTrimming="CharacterEllipsis"
-                        ToolTipService.ToolTip="{Binding DocumentStateText}"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ClientName}" FontSize="12"
+                                                       Foreground="#C9D1D9" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding TotalText}" FontSize="12"
+                                                       FontWeight="SemiBold" Foreground="{StaticResource NiatecAccentBrush}"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -495,713 +248,391 @@
                 </Grid>
             </Border>
 
-            <Border
-    Grid.Column="1"
-    Background="{StaticResource NiatecSurfaceBrush}"
-    BorderBrush="{StaticResource NiatecBorderBrush}"
-    BorderThickness="1"
-    CornerRadius="16"
-    Padding="12">
-
-                <Grid RowSpacing="10">
+            <Border Grid.Column="1" Background="{StaticResource NiatecSurfaceBrush}"
+                    BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="0">
+                <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Верхняя сводка счета -->
-                    <Border
-            Grid.Row="0"
-            Background="{StaticResource NiatecSurfaceAltBrush}"
-            BorderBrush="{StaticResource NiatecBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="12"
-            Padding="12">
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="0">
 
-                        <StackPanel Spacing="6">
-                            <Grid ColumnSpacing="10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-                                <TextBlock
-                        Text="Карточка счета"
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                <TextBlock
-                        Grid.Column="1"
-                        x:Name="InvoiceSourceTextBlock"
-                        Text="Ручной"
-                        FontSize="12"
-                        Foreground="{StaticResource NiatecTextMutedBrush}"
-                        VerticalAlignment="Center"/>
-                            </Grid>
-
-                            <TextBlock
-                    x:Name="InvoiceQuickSummaryTextBlock"
-                    Text="Черновик счета еще не создан."
-                    Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                    FontSize="12"
-                    TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Вкладки карточки -->
-                    <TabView
-            Grid.Row="1"
-            IsAddTabButtonVisible="False"
-            TabWidthMode="Equal">
-
-                        <!-- Основное -->
-                        <TabViewItem Header="Основное" IsClosable="False">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <StackPanel Spacing="10" Padding="0,10,0,0">
-
-                                    <ComboBox
-                            x:Name="InvoiceClientComboBox"
-                            Header="Клиент"
-                            DisplayMemberPath="Name"
-                            SelectionChanged="InvoiceClientComboBox_SelectionChanged"/>
-
-                                    <TextBox
-                            x:Name="InvoiceNumberTextBox"
-                            Header="Номер счета"
-                            IsReadOnly="True"/>
-
-                                    <Grid ColumnSpacing="10">
+                            <Border BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="0,0,0,1" Padding="14,12">
+                                <StackPanel Spacing="10">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Счёт" FontSize="16" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource NiatecTextPrimaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" x:Name="InvoiceSourceTextBlock" Text="Ручной"
+                                                   FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <TextBlock x:Name="InvoiceQuickSummaryTextBlock"
+                                               Text="Черновик счёта ещё не создан."
+                                               FontSize="12" Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                                               TextWrapping="Wrap"/>
+                                    <ComboBox x:Name="InvoiceClientComboBox" Header="Клиент"
+                                              DisplayMemberPath="Name"
+                                              SelectionChanged="InvoiceClientComboBox_SelectionChanged"/>
+                                    <Grid ColumnSpacing="8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
+                                        <TextBox x:Name="InvoiceNumberTextBox" Grid.Column="0" Header="Номер счёта" IsReadOnly="True"/>
+                                        <ComboBox x:Name="InvoiceStatusEditorComboBox" Grid.Column="1" Header="Статус" SelectedIndex="0">
+                                            <ComboBoxItem Content="Черновик"/>
+                                            <ComboBoxItem Content="Выставлен"/>
+                                            <ComboBoxItem Content="Оплачен"/>
+                                            <ComboBoxItem Content="Отменен"/>
+                                        </ComboBox>
+                                    </Grid>
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <DatePicker x:Name="InvoiceDatePicker" Grid.Column="0" Header="Дата счёта"/>
+                                        <DatePicker x:Name="InvoiceDueDatePicker" Grid.Column="1" Header="Срок оплаты"/>
+                                    </Grid>
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox x:Name="InvoicePeriodTextBox" Grid.Column="0" Header="Период" PlaceholderText="Май 2026"/>
+                                        <TextBox x:Name="InvoiceCommentTextBox" Grid.Column="1" Header="Комментарий" PlaceholderText="Примечание"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
 
-                                        <DatePicker
-                                x:Name="InvoiceDatePicker"
-                                Grid.Column="0"
-                                Header="Дата счета"/>
-
-                                        <DatePicker
-                                x:Name="InvoiceDueDatePicker"
-                                Grid.Column="1"
-                                Header="Срок оплаты"/>
+                            <Border BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="0,0,0,1" Padding="14,12">
+                                <StackPanel Spacing="10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Состав счёта" FontSize="14" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource NiatecTextPrimaryBrush}" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                        </StackPanel>
                                     </Grid>
 
-                                    <ComboBox
-                            x:Name="InvoiceStatusEditorComboBox"
-                            Header="Статус"
-                            SelectedIndex="0">
-                                        <ComboBoxItem Content="Черновик"/>
-                                        <ComboBoxItem Content="Выставлен"/>
-                                        <ComboBoxItem Content="Оплачен"/>
-                                        <ComboBoxItem Content="Отменен"/>
-                                    </ComboBox>
-
-                                    <TextBox
-                            x:Name="InvoicePeriodTextBox"
-                            Header="Период"
-                            PlaceholderText="Например: Май 2026"/>
-
-                                    <TextBox
-                            x:Name="InvoiceCommentTextBox"
-                            Header="Комментарий"
-                            PlaceholderText="Комментарий к счету"
-                            AcceptsReturn="True"
-                            TextWrapping="Wrap"
-                            Height="76"/>
-
-                                    <Border
-                            Background="{StaticResource NiatecSurfaceAltBrush}"
-                            BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="12">
-
-                                        <StackPanel Spacing="6">
-                                            <TextBlock
-                                    Text="Итоги"
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                            <TextBlock
-                                    x:Name="InvoiceTotalWithoutVatTextBlock"
-                                    Text="Без НДС: 0,00 ₽"
-                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                            <TextBlock
-                                    x:Name="InvoiceVatAmountTextBlock"
-                                    Text="НДС: 0,00 ₽"
-                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                            <TextBlock
-                                    x:Name="InvoiceTotalWithVatTextBlock"
-                                    Text="С НДС: 0,00 ₽"
-                                    Foreground="{StaticResource NiatecAccentBrush}"
-                                    FontWeight="SemiBold"/>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </ScrollViewer>
-                        </TabViewItem>
-
-                        <!-- Услуги -->
-                        <TabViewItem Header="Услуги" IsClosable="False">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <StackPanel Spacing="10" Padding="0,10,0,0">
-
-                                    <ComboBox
-                            x:Name="InvoiceServiceCatalogComboBox"
-                            Header="Типовая услуга"
-                            DisplayMemberPath="Name"
-                            PlaceholderText="Выбери услугу из справочника или заполни вручную"
-                            SelectionChanged="InvoiceServiceCatalogComboBox_SelectionChanged"/>
-
-                                    <ListView
-                            x:Name="InvoiceItemsListView"
-                            Height="210"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            SelectionMode="Single"
-                            SelectionChanged="InvoiceItemsListView_SelectionChanged">
-
+                                    <!-- Список строк счёта — в каждой строке кнопка удаления -->
+                                    <ListView x:Name="InvoiceItemsListView" Background="Transparent" BorderThickness="0"
+                                              SelectionMode="Single" SelectionChanged="InvoiceItemsListView_SelectionChanged"
+                                              MaxHeight="240" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                         <ListView.ItemContainerStyle>
                                             <Style TargetType="ListViewItem">
                                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                                 <Setter Property="Padding" Value="0"/>
-                                                <Setter Property="Margin" Value="0,0,0,8"/>
+                                                <Setter Property="Margin" Value="0,0,0,5"/>
+                                                <Setter Property="MinHeight" Value="0"/>
                                             </Style>
                                         </ListView.ItemContainerStyle>
-
                                         <ListView.ItemTemplate>
                                             <DataTemplate>
-                                                <Border
-                                        Background="{StaticResource NiatecBackgroundBrush}"
-                                        BorderBrush="{StaticResource NiatecBorderBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="10"
-                                        Padding="10">
-
-                                                    <Grid ColumnSpacing="10">
+                                                <Border Background="{StaticResource NiatecSurfaceAltBrush}"
+                                                        BorderBrush="{StaticResource NiatecBorderBrush}"
+                                                        BorderThickness="1" CornerRadius="10" Padding="10,8">
+                                                    <Grid ColumnSpacing="6">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="70"/>
-                                                            <ColumnDefinition Width="90"/>
-                                                            <ColumnDefinition Width="105"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="30"/>
                                                         </Grid.ColumnDefinitions>
-
-                                                        <StackPanel Grid.Column="0" Spacing="3">
-                                                            <TextBlock
-                                                    Text="{Binding ServiceName}"
-                                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                                    FontWeight="SemiBold"
-                                                    TextWrapping="Wrap"/>
-
-                                                            <TextBlock
-                                                    Text="{Binding Unit}"
-                                                    FontSize="12"
-                                                    Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                                        <!-- Название и единицы -->
+                                                        <StackPanel Grid.Column="0" Spacing="2">
+                                                            <TextBlock Text="{Binding ServiceName}" FontSize="13"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock FontSize="11"
+                                                                       Foreground="{StaticResource NiatecTextMutedBrush}">
+                                                                <Run Text="{Binding Quantity}"/>
+                                                                <Run Text=" "/>
+                                                                <Run Text="{Binding Unit}"/>
+                                                                <Run Text=" · "/>
+                                                                <Run Text="{Binding UnitPrice}"/>
+                                                                <Run Text=" ₽/ед."/>
+                                                            </TextBlock>
                                                         </StackPanel>
-
-                                                        <TextBlock
-                                                Grid.Column="1"
-                                                Text="{Binding Quantity}"
-                                                Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Center"/>
-
-                                                        <TextBlock
-                                                Grid.Column="2"
-                                                Text="{Binding UnitPrice}"
-                                                Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Center"/>
-
-                                                        <TextBlock
-                                                Grid.Column="3"
-                                                Text="{Binding AmountWithVat}"
-                                                Foreground="{StaticResource NiatecAccentBrush}"
-                                                FontWeight="SemiBold"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Right"/>
+                                                        <!-- НДС -->
+                                                        <TextBlock Grid.Column="1" Text="{Binding VatAmountText}"
+                                                                   FontSize="11"
+                                                                   Foreground="{StaticResource NiatecTextMutedBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <!-- Итого -->
+                                                        <TextBlock Grid.Column="2" Text="{Binding AmountWithVatText}"
+                                                                   FontSize="14" FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource NiatecAccentBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <!-- Кнопка удаления -->
+                                                        <Button Grid.Column="3" Content="✕"
+                                                                FontSize="12" Width="28" Height="28"
+                                                                Padding="0" VerticalAlignment="Center"
+                                                                Click="InlineDeleteInvoiceItemButton_Click"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
 
-                                    <Border
-                            Background="{StaticResource NiatecSurfaceAltBrush}"
-                            BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="12">
+                                    <!-- Итоги строк -->
+                                    <Border Background="{StaticResource NiatecBackgroundBrush}"
+                                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                                            BorderThickness="1" CornerRadius="8" Padding="10,6">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock x:Name="InvoiceVatAmountTextBlock" Text="НДС: 0,00 ₽"
+                                                       FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="InvoiceTotalWithoutVatTextBlock" Text="Без НДС: 0,00 ₽"
+                                                       Grid.Column="1" FontSize="12"
+                                                       Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="InvoiceTotalWithVatTextBlock" Text="Итого: 0,00 ₽"
+                                                       Grid.Column="2" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
 
-                                        <StackPanel Spacing="10">
-                                            <TextBlock
-                                    Text="Редактор строки услуги"
-                                    FontSize="16"
-                                    FontWeight="SemiBold"
-                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                    <!-- Форма добавления строки -->
+                                    <Border x:Name="InvoiceItemEditorModeBorder"
+                                            Background="{StaticResource NiatecSurfaceAltBrush}"
+                                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                                            BorderThickness="1" CornerRadius="10" Padding="10">
+                                        <StackPanel Spacing="8">
 
-                                            <TextBox
-                                    x:Name="InvoiceItemNameTextBox"
-                                    Header="Услуга"
-                                    PlaceholderText="Например: Абонентское обслуживание"/>
-
-                                            <Grid ColumnSpacing="8">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="85"/>
-                                                    <ColumnDefinition Width="85"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="85"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <TextBox
-                                        x:Name="InvoiceItemQuantityTextBox"
-                                        Grid.Column="0"
-                                        Header="Кол-во"
-                                        Text="1"/>
-
-                                                <TextBox
-                                        x:Name="InvoiceItemUnitTextBox"
-                                        Grid.Column="1"
-                                        Header="Ед."
-                                        Text="усл."/>
-
-                                                <TextBox
-                                        x:Name="InvoiceItemUnitPriceTextBox"
-                                        Grid.Column="2"
-                                        Header="Цена"
-                                        Text="0"/>
-
-                                                <TextBox
-                                        x:Name="InvoiceItemVatRateTextBox"
-                                        Grid.Column="3"
-                                        Header="НДС %"
-                                        Text="0"/>
-                                            </Grid>
-
-                                            <!-- Переключатель режима НДС -->
-                                            <Border
-                                    Background="{StaticResource NiatecBackgroundBrush}"
-                                    BorderBrush="{StaticResource NiatecBorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="10,8">
-                                                <Grid ColumnSpacing="12">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <ToggleButton
-                                        x:Name="InvoiceItemVatModeToggle"
-                                        Grid.Column="0"
-                                        Width="100"
-                                        Height="32"
-                                        Click="InvoiceItemVatModeToggle_Click">
-                                                        <TextBlock
-                                            x:Name="InvoiceItemVatModeLabel"
-                                            Text="Начислить"
-                                            FontSize="12"
-                                            FontWeight="SemiBold"/>
-                                                    </ToggleButton>
-
-                                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                                                        <TextBlock
-                                            Text="Режим НДС"
-                                            FontSize="11"
-                                            FontWeight="SemiBold"
-                                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-                                                        <TextBlock
-                                            Text="Начислить — НДС добавляется к цене · Выделить — НДС включён в цену"
-                                            FontSize="11"
-                                            Foreground="{StaticResource NiatecTextMutedBrush}"
-                                            TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-
-                                            <!-- Индикатор режима редактора -->
-                                            <Border
-                                    x:Name="InvoiceItemEditorModeBorder"
-                                    Background="#1A2A1A"
-                                    BorderBrush="#2A4A2A"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="10,6">
-                                                <Grid ColumnSpacing="8">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Border
-                                        Grid.Column="0"
-                                        Background="#2A5A2A"
-                                        CornerRadius="4"
-                                        Padding="6,2">
-                                                        <TextBlock
-                                            x:Name="InvoiceItemEditorModeLabel"
-                                            Text="+ Новая строка"
-                                            FontSize="11"
-                                            FontWeight="SemiBold"
-                                            Foreground="#7AE07A"/>
-                                                    </Border>
-                                                    <TextBlock
-                                        Grid.Column="1"
-                                        x:Name="InvoiceItemEditorHint"
-                                        Text="Заполни поля и нажми «Добавить строку»"
-                                        FontSize="11"
-                                        Foreground="#6A9A6A"
-                                        VerticalAlignment="Center"
-                                        TextTrimming="CharacterEllipsis"/>
-                                                </Grid>
-                                            </Border>
-
+                                            <!-- Шаг 1: выбор из справочника -->
                                             <Grid ColumnSpacing="8">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-
-                                                <Button
-                                        x:Name="SaveInvoiceItemMainButton"
-                                        Grid.Column="0"
-                                        Grid.ColumnSpan="2"
-                                        Content="Добавить строку"
-                                        Style="{StaticResource NiatecPrimaryButtonStyle}"
-                                        Click="SaveInvoiceItemButton_Click"/>
-
-                                                <Button
-                                        x:Name="DeleteInvoiceItemMainButton"
-                                        Grid.Column="2"
-                                        Content="Удалить"
-                                        Style="{StaticResource NiatecDangerButtonStyle}"
-                                        IsEnabled="False"
-                                        Click="DeleteInvoiceItemButton_Click"/>
+                                                <ComboBox x:Name="InvoiceServiceCatalogComboBox"
+                                                          DisplayMemberPath="Name"
+                                                          PlaceholderText="Выбрать из справочника..."
+                                                          SelectionChanged="InvoiceServiceCatalogComboBox_SelectionChanged"/>
+                                                <Border Grid.Column="1" Background="#1A2A1A"
+                                                        BorderBrush="#2A4A2A" BorderThickness="1"
+                                                        CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                                                    <TextBlock x:Name="InvoiceItemEditorModeLabel" Text="+ Новая строка"
+                                                               FontSize="11" FontWeight="SemiBold" Foreground="#7AE07A"/>
+                                                </Border>
                                             </Grid>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </ScrollViewer>
-                        </TabViewItem>
 
-                        <!-- Документы -->
-                        <TabViewItem Header="Документы" IsClosable="False">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <StackPanel Spacing="10" Padding="0,10,0,0">
+                                            <!-- Название (авто или вручную) -->
+                                            <TextBox x:Name="InvoiceItemNameTextBox"
+                                                     PlaceholderText="Название услуги (или выбери из справочника выше)"/>
 
-                                    <Border
-                Background="{StaticResource NiatecSurfaceAltBrush}"
-                BorderBrush="{StaticResource NiatecBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="12"
-                Padding="12">
-
-                                        <StackPanel Spacing="10">
-                                            <TextBlock
-                        Text="Формирование документов"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                            <TextBlock
-                        Text="Сформируйте документы по выбранному счёту. Word-счёт подходит для печати и отправки клиенту, УПД PDF — для визуального документа, УПД XML — для загрузки в ЭДО/СБИС."
-                        Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                        FontSize="12"
-                        TextWrapping="Wrap"/>
-
-                                            <Grid ColumnSpacing="8" RowSpacing="8">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
-
+                                            <!-- Числовые поля -->
+                                            <Grid ColumnSpacing="6">
                                                 <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="70"/>
+                                                    <ColumnDefinition Width="55"/>
                                                     <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="65"/>
                                                 </Grid.ColumnDefinitions>
-
-                                                <Button
-    x:Name="GenerateInvoiceWordButton"
-    Grid.Row="0"
-    Grid.Column="0"
-    Content="Word-счёт"
-    Style="{StaticResource NiatecSecondaryButtonStyle}"
-    Click="GenerateInvoiceWordButton_Click"/>
-
-                                                <Button
-    x:Name="GenerateUpdPdfButton"
-    Grid.Row="0"
-    Grid.Column="1"
-    Content="УПД PDF"
-    Style="{StaticResource NiatecPrimaryButtonStyle}"
-    Click="GenerateUpdPdfButton_Click"/>
-
-                                                <Button
-    x:Name="GenerateUpdXmlButton"
-    Grid.Row="1"
-    Grid.Column="0"
-    Content="УПД XML"
-    Style="{StaticResource NiatecPrimaryButtonStyle}"
-    Click="GenerateUpdXmlButton_Click"/>
-
-                                                <Button
-    x:Name="OpenInvoiceWordButton"
-    Grid.Row="1"
-    Grid.Column="1"
-    Content="Открыть счёт"
-                                                    Visibility="Collapsed"
-    IsEnabled="False"
-    Style="{StaticResource NiatecSecondaryButtonStyle}"
-    Click="OpenInvoiceWordButton_Click"/>
+                                                <TextBox x:Name="InvoiceItemQuantityTextBox" Grid.Column="0"
+                                                         Header="Кол-во" Text="1"/>
+                                                <TextBox x:Name="InvoiceItemUnitTextBox" Grid.Column="1"
+                                                         Header="Ед." Text="усл."/>
+                                                <TextBox x:Name="InvoiceItemUnitPriceTextBox" Grid.Column="2"
+                                                         Header="Цена ₽" Text="0"/>
+                                                <TextBox x:Name="InvoiceItemVatRateTextBox" Grid.Column="3"
+                                                         Header="НДС %" Text="0"/>
                                             </Grid>
+
+                                            <!-- НДС режим + кнопки -->
+                                            <Grid ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ToggleButton x:Name="InvoiceItemVatModeToggle"
+                                                              Height="32" Padding="10,0"
+                                                              ToolTipService.ToolTip="Начислить — НДС добавляется к цене. Выделить — НДС включён в цену."
+                                                              Click="InvoiceItemVatModeToggle_Click">
+                                                    <TextBlock x:Name="InvoiceItemVatModeLabel" Text="Начислить"
+                                                               FontSize="12" FontWeight="SemiBold"/>
+                                                </ToggleButton>
+                                                <TextBlock x:Name="InvoiceItemEditorHint" Grid.Column="1"
+                                                           Text="НДС сверх цены"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource NiatecTextMutedBrush}"
+                                                           VerticalAlignment="Center"/>
+                                                <Button x:Name="DeleteInvoiceItemMainButton" Grid.Column="2"
+                                                        Content="Удалить" IsEnabled="False" Height="32"
+                                                        Style="{StaticResource NiatecDangerButtonStyle}"
+                                                        Click="DeleteInvoiceItemButton_Click"/>
+                                            </Grid>
+
+                                            <Button x:Name="SaveInvoiceItemMainButton"
+                                                    Content="+ Добавить строку в счёт"
+                                                    Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                    Click="SaveInvoiceItemButton_Click"/>
                                         </StackPanel>
                                     </Border>
-
-                                    <Border
-                Background="{StaticResource NiatecBackgroundBrush}"
-                BorderBrush="{StaticResource NiatecBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="12"
-                Padding="12">
-
-                                        <StackPanel Spacing="10">
-                                            <TextBlock
-                        Text="Документы по счёту"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                            <ListView
-    x:Name="InvoiceDocumentsListView"
-    Height="180"
-    SelectionMode="Single"
-    SelectionChanged="InvoiceDocumentsListView_SelectionChanged"
-    Loaded="InvoiceDocumentsListView_Loaded"
-    Background="Transparent"
-    BorderThickness="0"
-    ScrollViewer.VerticalScrollBarVisibility="Auto">
-
-                                                <ListView.ItemContainerStyle>
-                                                    <Style TargetType="ListViewItem">
-                                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                                        <Setter Property="Padding" Value="0"/>
-                                                        <Setter Property="Margin" Value="0,0,0,8"/>
-                                                        <Setter Property="MinHeight" Value="0"/>
-
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="ListViewItem">
-                                                                    <Border
-                            x:Name="DocumentCardBorder"
-                            Background="{StaticResource NiatecSurfaceAltBrush}"
-                            BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="10">
-
-                                                                        <Grid ColumnSpacing="10">
-                                                                            <Grid.ColumnDefinitions>
-                                                                                <ColumnDefinition Width="4"/>
-                                                                                <ColumnDefinition Width="*"/>
-                                                                            </Grid.ColumnDefinitions>
-
-                                                                            <Border
-                                    x:Name="DocumentSelectedAccentBar"
-                                    Grid.Column="0"
-                                    Background="#C99A45"
-                                    CornerRadius="10,0,0,10"
-                                    Opacity="0"/>
-
-                                                                            <ContentPresenter
-                                    Grid.Column="1"
-                                    Margin="10"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    HorizontalAlignment="Stretch"/>
-                                                                        </Grid>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </ListView.ItemContainerStyle>
-
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Spacing="4">
-                                                            <TextBlock
-                    Text="{Binding Title}"
-                    FontWeight="SemiBold"
-                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                    TextWrapping="Wrap"/>
-
-                                                            <TextBlock
-                    Text="{Binding MetaText}"
-                    FontSize="12"
-                    Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                    TextWrapping="Wrap"/>
-
-                                                            <TextBlock
-                    Text="{Binding StatusText}"
-                    FontSize="12"
-                    Foreground="{StaticResource NiatecAccentBrush}"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-
-                                            <Button
-                        x:Name="OpenInvoiceDocumentButton"
-                        Content="Открыть выбранный документ"
-                        IsEnabled="False"
-                        Click="OpenInvoiceDocumentButton_Click"/>
-                                        </StackPanel>
-                                    </Border>
-
                                 </StackPanel>
-                            </ScrollViewer>
-                        </TabViewItem>
-                    </TabView>
+                            </Border>
 
-                    <!-- Нижняя панель действий -->
-                    <Border
-            Grid.Row="2"
-            Background="{StaticResource NiatecSurfaceAltBrush}"
-            BorderBrush="{StaticResource NiatecBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="12"
-            Padding="10">
+                            <Border BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="0,0,0,1" Padding="14,12">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Документы" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                    <Grid ColumnSpacing="8" RowSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button x:Name="GenerateInvoiceWordButton" Grid.Column="0"
+                                                Content="Word-счёт" Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="GenerateInvoiceWordButton_Click"/>
+                                        <Button x:Name="GenerateUpdPdfButton" Grid.Column="1"
+                                                Content="УПД PDF" Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                Click="GenerateUpdPdfButton_Click"/>
+                                        <Button x:Name="GenerateUpdXmlButton" Grid.Column="2"
+                                                Content="УПД XML" Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                Click="GenerateUpdXmlButton_Click"/>
 
-                        <Grid ColumnSpacing="8" RowSpacing="8">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                                        <Button x:Name="OpenInvoiceWordButton" Grid.Row="1" Grid.Column="2"
+                                                Content="Открыть счёт" IsEnabled="False" Visibility="Collapsed"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="OpenInvoiceWordButton_Click"/>
+                                    </Grid>
+                                    <ListView x:Name="InvoiceDocumentsListView" MaxHeight="150"
+                                              SelectionMode="Single"
+                                              SelectionChanged="InvoiceDocumentsListView_SelectionChanged"
+                                              Loaded="InvoiceDocumentsListView_Loaded"
+                                              Background="Transparent" BorderThickness="0"
+                                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem">
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                <Setter Property="Padding" Value="0"/>
+                                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                                <Setter Property="MinHeight" Value="0"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListViewItem">
+                                                            <Border x:Name="DocumentCardBorder"
+                                                                    Background="{StaticResource NiatecSurfaceAltBrush}"
+                                                                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                                                                    BorderThickness="1" CornerRadius="10">
+                                                                <Grid ColumnSpacing="10">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="4"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Border x:Name="DocumentSelectedAccentBar" Grid.Column="0"
+                                                                            Background="#C99A45" CornerRadius="10,0,0,10" Opacity="0"/>
+                                                                    <ContentPresenter Grid.Column="1" Margin="10"
+                                                                                      Content="{TemplateBinding Content}"
+                                                                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                                                      HorizontalAlignment="Stretch"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Spacing="3">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12"
+                                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding MetaText}" FontSize="11"
+                                                               Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding StatusText}" FontSize="11"
+                                                               Foreground="{StaticResource NiatecAccentBrush}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <Button x:Name="OpenInvoiceDocumentButton"
+                                            Content="Открыть выбранный документ" IsEnabled="False"
+                                            Click="OpenInvoiceDocumentButton_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Button
-        x:Name="SaveInvoiceButton"
-        Grid.Row="0"
-        Grid.Column="0"
-        Content="Сохранить"
-        Style="{StaticResource NiatecPrimaryButtonStyle}"
-        Click="SaveInvoiceButton_Click"/>
-
-                            <Button
-        x:Name="MarkInvoiceIssuedButton"
-        Grid.Row="0"
-        Grid.Column="1"
-        Content="Выставлен"
-        Style="{StaticResource NiatecSecondaryButtonStyle}"
-        Click="MarkInvoiceIssuedButton_Click"/>
-
-                            <Button
-        x:Name="MarkInvoicePaidButton"
-        Grid.Row="0"
-        Grid.Column="2"
-        Content="Оплачен"
-        Style="{StaticResource NiatecSecondaryButtonStyle}"
-        Click="MarkInvoicePaidButton_Click"/>
-
-                            <Button
-        x:Name="DuplicateInvoiceButton"
-        Grid.Row="1"
-        Grid.Column="0"
-        Content="Дублировать"
-        Style="{StaticResource NiatecSecondaryButtonStyle}"
-        Click="DuplicateInvoiceButton_Click"/>
-
-                            <Button
-        x:Name="DeleteInvoiceButton"
-        Grid.Row="1"
-        Grid.Column="1"
-        Content="Удалить"
-        Style="{StaticResource NiatecDangerButtonStyle}"
-        Click="DeleteInvoiceButton_Click"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Статус -->
-                    <Border
-            Grid.Row="3"
-            Background="{StaticResource NiatecSurfaceAltBrush}"
-            BorderBrush="{StaticResource NiatecBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="12"
-            Padding="10">
-
-                        <TextBlock
-                x:Name="BillingStatusTextBlock"
-                Text="Выберите счёт или создайте новый."
-                Foreground="{StaticResource NiatecAccentBrush}"
-                FontSize="12"
-                TextWrapping="Wrap"/>
-                    </Border>
+                    <StackPanel Grid.Row="1" Spacing="0">
+                        <Border BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="0,1,0,0" Padding="14,10">
+                            <Grid ColumnSpacing="8" RowSpacing="6">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="SaveInvoiceButton" Grid.Row="0" Grid.Column="0"
+                                        Content="Сохранить" Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                        Click="SaveInvoiceButton_Click"/>
+                                <Button x:Name="MarkInvoiceIssuedButton" Grid.Row="0" Grid.Column="1"
+                                        Content="Выставлен" Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                        Click="MarkInvoiceIssuedButton_Click"/>
+                                <Button x:Name="MarkInvoicePaidButton" Grid.Row="0" Grid.Column="2"
+                                        Content="Оплачен" Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                        Click="MarkInvoicePaidButton_Click"/>
+                                <Button x:Name="DuplicateInvoiceButton" Grid.Row="1" Grid.Column="0"
+                                        Content="Дублировать" Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                        Click="DuplicateInvoiceButton_Click"/>
+                                <Button x:Name="DeleteInvoiceButton" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                        Content="Удалить счёт" Style="{StaticResource NiatecDangerButtonStyle}"
+                                        Click="DeleteInvoiceButton_Click"/>
+                            </Grid>
+                        </Border>
+                        <Border BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="0,1,0,0" Padding="14,8">
+                            <TextBlock x:Name="BillingStatusTextBlock" Text="Выберите счёт или создайте новый."
+                                       Foreground="{StaticResource NiatecAccentBrush}" FontSize="12" TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
                 </Grid>
             </Border>
-            <!-- Временный скрытый блок совместимости со старым BillingPage.xaml.cs.
-     Не отображается пользователю, но сохраняет элементы, которые пока использует код. -->
-            <StackPanel Visibility="Collapsed">
-
-                <!-- Документы по счету -->
-
-                <!-- Справочник услуг -->
-                <ListView
-        x:Name="ServicesCatalogListView"
-        SelectionChanged="ServicesCatalogListView_SelectionChanged"/>
-
-                <TextBox x:Name="ServiceCatalogNameTextBox"/>
-                <TextBox x:Name="ServiceCatalogPriceTextBox"/>
-                <TextBox x:Name="ServiceCatalogUnitTextBox"/>
-                <TextBox x:Name="ServiceCatalogVatRateTextBox"/>
-
-                <Button
-        x:Name="NewServiceCatalogButton"
-        Content="Новая услуга"
-        Click="NewServiceCatalogButton_Click"/>
-
-                <Button
-        x:Name="SaveServiceCatalogButton"
-        Content="Сохранить услугу"
-        Click="SaveServiceCatalogButton_Click"/>
-
-                <Button
-        x:Name="DeleteServiceCatalogButton"
-        Content="Удалить услугу"
-        Click="DeleteServiceCatalogButton_Click"/>
-
-                <!-- Старые настройки организации, которые пока использует BillingPage.xaml.cs -->
-                <TextBox x:Name="OrganizationNameTextBox"/>
-                <TextBox x:Name="OrganizationInnTextBox"/>
-                <TextBox x:Name="OrganizationKppTextBox"/>
-                <TextBox x:Name="OrganizationAddressTextBox"/>
-
-                <TextBox x:Name="OrganizationBankNameTextBox"/>
-                <TextBox x:Name="OrganizationBankAccountTextBox"/>
-                <TextBox x:Name="OrganizationBikTextBox"/>
-                <TextBox x:Name="OrganizationCorrespondentAccountTextBox"/>
-
-                <TextBox x:Name="OrganizationDirectorTextBox"/>
-                <TextBox x:Name="OrganizationEmailTextBox"/>
-                <TextBox x:Name="OrganizationPhoneTextBox"/>
-
-                <Button
-        x:Name="SaveOrganizationSettingsButton"
-        Content="Сохранить настройки организации"
-        Click="SaveOrganizationSettingsButton_Click"/>
-
-            </StackPanel>
         </Grid>
+
+        <!-- Скрытые элементы совместимости -->
+        <StackPanel Visibility="Collapsed">
+            <ListView x:Name="ServicesCatalogListView" SelectionChanged="ServicesCatalogListView_SelectionChanged"/>
+            <TextBox x:Name="ServiceCatalogNameTextBox"/>
+            <TextBox x:Name="ServiceCatalogPriceTextBox"/>
+            <TextBox x:Name="ServiceCatalogUnitTextBox"/>
+            <TextBox x:Name="ServiceCatalogVatRateTextBox"/>
+            <Button x:Name="NewServiceCatalogButton" Content="Новая услуга" Click="NewServiceCatalogButton_Click"/>
+            <Button x:Name="SaveServiceCatalogButton" Content="Сохранить услугу" Click="SaveServiceCatalogButton_Click"/>
+            <Button x:Name="DeleteServiceCatalogButton" Content="Удалить услугу" Click="DeleteServiceCatalogButton_Click"/>
+            <TextBox x:Name="OrganizationNameTextBox"/>
+            <TextBox x:Name="OrganizationInnTextBox"/>
+            <TextBox x:Name="OrganizationKppTextBox"/>
+            <TextBox x:Name="OrganizationAddressTextBox"/>
+            <TextBox x:Name="OrganizationBankNameTextBox"/>
+            <TextBox x:Name="OrganizationBankAccountTextBox"/>
+            <TextBox x:Name="OrganizationBikTextBox"/>
+            <TextBox x:Name="OrganizationCorrespondentAccountTextBox"/>
+            <TextBox x:Name="OrganizationDirectorTextBox"/>
+            <TextBox x:Name="OrganizationEmailTextBox"/>
+            <TextBox x:Name="OrganizationPhoneTextBox"/>
+            <Button x:Name="SaveOrganizationSettingsButton" Content="Сохранить настройки организации"
+                    Click="SaveOrganizationSettingsButton_Click"/>
+        </StackPanel>
     </Grid>
 </Page>

@@ -1,12 +1,14 @@
-﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
+using QRCoder;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
@@ -60,9 +62,20 @@ namespace ClientAccountApp
                 .OrderByDescending(c => c.SignedAt)
                 .FirstOrDefault();
 
-            string contractBasis = signedContract != null && !string.IsNullOrWhiteSpace(signedContract.ContractNumber)
-                ? $"Договор № {signedContract.ContractNumber} от {(signedContract.SignedAt.HasValue ? signedContract.SignedAt.Value.ToString("dd.MM.yyyy") : signedContract.GeneratedAt?.ToString("dd.MM.yyyy") ?? "—")}"
-                : null;
+            string? contractBasis = null;
+            if (signedContract != null)
+            {
+                // Очищаем номер договора — в базе может лежать имя файла
+                string rawNumber = signedContract.ContractNumber ?? "";
+                string cleanNumber = ExtractCleanContractNumber(
+                    rawNumber, signedContract.ClientInfoId, signedContract.GeneratedAt);
+                string contractDate = signedContract.SignedAt.HasValue
+                    ? signedContract.SignedAt.Value.ToString("dd.MM.yyyy")
+                    : signedContract.GeneratedAt?.ToString("dd.MM.yyyy") ?? "—";
+
+                if (cleanNumber != "—")
+                    contractBasis = $"Договор № {cleanNumber} от {contractDate}";
+            }
 
             var items = db.InvoiceItems
                 .AsNoTracking()
@@ -97,11 +110,11 @@ namespace ClientAccountApp
 
             Body body = mainPart.Document.Body!;
 
-            AppendInvoiceOrganizationLogoIfExists(mainPart, body, organization);
+            // QR вычисляем заранее — он нужен в шапке
+            byte[]? qrBytesHeader = TryGeneratePaymentQr(organization, totalWithVat, invoice.InvoiceNumber);
 
             body.Append(CreateTopAccentLine());
-            body.Append(CreateParagraph("СЧЁТ НА ОПЛАТУ", true, 18, "1F4E79", JustificationValues.Left, 0, 60));
-            body.Append(CreateParagraph($"№ {invoice.InvoiceNumber}", true, 28, "111827", JustificationValues.Left, 0, 120));
+            body.Append(CreateHeaderWithQr(mainPart, organization, invoice, qrBytesHeader));
 
             body.Append(CreateInvoiceInfoTable(invoice));
             body.Append(CreateSpacerParagraph());
@@ -137,13 +150,23 @@ namespace ClientAccountApp
                     80));
             }
 
+            // Примечание — отдельный заметный блок
             if (!string.IsNullOrWhiteSpace(invoice.Comment))
             {
+                body.Append(CreateSpacerParagraph());
                 body.Append(CreateParagraph(
-                    $"Комментарий: {invoice.Comment}",
+                    "Примечание",
+                    true,
+                    11,
+                    "374151",
+                    JustificationValues.Left,
+                    80,
+                    40));
+                body.Append(CreateParagraph(
+                    invoice.Comment,
                     false,
-                    10,
-                    "4B5563",
+                    11,
+                    "374151",
                     JustificationValues.Left,
                     80,
                     80));
@@ -172,6 +195,344 @@ namespace ClientAccountApp
             mainPart.Document.Save();
 
             return tempPath;
+        }
+
+
+
+        private static Paragraph AppendLogoToParagraph(MainDocumentPart mainPart, string logoPath)
+        {
+            byte[] imgBytes = File.ReadAllBytes(logoPath);
+            string ext = Path.GetExtension(logoPath).ToLowerInvariant();
+            var imgType = ext switch
+            {
+                ".png" => ImagePartType.Png,
+                ".jpg" => ImagePartType.Jpeg,
+                ".jpeg" => ImagePartType.Jpeg,
+                _ => ImagePartType.Png
+            };
+            string relId = "logo_hdr_" + Guid.NewGuid().ToString("N")[..6];
+            using var ms = new MemoryStream(imgBytes);
+            var imgPart = mainPart.AddImagePart(imgType, relId);
+            imgPart.FeedData(ms);
+
+            long cx = 1800000L; // ~2 см
+            long cy = 900000L;
+
+            var drawing = new Drawing(
+                new DW.Inline(
+                    new DW.Extent { Cx = cx, Cy = cy },
+                    new DW.EffectExtent { LeftEdge=0L, TopEdge=0L, RightEdge=0L, BottomEdge=0L },
+                    new DW.DocProperties { Id = 10U, Name = "logo_hdr" },
+                    new DW.NonVisualGraphicFrameDrawingProperties(
+                        new A.GraphicFrameLocks { NoChangeAspect = true }),
+                    new A.Graphic(new A.GraphicData(
+                        new PIC.Picture(
+                            new PIC.NonVisualPictureProperties(
+                                new PIC.NonVisualDrawingProperties { Id = 0U, Name = "logo_hdr" },
+                                new PIC.NonVisualPictureDrawingProperties()),
+                            new PIC.BlipFill(
+                                new A.Blip { Embed = relId },
+                                new A.Stretch(new A.FillRectangle())),
+                            new PIC.ShapeProperties(
+                                new A.Transform2D(
+                                    new A.Offset { X=0L, Y=0L },
+                                    new A.Extents { Cx=cx, Cy=cy }),
+                                new A.PresetGeometry(new A.AdjustValueList())
+                                { Preset = A.ShapeTypeValues.Rectangle })))
+                    { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" }))
+                { DistanceFromTop=0U, DistanceFromBottom=0U, DistanceFromLeft=0U, DistanceFromRight=0U });
+
+            var para = new Paragraph();
+            para.Append(new Run(drawing));
+            return para;
+        }
+        /// <summary>
+        /// Двухколоночная шапка: слева — логотип+заголовок, справа — QR для оплаты.
+        /// </summary>
+        private static Table CreateHeaderWithQr(
+            MainDocumentPart mainPart,
+            OrganizationProfile org,
+            Invoice invoice,
+            byte[]? qrBytes)
+        {
+            var table = new Table();
+            table.Append(new TableProperties(
+                new TableBorders(
+                    new TopBorder { Val = BorderValues.None },
+                    new BottomBorder { Val = BorderValues.None },
+                    new LeftBorder { Val = BorderValues.None },
+                    new RightBorder { Val = BorderValues.None },
+                    new InsideHorizontalBorder { Val = BorderValues.None },
+                    new InsideVerticalBorder { Val = BorderValues.None }),
+                new TableWidth { Width = "10466", Type = TableWidthUnitValues.Dxa },
+                new TableJustification { Val = TableRowAlignmentValues.Left }));
+
+            var row = new TableRow();
+
+            // Левая колонка: логотип + СЧЁТ НА ОПЛАТУ + номер
+            var leftCell = new TableCell();
+            leftCell.Append(new TableCellProperties(
+                new TableCellWidth { Width = "7766", Type = TableWidthUnitValues.Dxa },
+                new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Top }));
+
+            // Логотип если есть
+            string? logoPath = null;
+            if (!string.IsNullOrWhiteSpace(org.LogoRelativePath))
+            {
+                string full = Path.Combine(AppPaths.ClientFilesFolder, org.LogoRelativePath);
+                if (File.Exists(full)) logoPath = full;
+            }
+            if (logoPath != null)
+            {
+                try
+                {
+                    var logoPara = AppendLogoToParagraph(mainPart, logoPath);
+                    leftCell.Append(logoPara);
+                }
+                catch { }
+            }
+
+            leftCell.Append(CreateParagraph(
+                "СЧЁТ НА ОПЛАТУ", true, 18, "1F4E79", JustificationValues.Left, 0, 30));
+            leftCell.Append(CreateParagraph(
+                $"№ {invoice.InvoiceNumber}", true, 28, "111827", JustificationValues.Left, 0, 60));
+
+            row.Append(leftCell);
+
+            // Правая колонка: QR-код
+            var rightCell = new TableCell();
+            rightCell.Append(new TableCellProperties(
+                new TableCellWidth { Width = "2700", Type = TableWidthUnitValues.Dxa },
+                new TableCellVerticalAlignment { Val = TableVerticalAlignmentValues.Top }));
+
+            if (qrBytes != null && qrBytes.Length > 0)
+            {
+                try
+                {
+                    rightCell.Append(CreateQrImageParagraph(mainPart, qrBytes, 900000, 900000, JustificationValues.Right));
+                    rightCell.Append(CreateParagraph(
+                        "Сканируйте для оплаты",
+                        false, 8, "6B7280", JustificationValues.Right, 0, 0));
+                }
+                catch
+                {
+                    rightCell.Append(CreateParagraph("", false, 8, "FFFFFF", JustificationValues.Left, 0, 0));
+                }
+            }
+            else
+            {
+                rightCell.Append(CreateParagraph(
+                    "[Заполните банковские реквизиты для QR]",
+                    false, 8, "9CA3AF", JustificationValues.Center, 20, 0));
+            }
+
+            row.Append(rightCell);
+            table.Append(row);
+            return table;
+        }
+
+        /// <summary>
+        /// Генерирует QR-код для оплаты по российскому стандарту (ST00012).
+        /// Возвращает PNG-байты или null если не хватает реквизитов.
+        /// </summary>
+        private static byte[]? TryGeneratePaymentQr(
+            OrganizationProfile org, decimal totalWithVat, string invoiceNumber)
+        {
+            // Для QR нужен расчётный счёт и БИК
+            if (string.IsNullOrWhiteSpace(org.SettlementAccount) ||
+                string.IsNullOrWhiteSpace(org.BankBic))
+                return null;
+
+            // Сумма в копейках, без разделителей
+            long sumKopeks = (long)Math.Round(totalWithVat * 100m, 0);
+
+            string name = string.IsNullOrWhiteSpace(org.Name)
+                ? org.ShortName : org.Name;
+
+            // Стандарт Банка России для QR-кода платёжного поручения
+            string qrData = string.Join("|",
+                "ST00012",
+                $"Name={name}",
+                $"PersonalAcc={org.SettlementAccount.Replace(" ", "")}",
+                $"BankName={org.BankName}",
+                $"BIC={org.BankBic.Replace(" ", "")}",
+                $"CorrespAcc={org.CorrespondentAccount.Replace(" ", "")}",
+                $"Sum={sumKopeks}",
+                $"Purpose=Оплата счёта № {invoiceNumber}",
+                $"PayeeINN={org.Inn.Replace(" ", "")}"
+            );
+
+            try
+            {
+                using var qrGenerator = new QRCodeGenerator();
+                var qrCodeData = qrGenerator.CreateQrCode(qrData, QRCodeGenerator.ECCLevel.M);
+                var qrCode = new PngByteQRCode(qrCodeData);
+                return qrCode.GetGraphic(4); // 4 пикселя на модуль
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Блок подписей с QR-кодом справа.
+        /// </summary>
+        private static Table CreateSignatureWithQrBlock(
+            MainDocumentPart mainPart, OrganizationProfile org, byte[]? qrBytes)
+        {
+            var table = new Table();
+
+            table.Append(new TableProperties(
+                new TableBorders(
+                    new TopBorder { Val = BorderValues.None },
+                    new BottomBorder { Val = BorderValues.None },
+                    new LeftBorder { Val = BorderValues.None },
+                    new RightBorder { Val = BorderValues.None },
+                    new InsideHorizontalBorder { Val = BorderValues.None },
+                    new InsideVerticalBorder { Val = BorderValues.None }),
+                new TableWidth { Width = "9360", Type = TableWidthUnitValues.Dxa }));
+
+            var row = new TableRow();
+
+            // Левая колонка — подписи
+            var sigCell = new TableCell();
+            sigCell.Append(new TableCellProperties(
+                new TableCellWidth { Width = "6500", Type = TableWidthUnitValues.Dxa }));
+
+            string directorPos = string.IsNullOrWhiteSpace(org.DirectorPosition)
+                ? "Директор" : org.DirectorPosition;
+            string directorName = org.DirectorName ?? "";
+
+            sigCell.Append(CreateParagraph(
+                $"{directorPos} _________________ / {directorName} /",
+                false, 10, "374151", JustificationValues.Left, 120, 40));
+            sigCell.Append(CreateParagraph(
+                "Главный бухгалтер _________________ /________________________/",
+                false, 10, "374151", JustificationValues.Left, 60, 40));
+            sigCell.Append(CreateParagraph(
+                "М.П.",
+                false, 10, "374151", JustificationValues.Left, 80, 0));
+
+            row.Append(sigCell);
+
+            // Правая колонка — QR
+            var qrCell = new TableCell();
+            qrCell.Append(new TableCellProperties(
+                new TableCellWidth { Width = "2860", Type = TableWidthUnitValues.Dxa }));
+
+            if (qrBytes != null && qrBytes.Length > 0)
+            {
+                try
+                {
+                    var imgPara = CreateQrImageParagraph(mainPart, qrBytes, 900000, 900000);
+                    qrCell.Append(imgPara);
+                    qrCell.Append(CreateParagraph(
+                        "Сканируйте для оплаты",
+                        false, 8, "6B7280", JustificationValues.Center, 0, 0));
+                }
+                catch
+                {
+                    qrCell.Append(CreateParagraph("QR: реквизиты не заполнены", false, 8, "9CA3AF", JustificationValues.Center, 0, 0));
+                }
+            }
+            else
+            {
+                qrCell.Append(CreateParagraph(
+                    "[Заполните банковские реквизиты] [для отображения QR-кода]",
+                    false, 8, "9CA3AF", JustificationValues.Center, 60, 0));
+            }
+
+            row.Append(qrCell);
+            table.Append(row);
+
+            return table;
+        }
+
+        private static Paragraph CreateQrImageParagraph(
+            MainDocumentPart mainPart, byte[] imageBytes, long widthEmu, long heightEmu)
+            => CreateQrImageParagraph(mainPart, imageBytes, widthEmu, heightEmu, JustificationValues.Center);
+
+        private static Paragraph CreateQrImageParagraph(
+            MainDocumentPart mainPart, byte[] imageBytes, long widthEmu, long heightEmu,
+            JustificationValues justification)
+        {
+            string relationshipId = "qrId" + Guid.NewGuid().ToString("N")[..8];
+
+            using var ms = new MemoryStream(imageBytes);
+            var imgPart = mainPart.AddImagePart(ImagePartType.Png, relationshipId);
+            imgPart.FeedData(ms);
+
+            var element = new Drawing(
+                new DW.Inline(
+                    new DW.Extent { Cx = widthEmu, Cy = heightEmu },
+                    new DW.EffectExtent
+                    {
+                        LeftEdge = 0L, TopEdge = 0L,
+                        RightEdge = 0L, BottomEdge = 0L
+                    },
+                    new DW.DocProperties { Id = 2U, Name = "QR-код оплаты" },
+                    new DW.NonVisualGraphicFrameDrawingProperties(
+                        new A.GraphicFrameLocks { NoChangeAspect = true }),
+                    new A.Graphic(
+                        new A.GraphicData(
+                            new PIC.Picture(
+                                new PIC.NonVisualPictureProperties(
+                                    new PIC.NonVisualDrawingProperties
+                                    {
+                                        Id = 0U,
+                                        Name = "qr.png"
+                                    },
+                                    new PIC.NonVisualPictureDrawingProperties()),
+                                new PIC.BlipFill(
+                                    new A.Blip { Embed = relationshipId },
+                                    new A.Stretch(new A.FillRectangle())),
+                                new PIC.ShapeProperties(
+                                    new A.Transform2D(
+                                        new A.Offset { X = 0L, Y = 0L },
+                                        new A.Extents { Cx = widthEmu, Cy = heightEmu }),
+                                    new A.PresetGeometry(
+                                        new A.AdjustValueList())
+                                    { Preset = A.ShapeTypeValues.Rectangle })))
+                        { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" }))
+                {
+                    DistanceFromTop = 0U,
+                    DistanceFromBottom = 0U,
+                    DistanceFromLeft = 0U,
+                    DistanceFromRight = 0U
+                });
+
+            var paragraph = new Paragraph();
+            paragraph.Append(new ParagraphProperties(
+                new Justification { Val = justification }));
+            paragraph.Append(new Run(element));
+            return paragraph;
+        }
+
+
+        /// <summary>Извлекает чистый номер договора из поля которое может содержать имя файла.</summary>
+        private static string ExtractCleanContractNumber(string? value, int clientId, DateTime? date)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                if (clientId > 0 && date.HasValue)
+                    return $"{date.Value:yyMMdd}-{clientId:000}";
+                return "—";
+            }
+
+            string text = Path.GetFileNameWithoutExtension(value.Trim());
+
+            // Номер вида 260420-018
+            var match = Regex.Match(text, @"\d{6}-\d{2,}");
+            if (match.Success) return match.Value;
+
+            // Дата + ID
+            if (clientId > 0 && date.HasValue)
+                return $"{date.Value:yyMMdd}-{clientId:000}";
+
+            // Убираем префиксы
+            text = Regex.Replace(text, @"^(Договор|ДОГОВОР)_?", "", RegexOptions.IgnoreCase).Trim('_', ' ', '-');
+            return string.IsNullOrWhiteSpace(text) ? "—" : text;
         }
 
         private static Paragraph CreateTopAccentLine()
@@ -277,9 +638,9 @@ namespace ClientAccountApp
             table.Append(row);
             return table;
         }
+        
 
-
-
+        
         private static Table CreateItemsTable(List<InvoiceItem> items)
         {
             var table = CreateBaseTable();
@@ -650,7 +1011,7 @@ namespace ClientAccountApp
                 ? "Клиент без названия"
                 : client.Name.Trim();
         }
-
+       
         private static string FormatMoney(decimal value)
         {
             return value.ToString("N2", RuCulture) + " ₽";

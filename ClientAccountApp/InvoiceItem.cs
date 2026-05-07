@@ -1,4 +1,4 @@
-﻿namespace ClientAccountApp
+namespace ClientAccountApp
 {
     public class InvoiceItem
     {
@@ -26,5 +26,14 @@
         public decimal AmountWithVat { get; set; }
 
         public int SortOrder { get; set; }
+
+        // Вычисляемые свойства для отображения в списке
+        public string AmountWithVatText =>
+            AmountWithVat.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("ru-RU")) + " ₽";
+
+        public string VatAmountText =>
+            VatAmount > 0
+                ? "НДС: " + VatAmount.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("ru-RU")) + " ₽"
+                : "";
     }
 }

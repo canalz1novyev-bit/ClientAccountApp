@@ -2693,6 +2693,28 @@ this.InitializeComponent();
                 : "Строка услуги обновлена.";
         }
 
+        private void InlineDeleteInvoiceItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement el || el.DataContext is not InvoiceItem item)
+                return;
+
+            if (!_selectedInvoiceId.HasValue) return;
+
+            using var db = new AppDbContext();
+            var toDelete = db.InvoiceItems.FirstOrDefault(x => x.Id == item.Id);
+            if (toDelete == null) return;
+
+            db.InvoiceItems.Remove(toDelete);
+            db.SaveChanges();
+
+            RecalculateInvoiceTotalsInDatabase(_selectedInvoiceId.Value);
+            LoadInvoiceItems(_selectedInvoiceId.Value);
+            UpdateBillingStats();
+            ClearInvoiceItemsEditor();
+
+            BillingStatusTextBlock.Text = $"Строка «{item.ServiceName}» удалена.";
+        }
+
         private void DeleteInvoiceItemButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_selectedInvoiceId.HasValue)
@@ -3106,7 +3128,10 @@ this.InitializeComponent();
             using var db = new AppDbContext();
             int organizationId = GetRequiredActiveOrganizationId();
 
-            string prefix = $"СЧ-{DateTime.Today:yyyy}-";
+            // Строим префикс из названия организации
+            string orgPrefix = BuildOrgInvoicePrefix(db, organizationId);
+            string prefix = $"{orgPrefix}-{DateTime.Today:yyyy}-";
+
             var existingNumbers = db.Invoices
                 .AsNoTracking()
                 .Where(x => x.InvoiceNumber.StartsWith(prefix))
@@ -3117,18 +3142,45 @@ this.InitializeComponent();
 
             foreach (var number in existingNumbers)
             {
-                if (number.Length <= prefix.Length)
-                    continue;
+                if (number.Length <= prefix.Length) continue;
 
                 string tail = number.Substring(prefix.Length);
 
                 if (int.TryParse(tail, out int parsed) && parsed >= nextNumber)
-                {
                     nextNumber = parsed + 1;
-                }
             }
 
             return $"{prefix}{nextNumber:0000}";
+        }
+
+        private static string BuildOrgInvoicePrefix(AppDbContext db, int organizationId)
+        {
+            var org = db.OrganizationProfiles
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == organizationId);
+
+            if (org == null) return "СЧ";
+
+            // Берём первые буквы из названия
+            // Убираем ООО, ИП, АО, ПАО, ЗАО и кавычки
+            string name = System.Text.RegularExpressions.Regex.Replace(
+                org.Name ?? org.ShortName ?? "",
+                @"(ООО|ОАО|ИП|АО|ПАО|ЗАО|АНО|НКО)[""«»"" \.\,]",
+                "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim('"', '«', '»', ' ', '"', '"');
+
+            // Берём только буквы
+            var letters = name.Where(c => char.IsLetter(c)).Take(3).ToArray();
+
+            if (letters.Length == 0) return "СЧ";
+
+            string prefix = new string(letters).ToUpperInvariant();
+
+            // Для ИП берём 2 буквы
+            bool isIp = (org.Name ?? "").StartsWith("ИП ", StringComparison.OrdinalIgnoreCase);
+            if (isIp && letters.Length >= 2)
+                prefix = new string(letters.Take(2).ToArray()).ToUpperInvariant();
+
+            return prefix;
         }
 
         private static string GetSelectedComboBoxText(ComboBox? comboBox, string fallback)

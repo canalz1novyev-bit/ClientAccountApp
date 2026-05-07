@@ -10,6 +10,13 @@ namespace ClientAccountApp
         public static Window? CurrentWindow { get; private set; }
         public static ShellWindow? AppShell { get; private set; }
 
+        /// <summary>Навигация из любой страницы.</summary>
+        public void NavigateTo(Type pageType)
+        {
+            if (RootFrame.CurrentSourcePageType != pageType)
+                RootFrame.Navigate(pageType);
+        }
+
         public ShellWindow()
         {
             CurrentWindow = this;

@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="ClientAccountApp.OrganizationSetupPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -145,6 +145,7 @@
 
                                 <TextBox
                                     x:Name="OrganizationBankBicTextBox"
+                                    LostFocus="OrganizationBankBicTextBox_LostFocus"
                                     Grid.Column="1"
                                     Header="БИК"/>
                             </Grid>

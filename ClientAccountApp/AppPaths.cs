@@ -20,8 +20,8 @@ namespace ClientAccountApp
             _defaultStorageRoot = GetDefaultStorageRoot();
             _storageRoot = ResolveStorageRoot();
 
-            _databasePath = Path.Combine(_storageRoot, DatabaseFileName);
-            _backupsFolder = Path.Combine(_storageRoot, BackupsFolderName);
+            _databasePath    = Path.Combine(_storageRoot, DatabaseFileName);
+            _backupsFolder   = Path.Combine(_storageRoot, BackupsFolderName);
             _clientFilesFolder = Path.Combine(_storageRoot, ClientFilesFolderName);
 
             Directory.CreateDirectory(_storageRoot);
@@ -29,61 +29,75 @@ namespace ClientAccountApp
             Directory.CreateDirectory(_clientFilesFolder);
         }
 
-        public static string AppDataFolder => _storageRoot;
+        public static string AppDataFolder      => _storageRoot ?? _getFallback();
+        public static string StorageRoot        => _storageRoot ?? _getFallback();
+        public static string DefaultStorageRoot => _defaultStorageRoot ?? _getFallback();
 
-        public static string StorageRoot => _storageRoot;
-
-        public static string DefaultStorageRoot => _defaultStorageRoot;
-
-        public static string DatabasePath => _databasePath;
-
-        public static string BackupsFolder => _backupsFolder;
-
-        public static string ClientFilesFolder => _clientFilesFolder;
-
-        public static bool IsCustomStorage
+        private static string _getFallback()
         {
-            get
+            try
             {
-                return !string.Equals(
-                    _storageRoot,
-                    _defaultStorageRoot,
-                    StringComparison.OrdinalIgnoreCase);
+                string appData = Environment.GetFolderPath(
+                    Environment.SpecialFolder.LocalApplicationData);
+                string folder = Path.Combine(appData, "ClientAccountApp");
+                Directory.CreateDirectory(folder);
+                return folder;
+            }
+            catch
+            {
+                return Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "ClientAccountApp");
             }
         }
+        public static string DatabasePath       => _databasePath;
+        public static string BackupsFolder      => _backupsFolder;
+        public static string ClientFilesFolder  => _clientFilesFolder;
 
+        public static bool IsCustomStorage =>
+            !string.Equals(_storageRoot, _defaultStorageRoot, StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Стандартный путь — Документы\ClientAccountApp.
+        /// Виден в Проводнике, не теряется при переустановке Windows.
+        /// </summary>
         private static string GetDefaultStorageRoot()
         {
-            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            // Пробуем Документы
+            try
+            {
+                string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                if (!string.IsNullOrWhiteSpace(documents))
+                {
+                    string folder = Path.Combine(documents, "ClientAccountApp");
+                    Directory.CreateDirectory(folder);
+                    return folder;
+                }
+            }
+            catch { }
 
-            string folder = Path.Combine(localAppData, "ClientAccountApp");
-
-            Directory.CreateDirectory(folder);
-
-            return folder;
+            // Запасной вариант — AppData (старое поведение)
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string fallback = Path.Combine(appData, "ClientAccountApp");
+            Directory.CreateDirectory(fallback);
+            return fallback;
         }
 
         private static string ResolveStorageRoot()
         {
-            string? customRoot = StorageLocationService.GetCustomStorageRoot();
-
-            if (string.IsNullOrWhiteSpace(customRoot))
-                return _defaultStorageRoot;
-
-            customRoot = customRoot.Trim();
-
             try
             {
-                Directory.CreateDirectory(customRoot);
-                Directory.CreateDirectory(Path.Combine(customRoot, BackupsFolderName));
-                Directory.CreateDirectory(Path.Combine(customRoot, ClientFilesFolderName));
+                string? customRoot = StorageLocationService.GetCustomStorageRoot();
+                if (!string.IsNullOrWhiteSpace(customRoot))
+                {
+                    customRoot = customRoot.Trim();
+                    Directory.CreateDirectory(customRoot);
+                    return customRoot;
+                }
+            }
+            catch { }
 
-                return customRoot;
-            }
-            catch
-            {
-                return _defaultStorageRoot;
-            }
+            return _defaultStorageRoot;
         }
     }
 }

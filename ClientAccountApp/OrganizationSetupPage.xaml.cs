@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -274,5 +274,29 @@ namespace ClientAccountApp
         {
             Frame.Navigate(typeof(OrganizationSelectPage));
         }
+        private async void OrganizationBankBicTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (OrganizationBankBicTextBox == null) return;
+
+            string bic = new string(
+                OrganizationBankBicTextBox.Text.Trim().Where(char.IsDigit).ToArray());
+
+            if (bic.Length != 9) return;
+
+            try
+            {
+                var result = await BankLookupService.FindByBicAsync(bic);
+                if (result == null) return;
+
+                OrganizationBankBicTextBox.Text         = result.Bic;
+                OrganizationBankNameTextBox.Text         = result.BankName;
+                OrganizationCorrespondentAccountTextBox.Text = result.CorrespondentAccount;
+            }
+            catch
+            {
+                // Тихая ошибка — пользователь заполнит вручную
+            }
+        }
+
     }
 }
