@@ -1,4 +1,4 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Diagnostics;
@@ -23,6 +23,20 @@ namespace ClientAccountApp
 
         private void SafeUpdateStorageInfo()
         {
+            // Режим базы данных
+            try
+            {
+                if (SqlServerModeTextBlock != null)
+                {
+                    bool isSql = false;
+                    try { isSql = DatabaseConnectionSettingsService.IsSqlServerMode(); } catch { }
+                    SqlServerModeTextBlock.Text = isSql
+                        ? "Режим: SQL Server (корпоративный)"
+                        : "Режим: Локальная SQLite";
+                }
+            }
+            catch { }
+
             // StorageCurrentPathTextBlock
             try
             {
@@ -84,6 +98,11 @@ namespace ClientAccountApp
         private void OpenStorageSettingsButton_Click(object sender, RoutedEventArgs e)
         {
             try { Frame.Navigate(typeof(DataStorageSettingsPage)); } catch { }
+        }
+
+        private void OpenDatabaseConnectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            try { Frame.Navigate(typeof(DatabaseConnectionSettingsPage)); } catch { }
         }
 
         private async void ResetStorageButton_Click(object sender, RoutedEventArgs e)

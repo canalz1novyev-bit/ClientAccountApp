@@ -70,6 +70,35 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Корпоративная база -->
+                <Border Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xF259;" FontSize="20"
+                                      Foreground="{StaticResource NiatecAccentBrush}"/>
+                            <TextBlock Text="Корпоративная база данных"
+                                       Style="{StaticResource NiatecSectionTitleTextStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock
+                            x:Name="SqlServerModeTextBlock"
+                            Text="Режим: Локальная SQLite"
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <TextBlock
+                            Text="SQL Server позволяет нескольким сотрудникам работать с одной базой данных одновременно. Требуется SQL Server или SQL Server Express."
+                            Style="{StaticResource NiatecCaptionTextStyle}"
+                            TextWrapping="Wrap"/>
+
+                        <Button
+                            Content="Открыть настройки подключения"
+                            Style="{StaticResource NiatecPrimaryButtonStyle}"
+                            HorizontalAlignment="Left"
+                            Click="OpenDatabaseConnectionButton_Click"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- Резервные копии -->
                 <Border Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="12">

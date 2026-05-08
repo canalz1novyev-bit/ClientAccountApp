@@ -1,7 +1,9 @@
-﻿using System;
+using System;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Velopack;
 
 namespace ClientAccountApp
 {
@@ -10,65 +12,84 @@ namespace ClientAccountApp
         public bool IsUpdateAvailable { get; set; }
         public string CurrentVersion { get; set; } = "";
         public string AvailableVersion { get; set; } = "";
+        public string ReleaseNotes { get; set; } = "";
+        public string DownloadUrl { get; set; } = "";
         public string Message { get; set; } = "";
     }
 
+    /// <summary>
+    /// Проверка обновлений через GitHub Releases API.
+    /// Пользователь скачивает новую версию вручную — без автоустановки.
+    /// </summary>
     public static class AppUpdateService
     {
-        // Позже заменим на реальный адрес обновлений.
-        // Например: https://ниатек.рф/downloads/niatec-client/releases
-        private const string UpdateUrl = "https://example.com/niatec-client/releases";
+        // ⚠️ Замени на свой GitHub репозиторий (логин/репо)
+        private const string GitHubOwner = "canalz1novyev-bit";
+        private const string GitHubRepo = "ClientAccountApp";
+
+        private static readonly HttpClient _http = new HttpClient();
+
+        static AppUpdateService()
+        {
+            // GitHub API требует User-Agent
+            _http.DefaultRequestHeaders.UserAgent.ParseAdd("ClientAccountApp/1.0");
+            _http.Timeout = TimeSpan.FromSeconds(15);
+        }
 
         public static string GetCurrentVersion()
         {
             try
             {
-                var assembly = Assembly.GetExecutingAssembly();
+                var ver = Assembly.GetExecutingAssembly()
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                    ?.InformationalVersion;
 
-                var infoVersion = assembly
-                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-                    .InformationalVersion;
+                if (!string.IsNullOrWhiteSpace(ver))
+                {
+                    int plus = ver.IndexOf('+');
+                    return plus > 0 ? ver[..plus] : ver;
+                }
 
-                if (!string.IsNullOrWhiteSpace(infoVersion))
-                    return infoVersion;
-
-                return assembly.GetName().Version?.ToString() ?? "0.9.0-beta";
+                return Assembly.GetExecutingAssembly()
+                    .GetName().Version?.ToString(3) ?? "1.0.0";
             }
             catch
             {
-                return "0.9.0-beta";
+                return "1.0.0";
             }
         }
 
         public static async Task<AppUpdateCheckResult> CheckForUpdatesAsync()
         {
+            string currentVersion = GetCurrentVersion();
+
             try
             {
-                var manager = new UpdateManager(UpdateUrl);
+                string url = $"https://api.github.com/repos/{GitHubOwner}/{GitHubRepo}/releases/latest";
+                string json = await _http.GetStringAsync(url);
 
-                var updateInfo = await manager.CheckForUpdatesAsync();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
 
-                string currentVersion = GetCurrentVersion();
+                string tag = root.GetProperty("tag_name").GetString() ?? "";
+                string available = tag.TrimStart('v');
+                string notes = root.TryGetProperty("body", out var body)
+                    ? body.GetString() ?? "" : "";
 
-                if (updateInfo == null)
-                {
-                    return new AppUpdateCheckResult
-                    {
-                        IsUpdateAvailable = false,
-                        CurrentVersion = currentVersion,
-                        AvailableVersion = "",
-                        Message = "Обновлений нет."
-                    };
-                }
+                string downloadUrl = $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/latest";
 
-                string availableVersion = updateInfo.TargetFullRelease?.Version?.ToString() ?? "новая версия";
+                bool isNewer = IsVersionNewer(available, currentVersion);
 
                 return new AppUpdateCheckResult
                 {
-                    IsUpdateAvailable = true,
+                    IsUpdateAvailable = isNewer,
                     CurrentVersion = currentVersion,
-                    AvailableVersion = availableVersion,
-                    Message = $"Доступно обновление: {availableVersion}"
+                    AvailableVersion = available,
+                    ReleaseNotes = notes,
+                    DownloadUrl = downloadUrl,
+                    Message = isNewer
+                        ? $"Доступна новая версия {available}!"
+                        : "Установлена последняя версия."
                 };
             }
             catch (Exception ex)
@@ -76,36 +97,40 @@ namespace ClientAccountApp
                 return new AppUpdateCheckResult
                 {
                     IsUpdateAvailable = false,
-                    CurrentVersion = GetCurrentVersion(),
-                    AvailableVersion = "",
-                    Message = "Ошибка проверки обновлений: " + ex.Message
+                    CurrentVersion = currentVersion,
+                    Message = "Ошибка проверки: " + ex.Message
                 };
             }
         }
 
-        public static async Task<string> DownloadAndApplyUpdateAsync()
+        /// <summary>
+        /// Открывает страницу релиза в браузере — пользователь скачивает сам.
+        /// </summary>
+        public static void OpenDownloadPage(string url)
         {
             try
             {
-                var manager = new UpdateManager(UpdateUrl);
-
-                var updateInfo = await manager.CheckForUpdatesAsync();
-
-                if (updateInfo == null)
-                    return "Обновлений нет.";
-
-                await manager.DownloadUpdatesAsync(updateInfo);
-
-                if (updateInfo.TargetFullRelease == null)
-                    return "Обновление скачано, но не удалось определить пакет для установки.";
-
-                manager.ApplyUpdatesAndRestart(updateInfo.TargetFullRelease);
-
-                return "Обновление скачано. Приложение будет перезапущено.";
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = string.IsNullOrWhiteSpace(url)
+                        ? $"https://github.com/{GitHubOwner}/{GitHubRepo}/releases/latest"
+                        : url,
+                    UseShellExecute = true
+                });
             }
-            catch (Exception ex)
+            catch { }
+        }
+
+        private static bool IsVersionNewer(string available, string current)
+        {
+            try
             {
-                return "Ошибка установки обновления: " + ex.Message;
+                return Version.Parse(available) > Version.Parse(current);
+            }
+            catch
+            {
+                return string.Compare(available, current,
+                    StringComparison.OrdinalIgnoreCase) > 0;
             }
         }
     }

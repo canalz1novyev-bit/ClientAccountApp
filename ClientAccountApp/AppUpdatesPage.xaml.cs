@@ -7,16 +7,16 @@ namespace ClientAccountApp
 {
     public sealed partial class AppUpdatesPage : Page
     {
-        private bool _hasUpdate;
+        private string _downloadUrl = "";
 
         public AppUpdatesPage()
         {
-            this.InitializeComponent();
-
-            CurrentVersionTextBlock.Text = AppUpdateService.GetCurrentVersion();
-            AvailableVersionTextBlock.Text = "Проверка ещё не выполнялась.";
-            UpdateStatusTextBlock.Text = "Раздел обновлений готов к работе.";
-            InstallUpdateButton.IsEnabled = false;
+            InitializeComponent();
+            Loaded += (_, _) =>
+            {
+                CurrentVersionTextBlock.Text = AppUpdateService.GetCurrentVersion();
+                AvailableVersionTextBlock.Text = "Нажмите «Проверить обновления».";
+            };
         }
 
         private async void CheckUpdatesButton_Click(object sender, RoutedEventArgs e)
@@ -30,69 +30,67 @@ namespace ClientAccountApp
             {
                 CheckUpdatesButton.IsEnabled = false;
                 InstallUpdateButton.IsEnabled = false;
+                UpdateProgressBar.Visibility = Visibility.Visible;
+                UpdateProgressBar.IsIndeterminate = true;
+                UpdateStatusTextBlock.Text = "Проверка обновлений...";
 
-                UpdateStatusTextBlock.Text = "Проверяю наличие обновлений...";
-
-                AppUpdateCheckResult result = await AppUpdateService.CheckForUpdatesAsync();
+                var result = await AppUpdateService.CheckForUpdatesAsync();
 
                 CurrentVersionTextBlock.Text = result.CurrentVersion;
+                AvailableVersionTextBlock.Text = result.IsUpdateAvailable
+                    ? result.AvailableVersion : "Нет доступных обновлений.";
 
-                _hasUpdate = result.IsUpdateAvailable;
+                UpdateStatusTextBlock.Text = result.Message;
+                _downloadUrl = result.DownloadUrl;
 
                 if (result.IsUpdateAvailable)
                 {
-                    AvailableVersionTextBlock.Text = result.AvailableVersion;
                     InstallUpdateButton.IsEnabled = true;
+                    // Показываем заметки о релизе
+                    if (!string.IsNullOrWhiteSpace(result.ReleaseNotes))
+                    {
+                        ReleaseNotesTextBlock.Text = result.ReleaseNotes;
+                        ReleaseNotesBorder.Visibility = Visibility.Visible;
+                    }
                 }
                 else
                 {
-                    AvailableVersionTextBlock.Text = "Новая версия не найдена.";
-                    InstallUpdateButton.IsEnabled = false;
+                    ReleaseNotesBorder.Visibility = Visibility.Collapsed;
                 }
-
-                UpdateStatusTextBlock.Text = result.Message;
             }
             catch (Exception ex)
             {
-                _hasUpdate = false;
-                InstallUpdateButton.IsEnabled = false;
-                UpdateStatusTextBlock.Text = "Ошибка проверки обновлений: " + ex.Message;
+                UpdateStatusTextBlock.Text = "Ошибка: " + ex.Message;
             }
             finally
             {
                 CheckUpdatesButton.IsEnabled = true;
+                UpdateProgressBar.Visibility = Visibility.Collapsed;
+                UpdateProgressBar.IsIndeterminate = false;
             }
         }
 
         private async void InstallUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            var dialog = new ContentDialog
             {
-                if (!_hasUpdate)
-                {
-                    UpdateStatusTextBlock.Text = "Сначала проверьте наличие обновлений.";
-                    return;
-                }
+                Title = "Скачать обновление?",
+                Content = "Откроется страница загрузки на GitHub. Скачайте ZIP, распакуйте и замените файлы приложения.",
+                PrimaryButtonText = "Открыть страницу загрузки",
+                CloseButtonText = "Отмена",
+                XamlRoot = XamlRoot
+            };
 
-                CheckUpdatesButton.IsEnabled = false;
-                InstallUpdateButton.IsEnabled = false;
-
-                UpdateStatusTextBlock.Text = "Скачиваю и устанавливаю обновление...";
-
-                string message = await AppUpdateService.DownloadAndApplyUpdateAsync();
-
-                UpdateStatusTextBlock.Text = message;
-            }
-            catch (Exception ex)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                UpdateStatusTextBlock.Text = "Ошибка установки обновления: " + ex.Message;
-                CheckUpdatesButton.IsEnabled = true;
+                AppUpdateService.OpenDownloadPage(_downloadUrl);
+                UpdateStatusTextBlock.Text = "Страница загрузки открыта в браузере.";
             }
         }
 
         private void BackToSettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(SettingsPage));
+            if (Frame.CanGoBack) Frame.GoBack();
         }
     }
 }

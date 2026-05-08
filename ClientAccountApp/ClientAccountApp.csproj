@@ -1,59 +1,226 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+  <OutputType>WinExe</OutputType>
+  <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+  <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+  <RootNamespace>ClientAccountApp</RootNamespace>
+  <ApplicationManifest>app.manifest</ApplicationManifest>
+  <Platforms>x86;x64;ARM64</Platforms>
+  <UseWinUI>true</UseWinUI>
+  <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  <Version>1.0.0</Version>
+  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  <InformationalVersion>1.0.0</InformationalVersion>
+</PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
 
-	<PropertyGroup>
-		
-		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-		<RootNamespace>ClientAccountApp</RootNamespace>
-		<UseWinUI>true</UseWinUI>
-		<Platforms>x64</Platforms>
-		<PlatformTarget>x64</PlatformTarget>
+  <ItemGroup>
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Templates\contract_template_niatek.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
-		<!-- Надёжные настройки публикации -->
-		<SelfContained>true</SelfContained>
-		<PublishReadyToRun>false</PublishReadyToRun>
-		<PublishTrimmed>false</PublishTrimmed>
-		<WindowsPackageType>None</WindowsPackageType>
-		<EnableMsixTooling>false</EnableMsixTooling>
-		<DisableXamlGeneratedMain>true</DisableXamlGeneratedMain>
-<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-<PublishSingleFile>false</PublishSingleFile>
-<IncludeAllContentForSelfExtract>false</IncludeAllContentForSelfExtract>
-	</PropertyGroup>
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!--
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.26" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.26" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.26">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
+    <PackageReference Include="PdfPig" Version="0.1.14" />
+    <PackageReference Include="QRCoder" Version="1.8.0" />
+    <PackageReference Include="QuestPDF" Version="2026.2.4" />
+    <!-- Velopack убран — используем простую проверку через GitHub API -->
+  </ItemGroup>
+
+  <!--
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+	
+
+ <!-- Publish Properties — оставляем только базовые настройки -->
+<PropertyGroup>
+  <PublishReadyToRun>False</PublishReadyToRun>
+  <PublishTrimmed>False</PublishTrimmed>
+</PropertyGroup>
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\Admin\source\repos\ClientAccountApp\ClientAccountApp\.editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="AiSettingsPage.xaml" />
+    <None Remove="AppUpdatesPage.xaml" />
+    <None Remove="BackupsPage.xaml" />
+    <None Remove="BillingPage.xaml" />
+    <None Remove="ClientsPage.xaml" />
+    <None Remove="ContractsPage.xaml" />
+    <None Remove="CounterpartySourcesSettingsPage.xaml" />
+    <None Remove="DashboardPage.xaml" />
+    <None Remove="DatabaseConnectionSettingsPage.xaml" />
+    <None Remove="DatabaseDiagnosticsPage.xaml" />
+    <None Remove="DataStorageSettingsPage.xaml" />
+    <None Remove="innlookup.local.json" />
+    <None Remove="LegacyWorkspacePage.xaml" />
+    <None Remove="OrganizationSelectPage.xaml" />
+    <None Remove="OrganizationSetupPage.xaml" />
+    <None Remove="ProblemSignaturesPage.xaml" />
+    <None Remove="SettingsPage.xaml" />
+    <None Remove="ShellWindow.xaml" />
+    <None Remove="Templates\contract_template_niatek.docx" />
+    <None Remove="Themes\NiatecTheme.xaml" />
+    <None Remove="ToolsPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\Admin\source\repos\ClientAccountApp\ClientAccountApp\.editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="innlookup.local.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ContractsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="DashboardPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="LegacyWorkspacePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+	<ItemGroup>
+		<None Remove="ContractsPage.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="OrganizationSelectPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="OrganizationSetupPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="BillingPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+	<ItemGroup>
+	  <Page Update="ToolsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Assets\**\*.*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Templates\**\*.*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="innlookup.local.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+		<Page Update="ContractsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
 	</ItemGroup>
-<ItemGroup>
-  <Content Include="**\*.xaml">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </Content>
-</ItemGroup>
-
 	<ItemGroup>
-		<PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.26" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.26" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
-		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
-		<PackageReference Include="PdfPig" Version="0.1.14" />
-		<PackageReference Include="QRCoder" Version="1.8.0" />
-		<PackageReference Include="QuestPDF" Version="2026.2.4" />
-		<PackageReference Include="Velopack" Version="0.0.1298" />
+		<Page Update="ContractsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
 	</ItemGroup>
-
+  <ItemGroup>
+    <Page Update="ShellWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="BackupsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ProblemSignaturesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ClientsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\Reports\" />
+    <Folder Include="XsdSchemas\ACT\" />
+    <Folder Include="XsdSchemas\CHET_F\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\Reports\NiatecCounterpartyLogo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="AppUpdatesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CounterpartySourcesSettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="AiSettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="DatabaseDiagnosticsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="DatabaseConnectionSettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Themes\NiatecTheme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="SettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="DataStorageSettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
 </Project>

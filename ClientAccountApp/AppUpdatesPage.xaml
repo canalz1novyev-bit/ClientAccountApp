@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="ClientAccountApp.AppUpdatesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -98,12 +98,35 @@
                                 Click="InstallUpdateButton_Click"/>
                         </Grid>
 
+                        <ProgressBar
+                            x:Name="UpdateProgressBar"
+                            Visibility="Collapsed"
+                            Minimum="0" Maximum="100"
+                            IsIndeterminate="True"/>
+
                         <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
                             <TextBlock
                                 x:Name="UpdateStatusTextBlock"
-                                Text="Раздел обновлений готов к работе."
+                                Text="Нажми &quot;Проверить обновления&quot; для начала."
                                 Foreground="{StaticResource NiatecAccentBrush}"
                                 TextWrapping="Wrap"/>
+                        </Border>
+
+                        <Border
+                            x:Name="ReleaseNotesBorder"
+                            Style="{StaticResource NiatecInnerPanelBorderStyle}"
+                            Visibility="Collapsed">
+                            <StackPanel Spacing="6">
+                                <TextBlock
+                                    Text="Что нового"
+                                    FontWeight="SemiBold"
+                                    Foreground="{StaticResource NiatecAccentBrush}"/>
+                                <TextBlock
+                                    x:Name="ReleaseNotesTextBlock"
+                                    Text=""
+                                    Style="{StaticResource NiatecCaptionTextStyle}"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>
