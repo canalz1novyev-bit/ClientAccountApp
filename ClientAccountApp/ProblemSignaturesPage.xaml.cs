@@ -149,7 +149,7 @@ namespace ClientAccountApp
                 return;
             }
 
-            Frame?.Navigate(typeof(LegacyWorkspacePage), _selectedProblemSignature.ClientId);
+            Frame?.Navigate(typeof(ClientsPage), _selectedProblemSignature.ClientId);
         }
     }
 }

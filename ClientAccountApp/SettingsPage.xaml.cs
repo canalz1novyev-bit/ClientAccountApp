@@ -1,5 +1,7 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -17,13 +19,61 @@ namespace ClientAccountApp
         protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            // Откладываем чтобы страница успела полностью отрисоваться
-            DispatcherQueue.TryEnqueue(() => SafeUpdateStorageInfo());
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                SafeUpdateStorageInfo();
+                UpdateThemeCardSelection();
+            });
         }
+
+        // ─── Тема ─────────────────────────────────────────────────────────────
+
+        private void DarkThemeCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            ThemeService.ApplyTheme(ThemeService.ThemeDark);
+            UpdateThemeCardSelection();
+            ThemeStatusTextBlock.Text = "Тёмная тема применена.";
+        }
+
+        private void LightThemeCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            ThemeService.ApplyTheme(ThemeService.ThemeLight);
+            UpdateThemeCardSelection();
+            ThemeStatusTextBlock.Text = "Светлая тема применена.";
+        }
+
+        private void MilitaryThemeCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            ThemeService.ApplyTheme(ThemeService.ThemeMilitary);
+            UpdateThemeCardSelection();
+            ThemeStatusTextBlock.Text = "Тема М81 Woodland применена.";
+        }
+
+        private void UpdateThemeCardSelection()
+        {
+            string theme = ThemeService.CurrentTheme;
+
+            var accent = new SolidColorBrush(ColorHelper.FromArgb(255, 184, 134, 11));
+            var milAccent = new SolidColorBrush(ColorHelper.FromArgb(255, 100, 160, 50));
+            var def = new SolidColorBrush(ColorHelper.FromArgb(255, 42, 53, 72));
+
+            DarkThemeCard.BorderBrush = theme == ThemeService.ThemeDark ? accent : def;
+            DarkThemeCard.BorderThickness = theme == ThemeService.ThemeDark ? new Thickness(2) : new Thickness(1);
+
+            LightThemeCard.BorderBrush = theme == ThemeService.ThemeLight ? accent : def;
+            LightThemeCard.BorderThickness = theme == ThemeService.ThemeLight ? new Thickness(2) : new Thickness(1);
+
+            if (MilitaryThemeCard != null)
+            {
+                MilitaryThemeCard.BorderBrush = theme == ThemeService.ThemeMilitary ? milAccent : def;
+                MilitaryThemeCard.BorderThickness = theme == ThemeService.ThemeMilitary ? new Thickness(2) : new Thickness(1);
+            }
+        }
+
+        // ─── Хранилище ────────────────────────────────────────────────────────
 
         private void SafeUpdateStorageInfo()
         {
-            // Режим базы данных
             try
             {
                 if (SqlServerModeTextBlock != null)
@@ -37,7 +87,6 @@ namespace ClientAccountApp
             }
             catch { }
 
-            // StorageCurrentPathTextBlock
             try
             {
                 if (StorageCurrentPathTextBlock != null)
@@ -49,7 +98,6 @@ namespace ClientAccountApp
             }
             catch { }
 
-            // StoragePathInfoTextBlock
             try
             {
                 if (StoragePathInfoTextBlock != null)
@@ -63,7 +111,6 @@ namespace ClientAccountApp
             }
             catch { }
 
-            // ResetStorageButton
             try
             {
                 if (ResetStorageButton != null)
@@ -76,8 +123,6 @@ namespace ClientAccountApp
             }
             catch { }
         }
-
-        // ─── Хранилище ────────────────────────────────────────────────────────
 
         private void OpenStorageFolderButton_Click(object sender, RoutedEventArgs e)
         {
@@ -183,8 +228,6 @@ namespace ClientAccountApp
         {
             try { Frame.Navigate(typeof(BackupsPage)); } catch { }
         }
-
-        // ─── Вспомогательные ──────────────────────────────────────────────────
 
         private static void OpenFolder(string path)
         {

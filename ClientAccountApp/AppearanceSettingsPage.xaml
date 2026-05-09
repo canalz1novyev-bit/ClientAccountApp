@@ -1,0 +1,65 @@
+<Page
+    x:Class="ClientAccountApp.AppearanceSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Внешний вид" Style="{StaticResource NiatecPageTitleTextStyle}"/>
+                <TextBlock Text="Настройка темы и оформления приложения."
+                           Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+            </StackPanel>
+
+            <Border Grid.Row="1" Style="{StaticResource NiatecCardBorderStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Тема приложения" Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+                    <TextBlock Text="Выберите тёмную или светлую тему. Изменение применяется немедленно."
+                               Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Border x:Name="DarkThemeCard"
+                                Width="160" Height="100" CornerRadius="12"
+                                Background="#0B0F17"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                BorderThickness="2" Padding="12"
+                                Tapped="DarkThemeCard_Tapped">
+                            <StackPanel Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="Тёмная" Foreground="White"
+                                           FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="Классический тёмный интерфейс"
+                                           Foreground="#9AA7BD" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="LightThemeCard"
+                                Width="160" Height="100" CornerRadius="12"
+                                Background="#F0F2F5"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                BorderThickness="2" Padding="12"
+                                Tapped="LightThemeCard_Tapped">
+                            <StackPanel Spacing="8" VerticalAlignment="Center">
+                                <TextBlock Text="Светлая" Foreground="#1A2033"
+                                           FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="Светлый интерфейс для работы днём"
+                                           Foreground="#4A5568" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock x:Name="ThemeStatusTextBlock" Text=""
+                               Foreground="{StaticResource NiatecAccentBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

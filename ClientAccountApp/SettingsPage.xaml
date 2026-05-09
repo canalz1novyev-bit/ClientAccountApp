@@ -15,7 +15,7 @@
         <StackPanel Spacing="4">
             <TextBlock Text="Параметры" Style="{StaticResource NiatecPageTitleTextStyle}"/>
             <TextBlock
-                Text="Хранилище данных и резервные копии."
+                Text="Хранилище данных, резервные копии и внешний вид."
                 Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
             <TextBlock
                 x:Name="StoragePathInfoTextBlock"
@@ -25,6 +25,78 @@
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16">
+
+                <!-- Внешний вид -->
+                <Border Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <FontIcon Glyph="&#xE790;" FontSize="20"
+                                      Foreground="{StaticResource NiatecAccentBrush}"/>
+                            <TextBlock Text="Внешний вид"
+                                       Style="{StaticResource NiatecSectionTitleTextStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock
+                            Text="Выберите тёмную или светлую тему. Изменение применяется немедленно."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border x:Name="DarkThemeCard"
+                                    Width="160" Height="90" CornerRadius="12"
+                                    Background="#0B0F17"
+                                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                                    BorderThickness="2" Padding="12"
+                                    Tapped="DarkThemeCard_Tapped">
+                                <StackPanel Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="Тёмная" Foreground="White"
+                                               FontSize="14" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Классический тёмный интерфейс"
+                                               Foreground="#9AA7BD" FontSize="11" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="LightThemeCard"
+                                    Width="160" Height="90" CornerRadius="12"
+                                    Background="#F0F2F5"
+                                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                                    BorderThickness="2" Padding="12"
+                                    Tapped="LightThemeCard_Tapped">
+                                <StackPanel Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="Светлая" Foreground="#1A2033"
+                                               FontSize="14" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Светлый интерфейс для работы днём"
+                                               Foreground="#4A5568" FontSize="11" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                            <Border x:Name="MilitaryThemeCard"
+        Width="160" Height="90" CornerRadius="12"
+        BorderBrush="{StaticResource NiatecBorderBrush}"
+        BorderThickness="2" Padding="12"
+        Tapped="MilitaryThemeCard_Tapped">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#3B4A2A" Offset="0"/>
+                                        <GradientStop Color="#2A3D1A" Offset="0.5"/>
+                                        <GradientStop Color="#1E1A0E" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel Spacing="6" VerticalAlignment="Center">
+                                    <TextBlock Text="М81 Woodland" Foreground="#B8D478"
+                   FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="Камуфляж · военная тема"
+                   Foreground="#6A7A40" FontSize="11" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock
+                            x:Name="ThemeStatusTextBlock"
+                            Text=""
+                            Foreground="{StaticResource NiatecAccentBrush}"
+                            TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
 
                 <!-- Хранилище данных -->
                 <Border Style="{StaticResource NiatecCardBorderStyle}">
@@ -87,7 +159,7 @@
                             Style="{StaticResource NiatecCaptionTextStyle}"/>
 
                         <TextBlock
-                            Text="SQL Server позволяет нескольким сотрудникам работать с одной базой данных одновременно. Требуется SQL Server или SQL Server Express."
+                            Text="SQL Server позволяет нескольким сотрудникам работать с одной базой данных одновременно."
                             Style="{StaticResource NiatecCaptionTextStyle}"
                             TextWrapping="Wrap"/>
 
@@ -111,7 +183,7 @@
                         </StackPanel>
 
                         <TextBlock
-                            Text="Копируют базу данных и файлы клиентов в папку Backups. Делайте копию перед важными изменениями — это займёт несколько секунд."
+                            Text="Копируют базу данных и файлы клиентов в папку Backups. Делайте копию перед важными изменениями."
                             Style="{StaticResource NiatecCaptionTextStyle}"
                             TextWrapping="Wrap"/>
 

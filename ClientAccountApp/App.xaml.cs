@@ -33,6 +33,9 @@ namespace ClientAccountApp
                 WriteAppLog("DatabaseInitializer error: " + ex);
             }
 
+            // Применяем сохранённую тему до создания окна
+            ThemeService.ApplySavedTheme();
+
             try
             {
                 WriteAppLog("Before ShellWindow");
@@ -94,8 +97,12 @@ namespace ClientAccountApp
                     {
                         clientMap.TryGetValue(note.ClientInfoId, out string? clientName);
                         int daysOverdue = (today - note.ReminderDate!.Value.Date).Days;
-                        string title = daysOverdue == 0 ? "Напоминание на сегодня" : $"Просрочено на {daysOverdue} дн.";
-                        string noteText = note.NoteText.Length > 120 ? note.NoteText.Substring(0, 120) + "…" : note.NoteText;
+                        string title = daysOverdue == 0
+                            ? "Напоминание на сегодня"
+                            : $"Просрочено на {daysOverdue} дн.";
+                        string noteText = note.NoteText.Length > 120
+                            ? note.NoteText.Substring(0, 120) + "…"
+                            : note.NoteText;
 
                         AppNotificationManager.Default.Show(
                             new AppNotificationBuilder()
@@ -126,12 +133,12 @@ namespace ClientAccountApp
         {
             try
             {
-                string folder = System.IO.Path.Combine(
+                string folder = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "ClientAccountApp", "Logs");
                 Directory.CreateDirectory(folder);
                 File.AppendAllText(
-                    System.IO.Path.Combine(folder, "startup-log.txt"),
+                    Path.Combine(folder, "startup-log.txt"),
                     DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine);
             }
             catch { }

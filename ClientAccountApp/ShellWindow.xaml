@@ -2,7 +2,7 @@
     x:Class="ClientAccountApp.ShellWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="NIATEC.Client — закрытая бета">
+    Title="NIATEC.Client v1.1">
 
     <NavigationView x:Name="AppNavigationView"
                 PaneDisplayMode="Left"
@@ -11,99 +11,79 @@
                 PaneClosing="AppNavigationView_PaneClosing"
                 SelectionChanged="AppNavigationView_SelectionChanged">
 
+        <!-- SolidColorBrush — мутируем Color, объект остаётся тот же -->
+        <NavigationView.Resources>
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="#0B0F17"/>
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground"  Color="#0B0F17"/>
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground"      Color="#0B0F17"/>
+        </NavigationView.Resources>
+
         <NavigationView.MenuItems>
-            <NavigationViewItem
-                x:Name="DashboardNavItem"
-                Tag="dashboard"
-                Content="Сводка">
+            <NavigationViewItem x:Name="DashboardNavItem" Tag="dashboard" Content="Сводка">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Home"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            
-
-            <NavigationViewItem
-                x:Name="ClientsNavItem"
-                Tag="clients"
-                Content="Клиенты">
+            <NavigationViewItem x:Name="ClientsNavItem" Tag="clients" Content="Клиенты">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Contact"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-
-            <NavigationViewItem
-    Tag="problem-signatures"
-    Content="ЭЦП">
+            <NavigationViewItem Tag="problem-signatures" Content="ЭЦП">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Important"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem
-    Tag="contracts"
-    Content="Договоры">
+            <NavigationViewItem Tag="contracts" Content="Договоры">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Document"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            
-            <NavigationViewItem Content="Инструменты" Tag="tools">
+            <NavigationViewItem Tag="tools" Content="Инструменты">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Library"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem
-    Tag="billing"
-    Content="Начисления">
+            <NavigationViewItem Tag="billing" Content="Начисления">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Calculator"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-
-            <NavigationViewItem
-    Tag="catalog"
-    Content="Справочник услуг">
+            <NavigationViewItem Tag="catalog" Content="Справочник услуг">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="List"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-
         </NavigationView.MenuItems>
+
         <NavigationView.PaneFooter>
-            <StackPanel
-        x:Name="PaneFooterContent"
-        Padding="12"
-        Spacing="8">
+            <Grid>
+                <!-- Камуфляжный слой: растягивается на всю панель через отрицательные отступы -->
+                <Image x:Name="NavCamoImage"
+                       Stretch="UniformToFill"
+                       IsHitTestVisible="False"
+                       Visibility="Collapsed"
+                       Margin="-200,-2000,-200,0"
+                       VerticalAlignment="Bottom"/>
 
-                <TextBlock
-            Text="Рабочая организация"
-            Foreground="#8F9BB3"
-            FontSize="12"/>
-
-                <TextBlock
-    x:Name="ActiveOrganizationFooterTextBlock"
-    Text="Организация не выбрана"
-    Foreground="White"
-    FontWeight="SemiBold"
-    TextWrapping="Wrap"/>
-                <TextBlock
-    x:Name="DatabaseModeFooterTextBlock"
-    Text="База: —"
-    Foreground="#8F9BB3"
-    FontSize="12"
-    TextWrapping="Wrap"
-    Margin="0,4,0,0"/>
-
-                <Button
-    Content="Профиль организации"
-    HorizontalAlignment="Stretch"
-    Click="OpenOrganizationProfileButton_Click"/>
-
-                <Button
-            Content="Сменить организацию"
-            HorizontalAlignment="Stretch"
-            Click="SwitchOrganizationButton_Click"/>
-            </StackPanel>
+                <StackPanel x:Name="PaneFooterContent" Padding="12" Spacing="8">
+                    <TextBlock Text="Рабочая организация" Foreground="#8FA0BF" FontSize="12"/>
+                    <TextBlock x:Name="ActiveOrganizationFooterTextBlock"
+                               Text="Организация не выбрана"
+                               Foreground="White" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="DatabaseModeFooterTextBlock"
+                               Text="База: —"
+                               Foreground="#5A7090" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    <Button Content="Профиль организации"
+                            HorizontalAlignment="Stretch"
+                            Click="OpenOrganizationProfileButton_Click"/>
+                    <Button Content="Сменить организацию"
+                            HorizontalAlignment="Stretch"
+                            Click="SwitchOrganizationButton_Click"/>
+                </StackPanel>
+            </Grid>
         </NavigationView.PaneFooter>
+
         <Frame x:Name="RootFrame"/>
     </NavigationView>
 </Window>

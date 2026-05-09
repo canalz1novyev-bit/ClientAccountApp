@@ -327,7 +327,7 @@ namespace ClientAccountApp
 
         private void OpenClientsButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(LegacyWorkspacePage));
+            Frame.Navigate(typeof(ClientsPage));
         }
 
         private void OpenSignaturesButton_Click(object sender, RoutedEventArgs e)

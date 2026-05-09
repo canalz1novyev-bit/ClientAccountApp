@@ -83,7 +83,7 @@ namespace ClientAccountApp
 
         public BillingPage()
         {
-this.InitializeComponent();
+            this.InitializeComponent();
             InvoiceDocumentsListView.ItemsSource = _invoiceDocuments;
             InvoicesListView.ItemsSource = _invoices;
             InvoicesCompactListView.ItemsSource = _invoices;
@@ -93,6 +93,29 @@ this.InitializeComponent();
             ServicesCatalogListView.ItemsSource = _servicesCatalog;
 
             Loaded += BillingPage_Loaded;
+
+            // ★ Применяем тему страницы при загрузке
+            Loaded += (s, e) =>
+            {
+                this.RequestedTheme = ThemeService.CurrentTheme == ThemeService.ThemeLight
+                    ? ElementTheme.Light
+                    : ElementTheme.Dark;
+            };
+
+            // ★ Обновляем тему при переключении
+            ThemeService.ThemeChanged += (theme) =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    this.RequestedTheme = theme == ThemeService.ThemeLight
+                        ? ElementTheme.Light
+                        : ElementTheme.Dark;
+
+                    // Перерисовываем цвета блока редактирования строки
+                    bool isEditing = _selectedInvoiceItemId.HasValue;
+                    UpdateItemEditorMode(isEditing);
+                });
+            };
         }
         private int GetRequiredActiveOrganizationId()
         {
@@ -220,19 +243,17 @@ this.InitializeComponent();
         }
         private void UpdateInvoiceDocumentsSelectionVisuals()
         {
-            if (InvoiceDocumentsListView == null)
-                return;
+            if (InvoiceDocumentsListView == null) return;
 
             InvoiceDocumentsListView.UpdateLayout();
 
+            bool isLight = ThemeService.CurrentTheme == ThemeService.ThemeLight;
             object? selectedItem = InvoiceDocumentsListView.SelectedItem;
 
             foreach (object item in InvoiceDocumentsListView.Items)
             {
                 var container = InvoiceDocumentsListView.ContainerFromItem(item) as ListViewItem;
-
-                if (container == null)
-                    continue;
+                if (container == null) continue;
 
                 var cardBorder = FindVisualChildByName<Border>(container, "DocumentCardBorder");
                 var accentBar = FindVisualChildByName<Border>(container, "DocumentSelectedAccentBar");
@@ -243,20 +264,26 @@ this.InitializeComponent();
                 {
                     if (isSelected)
                     {
-                        cardBorder.Background = CreateSolidBrush(32, 48, 74);
-                        cardBorder.BorderBrush = CreateSolidBrush(122, 99, 54);
+                        cardBorder.Background = isLight
+                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 255, 249, 230)) // светло-золотой
+                            : new SolidColorBrush(ColorHelper.FromArgb(255, 32, 48, 74));
+                        cardBorder.BorderBrush = isLight
+                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 212, 160, 23))  // золотая рамка
+                            : new SolidColorBrush(ColorHelper.FromArgb(255, 122, 99, 54));
                     }
                     else
                     {
-                        cardBorder.Background = CreateSolidBrush(23, 26, 33);
-                        cardBorder.BorderBrush = CreateSolidBrush(43, 49, 64);
+                        cardBorder.Background = isLight
+                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 245, 247, 250)) // светлый фон
+                            : new SolidColorBrush(ColorHelper.FromArgb(255, 23, 26, 33));
+                        cardBorder.BorderBrush = isLight
+                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 221, 225, 234)) // светлая рамка
+                            : new SolidColorBrush(ColorHelper.FromArgb(255, 43, 49, 64));
                     }
                 }
 
                 if (accentBar != null)
-                {
                     accentBar.Opacity = isSelected ? 1 : 0;
-                }
             }
         }
 
@@ -2402,6 +2429,8 @@ this.InitializeComponent();
         {
             if (SaveInvoiceItemMainButton == null) return;
 
+            bool isLight = ThemeService.CurrentTheme == ThemeService.ThemeLight;
+
             if (isEditing)
             {
                 SaveInvoiceItemMainButton.Content = "Сохранить изменения";
@@ -2413,10 +2442,14 @@ this.InitializeComponent();
                     InvoiceItemEditorHint.Text = "Измени поля и нажми «Сохранить изменения»";
                 if (InvoiceItemEditorModeBorder != null)
                 {
-                    InvoiceItemEditorModeBorder.Background =
-                        new SolidColorBrush(ColorHelper.FromArgb(255, 26, 26, 10));
-                    InvoiceItemEditorModeBorder.BorderBrush =
-                        new SolidColorBrush(ColorHelper.FromArgb(255, 74, 74, 10));
+                    // Светлая тема: светло-жёлтый акцент
+                    // Тёмная тема: тёмно-жёлтый акцент
+                    InvoiceItemEditorModeBorder.Background = isLight
+                        ? new SolidColorBrush(ColorHelper.FromArgb(255, 255, 252, 235))
+                        : new SolidColorBrush(ColorHelper.FromArgb(255, 40, 38, 10));
+                    InvoiceItemEditorModeBorder.BorderBrush = isLight
+                        ? new SolidColorBrush(ColorHelper.FromArgb(255, 212, 160, 23))
+                        : new SolidColorBrush(ColorHelper.FromArgb(255, 100, 90, 20));
                 }
             }
             else
@@ -2430,10 +2463,14 @@ this.InitializeComponent();
                     InvoiceItemEditorHint.Text = "Заполни поля и нажми «Добавить строку»";
                 if (InvoiceItemEditorModeBorder != null)
                 {
-                    InvoiceItemEditorModeBorder.Background =
-                        new SolidColorBrush(ColorHelper.FromArgb(255, 10, 26, 10));
-                    InvoiceItemEditorModeBorder.BorderBrush =
-                        new SolidColorBrush(ColorHelper.FromArgb(255, 10, 74, 10));
+                    // Светлая тема: нейтральный светлый фон
+                    // Тёмная тема: как раньше тёмно-зелёный
+                    InvoiceItemEditorModeBorder.Background = isLight
+                        ? new SolidColorBrush(ColorHelper.FromArgb(255, 245, 247, 250))
+                        : new SolidColorBrush(ColorHelper.FromArgb(255, 10, 26, 10));
+                    InvoiceItemEditorModeBorder.BorderBrush = isLight
+                        ? new SolidColorBrush(ColorHelper.FromArgb(255, 221, 225, 234))
+                        : new SolidColorBrush(ColorHelper.FromArgb(255, 10, 74, 10));
                 }
             }
         }

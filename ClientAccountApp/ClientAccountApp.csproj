@@ -78,7 +78,6 @@
     <None Remove="AppUpdatesPage.xaml" />
     <None Remove="BackupsPage.xaml" />
     <None Remove="BillingPage.xaml" />
-    <None Remove="ClientsPage.xaml" />
     <None Remove="ContractsPage.xaml" />
     <None Remove="CounterpartySourcesSettingsPage.xaml" />
     <None Remove="DashboardPage.xaml" />
@@ -86,7 +85,6 @@
     <None Remove="DatabaseDiagnosticsPage.xaml" />
     <None Remove="DataStorageSettingsPage.xaml" />
     <None Remove="innlookup.local.json" />
-    <None Remove="LegacyWorkspacePage.xaml" />
     <None Remove="OrganizationSelectPage.xaml" />
     <None Remove="OrganizationSetupPage.xaml" />
     <None Remove="ProblemSignaturesPage.xaml" />
@@ -115,7 +113,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="LegacyWorkspacePage.xaml">
+    <Page Update="ClientsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -165,11 +163,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="ProblemSignaturesPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="ClientsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

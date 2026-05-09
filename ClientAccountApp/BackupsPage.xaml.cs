@@ -150,7 +150,7 @@ namespace ClientAccountApp
 
         private void OpenLegacyWorkspaceButton_Click(object sender, RoutedEventArgs e)
         {
-            Frame?.Navigate(typeof(LegacyWorkspacePage));
+            Frame?.Navigate(typeof(ClientsPage));
         }
 
         private async Task ShowBackupDialogAsync(string title, string message)

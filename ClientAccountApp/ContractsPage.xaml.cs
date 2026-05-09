@@ -327,7 +327,7 @@ namespace ClientAccountApp
                 return;
             }
 
-            Frame?.Navigate(typeof(LegacyWorkspacePage), item.ClientId);
+            Frame?.Navigate(typeof(ClientsPage), item.ClientId);
         }
 
         private void OpenContractButton_Click(object sender, RoutedEventArgs e)
