@@ -1,3 +1,11 @@
 ﻿publish2/
 publish2/.playwright/
 .playwright/
+BundleArtifacts/
+*.user
+.vs/
+obj/
+bin/
+publish/
+publish2/
+.playwright/
