@@ -24,6 +24,9 @@ namespace ClientAccountApp
             "NavigationViewTopPaneBackground"
         };
 
+        private static ElementTheme ElementThemeForAppTheme(string theme) =>
+            theme == ThemeService.ThemeLight ? ElementTheme.Light : ElementTheme.Dark;
+
         public void NavigateTo(Type pageType)
         {
             if (RootFrame.CurrentSourcePageType != pageType)
@@ -39,12 +42,9 @@ namespace ClientAccountApp
 
             ThemeService.ThemeChanged += OnThemeChanged;
 
-            // ★ Применяем тему заново при каждой навигации
             RootFrame.Navigated += (s, e) =>
             {
-                RootFrame.RequestedTheme = ThemeService.CurrentTheme == ThemeService.ThemeLight
-                    ? ElementTheme.Light
-                    : ElementTheme.Dark;
+                RootFrame.RequestedTheme = ElementThemeForAppTheme(ThemeService.CurrentTheme);
             };
 
             if (PaneFooterContent != null && !AppNavigationView.IsPaneOpen)
@@ -79,10 +79,7 @@ namespace ClientAccountApp
 
         private void ApplyFullTheme(string theme)
         {
-            // Системные WinUI контролы (TextBox, ComboBox и т.д.)
-            RootFrame.RequestedTheme = theme == ThemeService.ThemeLight
-                ? ElementTheme.Light
-                : ElementTheme.Dark;
+            RootFrame.RequestedTheme = ElementThemeForAppTheme(theme);
 
             // Цвет панели навигации
             UpdateNavPaneColor(theme);

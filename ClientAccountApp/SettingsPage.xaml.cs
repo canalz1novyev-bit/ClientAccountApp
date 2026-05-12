@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Diagnostics;
@@ -29,25 +30,22 @@ namespace ClientAccountApp
 
         // ─── Тема ─────────────────────────────────────────────────────────────
 
-        private void DarkThemeCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void ThemePreviewCard_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            ThemeService.ApplyTheme(ThemeService.ThemeDark);
-            UpdateThemeCardSelection();
-            ThemeStatusTextBlock.Text = "Тёмная тема применена.";
-        }
+            if (sender is not FrameworkElement { Tag: string themeKey }) return;
 
-        private void LightThemeCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
-        {
-            ThemeService.ApplyTheme(ThemeService.ThemeLight);
-            UpdateThemeCardSelection();
-            ThemeStatusTextBlock.Text = "Светлая тема применена.";
-        }
+            string status = themeKey switch
+            {
+                ThemeService.ThemeDark => "Тёмная тема применена.",
+                ThemeService.ThemeLight => "Светлая тема применена.",
+                ThemeService.ThemeMilitary => "Тема M81 Woodland применена.",
+                _ => ""
+            };
+            if (string.IsNullOrEmpty(status)) return;
 
-        private void MilitaryThemeCard_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
-        {
-            ThemeService.ApplyTheme(ThemeService.ThemeMilitary);
+            ThemeService.ApplyTheme(themeKey);
             UpdateThemeCardSelection();
-            ThemeStatusTextBlock.Text = "Тема M81 Woodland применена.";
+            ThemeStatusTextBlock.Text = status;
         }
 
         private void UpdateThemeCardSelection()
@@ -191,11 +189,32 @@ namespace ClientAccountApp
                 if (DataModeTextBlock != null)
                     DataModeTextBlock.Text = "Текущий режим: не определён";
 
+                if (StorageHelpTextBlock != null)
+                    StorageHelpTextBlock.Text = "Не удалось обновить описание хранилища.";
+
                 if (StorageCurrentPathTextBlock != null)
                     StorageCurrentPathTextBlock.Text = "Не удалось определить папку данных.";
 
+                if (ResetStorageButton != null)
+                    ResetStorageButton.Visibility = Visibility.Collapsed;
+
                 if (SqlServerModeTextBlock != null)
                     SqlServerModeTextBlock.Text = "Не удалось определить режим работы базы.";
+
+                if (SharedWorkDescriptionTextBlock != null)
+                    SharedWorkDescriptionTextBlock.Text = "Не удалось загрузить описание совместной работы.";
+
+                if (SharedWorkDetailsTextBlock != null)
+                    SharedWorkDetailsTextBlock.Text = "";
+
+                if (BackupStatusTextBlock != null)
+                    BackupStatusTextBlock.Text = "Не удалось обновить сведения о резервных копиях.";
+
+                if (CreateBackupButton != null)
+                {
+                    CreateBackupButton.IsEnabled = false;
+                    CreateBackupButton.Content = "Создать резервную копию";
+                }
             }
         }
 
@@ -248,15 +267,7 @@ namespace ClientAccountApp
         {
             try
             {
-                string folder = AppPaths.StorageRoot;
-                Directory.CreateDirectory(folder);
-
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    Arguments = "\"" + folder + "\"",
-                    UseShellExecute = true
-                });
+                OpenFolder(AppPaths.StorageRoot);
             }
             catch (Exception ex)
             {

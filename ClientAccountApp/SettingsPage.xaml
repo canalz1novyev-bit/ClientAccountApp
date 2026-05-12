@@ -63,7 +63,8 @@
                                 BorderBrush="{StaticResource NiatecBorderBrush}"
                                 BorderThickness="2"
                                 Padding="12"
-                                Tapped="DarkThemeCard_Tapped">
+                                Tag="Dark"
+                                Tapped="ThemePreviewCard_Tapped">
 
                                 <StackPanel Spacing="6" VerticalAlignment="Center">
                                     <TextBlock
@@ -89,7 +90,8 @@
                                 BorderBrush="{StaticResource NiatecBorderBrush}"
                                 BorderThickness="2"
                                 Padding="12"
-                                Tapped="LightThemeCard_Tapped">
+                                Tag="Light"
+                                Tapped="ThemePreviewCard_Tapped">
 
                                 <StackPanel Spacing="6" VerticalAlignment="Center">
                                     <TextBlock
@@ -114,7 +116,8 @@
                                 BorderBrush="{StaticResource NiatecBorderBrush}"
                                 BorderThickness="2"
                                 Padding="12"
-                                Tapped="MilitaryThemeCard_Tapped">
+                                Tag="Military"
+                                Tapped="ThemePreviewCard_Tapped">
 
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">

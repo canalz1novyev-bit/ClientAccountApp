@@ -98,9 +98,6 @@ namespace ClientAccountApp
         // PDF
         // ═════════════════════════════════════════════════════════════════════
 
-        private static void OpenUrl(string url) =>
-            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
-
         private async void PickSourceFileButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -709,10 +706,8 @@ namespace ClientAccountApp
             StmtShownDebitText.Text = $"-{debit:N2} ₽";
             StmtMarkedCountText.Text = $"{marked} шт.";
 
-            // Период в нижней панели (требует обновлённого ToolsPage.xaml с x:Name="StmtFooterPeriodText")
             if (_currentStatement != null)
-                if (FindName("StmtFooterPeriodText") is TextBlock tb)
-                    tb.Text = _currentStatement.PeriodDisplay;
+                StmtFooterPeriodText.Text = _currentStatement.PeriodDisplay;
         }
 
         // ═════════════════════════════════════════════════════════════════════
@@ -1224,7 +1219,7 @@ namespace ClientAccountApp
             int year = StmtExportYearCombo.SelectedItem is ComboBoxItem yi && yi.Tag is int y ? y : DateTime.Now.Year;
             int qtr = StmtExportQuarterCombo.SelectedIndex + 1;
 
-            var usnType = (FindName("StmtUsnTypeCombo") is ComboBox usnCombo && usnCombo.SelectedIndex == 1)
+            var usnType = StmtUsnTypeCombo.SelectedIndex == 1
                 ? BankStatementUsnXmlExporter.UsnType.IncomeMinus15
                 : BankStatementUsnXmlExporter.UsnType.Income6;
 
@@ -1299,7 +1294,7 @@ namespace ClientAccountApp
             int year = StmtExportYearCombo.SelectedItem is ComboBoxItem yi && yi.Tag is int y ? y : DateTime.Now.Year;
             int qtr = StmtExportQuarterCombo.SelectedIndex + 1;
 
-            var usnType = (FindName("StmtUsnTypeCombo") is ComboBox usnCombo && usnCombo.SelectedIndex == 1)
+            var usnType = StmtUsnTypeCombo.SelectedIndex == 1
                 ? BankStatementUsnXmlExporter.UsnType.IncomeMinus15
                 : BankStatementUsnXmlExporter.UsnType.Income6;
 
@@ -1395,6 +1390,14 @@ namespace ClientAccountApp
             {
                 "выдача кредит", "выдача займ", "выдача заем",
                 "предоставление займ", "предоставление кредит", "выдача ссуд",
+            },
+            [ExclusionCategory.Deposit] = new[]
+            {
+                "вклад", "депозит", "депозитн", "сберегательн",
+                "размещение вклада", "размещение депозит", "пополнение вклада",
+                "возврат вклада", "возврат депозит", "закрытие вклада",
+                "проценты по вклад", "проценты по депозит", "начисление процентов по вклад",
+                "договор банковского вклада", "договор вклада",
             },
             [ExclusionCategory.NoVat] = new[]
             {
