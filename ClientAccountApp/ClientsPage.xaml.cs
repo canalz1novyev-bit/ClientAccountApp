@@ -1282,18 +1282,48 @@ namespace ClientAccountApp
         {
             if (ClientsListView.SelectedItem is not ClientInfo selectedClient) { StatusTextBlock.Text = "Сначала выбери клиента для удаления."; return; }
             string deletedClientName = selectedClient.Name;
+            int clientId = selectedClient.Id;
             try
             {
                 using (var db = new AppDbContext())
                 {
-                    var clientFromDb = db.Clients.FirstOrDefault(c => c.Id == selectedClient.Id);
+                    var clientFromDb = db.Clients.FirstOrDefault(c => c.Id == clientId);
                     if (clientFromDb == null) { StatusTextBlock.Text = "Не удалось найти клиента в базе данных."; return; }
-                    var clientFiles = db.ClientFiles.Where(f => f.ClientInfoId == selectedClient.Id).ToList();
+
+                    var clientFiles = db.ClientFiles.Where(f => f.ClientInfoId == clientId).ToList();
                     foreach (var clientFile in clientFiles) ClientFileStorageService.DeleteFileIfExists(ClientFileStorageService.GetFullPath(clientFile.RelativePath));
-                    db.DigitalSignatures.RemoveRange(db.DigitalSignatures.Where(s => s.ClientInfoId == selectedClient.Id));
-                    db.BankAccounts.RemoveRange(db.BankAccounts.Where(a => a.ClientInfoId == selectedClient.Id));
-                    db.ClientNotes.RemoveRange(db.ClientNotes.Where(n => n.ClientInfoId == selectedClient.Id));
+
+                    // Удаление зависимых строк строго в порядке "дети → родители",
+                    // иначе SQLite с включёнными FK constraint падает на SaveChanges.
+                    // Порядок:
+                    //   1) InvoiceItems  → ссылаются на Invoice
+                    //   2) InvoiceDocuments → ссылаются на Invoice и на ClientInfo напрямую
+                    //   3) Invoices → ссылаются на ClientInfo
+                    //   4) ClientContracts, ClientRecurringServices → ссылаются на ClientInfo
+                    //   5) DigitalSignatures, BankAccounts, ClientNotes, ClientFiles
+                    //   6) сам ClientInfo
+
+                    var clientInvoiceIds = db.Invoices
+                        .Where(i => i.ClientInfoId == clientId)
+                        .Select(i => i.Id)
+                        .ToList();
+
+                    if (clientInvoiceIds.Count > 0)
+                    {
+                        db.InvoiceItems.RemoveRange(db.InvoiceItems.Where(it => clientInvoiceIds.Contains(it.InvoiceId)));
+                        db.InvoiceDocuments.RemoveRange(db.InvoiceDocuments.Where(d => clientInvoiceIds.Contains(d.InvoiceId)));
+                    }
+
+                    db.InvoiceDocuments.RemoveRange(db.InvoiceDocuments.Where(d => d.ClientInfoId == clientId));
+                    db.Invoices.RemoveRange(db.Invoices.Where(i => i.ClientInfoId == clientId));
+                    db.ClientContracts.RemoveRange(db.ClientContracts.Where(c => c.ClientInfoId == clientId));
+                    db.ClientRecurringServices.RemoveRange(db.ClientRecurringServices.Where(r => r.ClientInfoId == clientId));
+
+                    db.DigitalSignatures.RemoveRange(db.DigitalSignatures.Where(s => s.ClientInfoId == clientId));
+                    db.BankAccounts.RemoveRange(db.BankAccounts.Where(a => a.ClientInfoId == clientId));
+                    db.ClientNotes.RemoveRange(db.ClientNotes.Where(n => n.ClientInfoId == clientId));
                     db.ClientFiles.RemoveRange(clientFiles);
+
                     db.Clients.Remove(clientFromDb);
                     db.SaveChanges();
                 }
@@ -1301,7 +1331,11 @@ namespace ClientAccountApp
                 LoadClientsFromDatabase();
                 StatusTextBlock.Text = $"Клиент «{deletedClientName}» удален.";
             }
-            catch (Exception ex) { StatusTextBlock.Text = $"Ошибка удаления клиента: {ex.Message}"; }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("ClientsPage.DeleteSelectedClientButton_Click", ex);
+                StatusTextBlock.Text = $"Ошибка удаления клиента: {ex.Message}";
+            }
         }
 
         private void AddNoteButton_Click(object sender, RoutedEventArgs e)
