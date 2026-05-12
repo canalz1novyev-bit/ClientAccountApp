@@ -61,7 +61,17 @@ namespace ClientAccountApp
                         RestoreStatementUI();
                 });
         }
+        private void RsvToolFrame_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Frame frame)
+                return;
 
+            if (frame.CurrentSourcePageType != typeof(RsvPage))
+            {
+                frame.Navigate(typeof(RsvPage));
+            }
+        }
+        
         private void RestoreStatementUI()
         {
             StmtFilePathTextBox.Text = _loadedFilePath;
@@ -263,11 +273,48 @@ namespace ClientAccountApp
 
         private static void SetVatModeButtonState(Button btn, bool active)
         {
-            if (btn == null) return;
-            btn.Background = new SolidColorBrush(active ? ColorHelper.FromArgb(255, 47, 79, 111) : ColorHelper.FromArgb(255, 17, 21, 28));
-            btn.BorderBrush = new SolidColorBrush(active ? ColorHelper.FromArgb(255, 90, 145, 255) : ColorHelper.FromArgb(255, 43, 49, 64));
-        }
+            if (btn == null)
+                return;
 
+            bool isLightTheme = ThemeService.CurrentTheme == ThemeService.ThemeLight;
+
+            if (isLightTheme)
+            {
+                if (active)
+                {
+                    btn.Background = new SolidColorBrush(ColorHelper.FromArgb(255, 217, 154, 0));
+                    btn.BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 184, 134, 11));
+                    btn.Foreground = new SolidColorBrush(ColorHelper.FromArgb(255, 20, 24, 35));
+                }
+                else
+                {
+                    btn.Background = new SolidColorBrush(ColorHelper.FromArgb(255, 248, 250, 252));
+                    btn.BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 210, 218, 230));
+                    btn.Foreground = new SolidColorBrush(ColorHelper.FromArgb(255, 40, 50, 70));
+                }
+            }
+            else
+            {
+                if (active)
+                {
+                    btn.Background = new SolidColorBrush(ColorHelper.FromArgb(255, 184, 134, 11));
+                    btn.BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 217, 154, 0));
+                    btn.Foreground = new SolidColorBrush(Colors.Black);
+                }
+                else
+                {
+                    btn.Background = new SolidColorBrush(ColorHelper.FromArgb(255, 23, 28, 38));
+                    btn.BorderBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 43, 49, 64));
+                    btn.Foreground = new SolidColorBrush(ColorHelper.FromArgb(255, 210, 218, 230));
+                }
+            }
+
+            btn.BorderThickness = active
+                ? new Thickness(2)
+                : new Thickness(1);
+
+            btn.CornerRadius = new CornerRadius(8);
+        }
         private void RecalculateVat()
         {
             if (!TryParseDecimal(VatAmountTextBox.Text, out decimal amount)) { SetVatEmptyState("Введи корректную сумму."); return; }

@@ -19,46 +19,62 @@
         </NavigationView.Resources>
 
         <NavigationView.MenuItems>
-            <NavigationViewItem x:Name="DashboardNavItem" Tag="dashboard" Content="Сводка">
+
+            <!-- Основное -->
+            <NavigationViewItemHeader Content="Основное"/>
+
+            <NavigationViewItem x:Name="DashboardNavItem" Tag="dashboard" Content="Главная">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Home"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
+
             <NavigationViewItem x:Name="ClientsNavItem" Tag="clients" Content="Клиенты">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Contact"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Tag="problem-signatures" Content="ЭЦП">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Important"/>
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+
+            <NavigationViewItemSeparator/>
+
+            <!-- Работа -->
+            <NavigationViewItemHeader Content="Работа"/>
+
             <NavigationViewItem Tag="contracts" Content="Договоры">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Document"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Tag="tools" Content="Инструменты">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Library"/>
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem Tag="rsv" Content="Мастер РСВ">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Document"/>
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
+
             <NavigationViewItem Tag="billing" Content="Начисления">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Calculator"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Tag="catalog" Content="Справочник услуг">
+
+            <NavigationViewItem Tag="problem-signatures" Content="ЭЦП">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Important"/>
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItemSeparator/>
+
+            <!-- Дополнительно -->
+            <NavigationViewItemHeader Content="Дополнительно"/>
+
+            <NavigationViewItem Tag="catalog" Content="Справочник">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="List"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
+
+            <NavigationViewItem Tag="tools" Content="Инструменты">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Library"/>
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
         </NavigationView.MenuItems>
 
         <NavigationView.PaneFooter>

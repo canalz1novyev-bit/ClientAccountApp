@@ -12,68 +12,110 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Заголовок страницы -->
         <StackPanel Spacing="4">
-            <TextBlock Text="Параметры" Style="{StaticResource NiatecPageTitleTextStyle}"/>
             <TextBlock
-                Text="Хранилище данных, резервные копии и внешний вид."
+                Text="Параметры"
+                Style="{StaticResource NiatecPageTitleTextStyle}"/>
+
+            <TextBlock
+                Text="Настройки внешнего вида, данных приложения, совместной работы и резервных копий."
                 Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+
             <TextBlock
                 x:Name="StoragePathInfoTextBlock"
-                Text="Загрузка..."
-                Style="{StaticResource NiatecMutedTextStyle}"/>
+                Text="Загрузка сведений..."
+                Style="{StaticResource NiatecMutedTextStyle}"
+                TextWrapping="Wrap"/>
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Spacing="16">
+            <StackPanel Spacing="16" MaxWidth="1250">
 
                 <!-- Внешний вид -->
                 <Border Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="12">
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <FontIcon Glyph="&#xE790;" FontSize="20"
-                                      Foreground="{StaticResource NiatecAccentBrush}"/>
-                            <TextBlock Text="Внешний вид"
-                                       Style="{StaticResource NiatecSectionTitleTextStyle}"
-                                       VerticalAlignment="Center"/>
+                            <FontIcon
+                                Glyph="&#xE790;"
+                                FontSize="20"
+                                Foreground="{StaticResource NiatecAccentBrush}"/>
+
+                            <TextBlock
+                                Text="Внешний вид"
+                                Style="{StaticResource NiatecSectionTitleTextStyle}"
+                                VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <TextBlock
-                            Text="Выберите тёмную или светлую тему. Изменение применяется немедленно."
-                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            Text="Выберите тему оформления приложения. Изменение применяется сразу."
+                            Style="{StaticResource NiatecCaptionTextStyle}"
+                            TextWrapping="Wrap"/>
 
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Border x:Name="DarkThemeCard"
-                                    Width="160" Height="90" CornerRadius="12"
-                                    Background="#0B0F17"
-                                    BorderBrush="{StaticResource NiatecBorderBrush}"
-                                    BorderThickness="2" Padding="12"
-                                    Tapped="DarkThemeCard_Tapped">
+
+                            <Border
+                                x:Name="DarkThemeCard"
+                                Width="160"
+                                Height="90"
+                                CornerRadius="12"
+                                Background="#0B0F17"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                BorderThickness="2"
+                                Padding="12"
+                                Tapped="DarkThemeCard_Tapped">
+
                                 <StackPanel Spacing="6" VerticalAlignment="Center">
-                                    <TextBlock Text="Тёмная" Foreground="White"
-                                               FontSize="14" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Классический тёмный интерфейс"
-                                               Foreground="#9AA7BD" FontSize="11" TextWrapping="Wrap"/>
+                                    <TextBlock
+                                        Text="Тёмная"
+                                        Foreground="White"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"/>
+
+                                    <TextBlock
+                                        Text="Классический тёмный интерфейс"
+                                        Foreground="#9AA7BD"
+                                        FontSize="11"
+                                        TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
 
-                            <Border x:Name="LightThemeCard"
-                                    Width="160" Height="90" CornerRadius="12"
-                                    Background="#F0F2F5"
-                                    BorderBrush="{StaticResource NiatecBorderBrush}"
-                                    BorderThickness="2" Padding="12"
-                                    Tapped="LightThemeCard_Tapped">
+                            <Border
+                                x:Name="LightThemeCard"
+                                Width="160"
+                                Height="90"
+                                CornerRadius="12"
+                                Background="#F0F2F5"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                BorderThickness="2"
+                                Padding="12"
+                                Tapped="LightThemeCard_Tapped">
+
                                 <StackPanel Spacing="6" VerticalAlignment="Center">
-                                    <TextBlock Text="Светлая" Foreground="#1A2033"
-                                               FontSize="14" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Светлый интерфейс для работы днём"
-                                               Foreground="#4A5568" FontSize="11" TextWrapping="Wrap"/>
+                                    <TextBlock
+                                        Text="Светлая"
+                                        Foreground="#1A2033"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"/>
+
+                                    <TextBlock
+                                        Text="Светлый интерфейс для работы днём"
+                                        Foreground="#4A5568"
+                                        FontSize="11"
+                                        TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
-                            <Border x:Name="MilitaryThemeCard"
-        Width="160" Height="90" CornerRadius="12"
-        BorderBrush="{StaticResource NiatecBorderBrush}"
-        BorderThickness="2" Padding="12"
-        Tapped="MilitaryThemeCard_Tapped">
+
+                            <Border
+                                x:Name="MilitaryThemeCard"
+                                Width="160"
+                                Height="90"
+                                CornerRadius="12"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                BorderThickness="2"
+                                Padding="12"
+                                Tapped="MilitaryThemeCard_Tapped">
+
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                         <GradientStop Color="#3B4A2A" Offset="0"/>
@@ -81,11 +123,19 @@
                                         <GradientStop Color="#1E1A0E" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Border.Background>
+
                                 <StackPanel Spacing="6" VerticalAlignment="Center">
-                                    <TextBlock Text="М81 Woodland" Foreground="#B8D478"
-                   FontSize="13" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Камуфляж · военная тема"
-                   Foreground="#6A7A40" FontSize="11" TextWrapping="Wrap"/>
+                                    <TextBlock
+                                        Text="M81 Woodland"
+                                        Foreground="#B8D478"
+                                        FontSize="13"
+                                        FontWeight="SemiBold"/>
+
+                                    <TextBlock
+                                        Text="Камуфляжная тема"
+                                        Foreground="#6A7A40"
+                                        FontSize="11"
+                                        TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -98,73 +148,122 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Хранилище данных -->
+                <!-- Данные приложения -->
                 <Border Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="12">
+
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <FontIcon Glyph="&#xE8B7;" FontSize="20"
-                                      Foreground="{StaticResource NiatecAccentBrush}"/>
-                            <TextBlock Text="Хранилище данных"
-                                       Style="{StaticResource NiatecSectionTitleTextStyle}"
-                                       VerticalAlignment="Center"/>
+                            <FontIcon
+                                Glyph="&#xE8B7;"
+                                FontSize="20"
+                                Foreground="{StaticResource NiatecAccentBrush}"/>
+
+                            <TextBlock
+                                Text="Данные приложения"
+                                Style="{StaticResource NiatecSectionTitleTextStyle}"
+                                VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <TextBlock
-                            x:Name="StorageCurrentPathTextBlock"
-                            Text="Определение пути..."
+                            x:Name="DataModeTextBlock"
+                            Text="Текущий режим: Локальный"
+                            FontWeight="SemiBold"
                             Style="{StaticResource NiatecCaptionTextStyle}"
                             TextWrapping="Wrap"/>
 
-                        <Grid ColumnSpacing="8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <TextBlock
+                            x:Name="StorageHelpTextBlock"
+                            Text="Здесь хранятся база приложения, файлы клиентов, документы и резервные копии."
+                            Style="{StaticResource NiatecCaptionTextStyle}"
+                            TextWrapping="Wrap"/>
+
+                        <Border
+                            Background="{StaticResource NiatecSurfaceAltBrush}"
+                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10">
+
+                            <StackPanel Spacing="4">
+                                <TextBlock
+                                    Text="Папка данных:"
+                                    FontWeight="SemiBold"
+                                    Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                                <TextBlock
+                                    x:Name="StorageCurrentPathTextBlock"
+                                    Text="Определение пути..."
+                                    Style="{StaticResource NiatecCaptionTextStyle}"
+                                    TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
-                                Grid.Column="0"
-                                Content="Открыть папку"
+                                Content="Открыть папку данных"
                                 Style="{StaticResource NiatecPrimaryButtonStyle}"
                                 Click="OpenStorageFolderButton_Click"/>
+
                             <Button
-                                Grid.Column="1"
                                 Content="Изменить папку"
                                 Style="{StaticResource NiatecSecondaryButtonStyle}"
                                 Click="OpenStorageSettingsButton_Click"/>
+
                             <Button
                                 x:Name="ResetStorageButton"
-                                Grid.Column="2"
-                                Content="Сбросить на стандартный"
+                                Content="Сбросить на стандартную"
                                 Style="{StaticResource NiatecSecondaryButtonStyle}"
                                 Visibility="Collapsed"
                                 Click="ResetStorageButton_Click"/>
-                        </Grid>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Корпоративная база -->
+                <!-- Совместная работа -->
                 <Border Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="12">
+
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <FontIcon Glyph="&#xF259;" FontSize="20"
-                                      Foreground="{StaticResource NiatecAccentBrush}"/>
-                            <TextBlock Text="Корпоративная база данных"
-                                       Style="{StaticResource NiatecSectionTitleTextStyle}"
-                                       VerticalAlignment="Center"/>
+                            <FontIcon
+                                Glyph="&#xE902;"
+                                FontSize="20"
+                                Foreground="{StaticResource NiatecAccentBrush}"/>
+
+                            <TextBlock
+                                Text="Совместная работа"
+                                Style="{StaticResource NiatecSectionTitleTextStyle}"
+                                VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <TextBlock
                             x:Name="SqlServerModeTextBlock"
-                            Text="Режим: Локальная SQLite"
-                            Style="{StaticResource NiatecCaptionTextStyle}"/>
-
-                        <TextBlock
-                            Text="SQL Server позволяет нескольким сотрудникам работать с одной базой данных одновременно."
+                            Text="Сейчас приложение работает в локальном режиме."
+                            FontWeight="SemiBold"
                             Style="{StaticResource NiatecCaptionTextStyle}"
                             TextWrapping="Wrap"/>
 
+                        <TextBlock
+                            x:Name="SharedWorkDescriptionTextBlock"
+                            Text="Этот режим подходит, если с программой работает один пользователь на одном компьютере. Если нужно, чтобы несколько сотрудников работали с одной базой, настройте совместную работу."
+                            Style="{StaticResource NiatecCaptionTextStyle}"
+                            TextWrapping="Wrap"/>
+
+                        <Border
+                            Background="{StaticResource NiatecSurfaceAltBrush}"
+                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10">
+
+                            <TextBlock
+                                x:Name="SharedWorkDetailsTextBlock"
+                                Text="Сервер не используется. Все данные хранятся на этом компьютере."
+                                Style="{StaticResource NiatecCaptionTextStyle}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+
                         <Button
-                            Content="Открыть настройки подключения"
+                            Content="Настроить совместную работу"
                             Style="{StaticResource NiatecPrimaryButtonStyle}"
                             HorizontalAlignment="Left"
                             Click="OpenDatabaseConnectionButton_Click"/>
@@ -174,53 +273,52 @@
                 <!-- Резервные копии -->
                 <Border Style="{StaticResource NiatecCardBorderStyle}">
                     <StackPanel Spacing="12">
+
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <FontIcon Glyph="&#xE896;" FontSize="20"
-                                      Foreground="{StaticResource NiatecAccentBrush}"/>
-                            <TextBlock Text="Резервные копии"
-                                       Style="{StaticResource NiatecSectionTitleTextStyle}"
-                                       VerticalAlignment="Center"/>
+                            <FontIcon
+                                Glyph="&#xE896;"
+                                FontSize="20"
+                                Foreground="{StaticResource NiatecAccentBrush}"/>
+
+                            <TextBlock
+                                Text="Резервные копии"
+                                Style="{StaticResource NiatecSectionTitleTextStyle}"
+                                VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <TextBlock
-                            Text="Копируют базу данных и файлы клиентов в папку Backups. Делайте копию перед важными изменениями."
+                            Text="Создавайте резервную копию перед важными изменениями. Она поможет восстановить клиентов, документы и файлы, если что-то пойдёт не так."
                             Style="{StaticResource NiatecCaptionTextStyle}"
                             TextWrapping="Wrap"/>
 
-                        <Grid ColumnSpacing="8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
+                        <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button
                                 x:Name="CreateBackupButton"
-                                Grid.Column="0"
                                 Content="Создать резервную копию"
                                 Style="{StaticResource NiatecPrimaryButtonStyle}"
                                 Click="CreateBackupButton_Click"/>
 
                             <Button
-                                Grid.Column="1"
                                 Content="Открыть папку копий"
                                 Style="{StaticResource NiatecSecondaryButtonStyle}"
                                 Click="OpenBackupsFolderButton_Click"/>
 
                             <Button
-                                Grid.Column="2"
                                 Content="Все резервные копии"
                                 Style="{StaticResource NiatecSecondaryButtonStyle}"
                                 Click="OpenBackupsButton_Click"/>
-                        </Grid>
+                        </StackPanel>
 
                         <Border
                             Background="{StaticResource NiatecSurfaceAltBrush}"
                             BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1" CornerRadius="8" Padding="10,6">
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10,6">
+
                             <TextBlock
                                 x:Name="BackupStatusTextBlock"
-                                Text="Резервные копии хранятся в папке Backups внутри хранилища данных."
+                                Text="Резервные копии сохраняются внутри папки данных приложения."
                                 Style="{StaticResource NiatecCaptionTextStyle}"
                                 TextWrapping="Wrap"/>
                         </Border>

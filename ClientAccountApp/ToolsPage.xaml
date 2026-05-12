@@ -17,19 +17,32 @@
                 Text="Инструменты"
                 Style="{StaticResource NiatecPageTitleTextStyle}"/>
             <TextBlock
-                Text="PDF, НДС, проценты по ст. 395 ГК РФ и анализ банковских выписок"
-                Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+    Text="PDF, НДС, РСВ, проценты по ст. 395 ГК РФ и анализ банковских выписок"
+    Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
         </StackPanel>
 
         <TabView
-            Grid.Row="1"
-            IsAddTabButtonVisible="False"
-            TabWidthMode="Equal">
+    Grid.Row="1"
+    IsAddTabButtonVisible="False"
+    TabWidthMode="SizeToContent"
+    Margin="0,8,0,0">
 
             <!-- ═══════════════════════════════════════════
                  PDF
                  ═══════════════════════════════════════════ -->
-            <TabViewItem Header="PDF" IsClosable="False">
+            <TabViewItem IsClosable="False">
+                <TabViewItem.Header>
+                    <Border MinWidth="145" Padding="12,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Symbol="Document"/>
+                            <TextBlock
+                    Text="PDF-документы"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </TabViewItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid ColumnSpacing="16" Padding="0,16,0,0">
                         <Grid.ColumnDefinitions>
@@ -39,115 +52,155 @@
 
                         <Border Grid.Column="0" Style="{StaticResource NiatecCardBorderStyle}">
                             <StackPanel Spacing="14">
-                                <TextBlock Text="Конвертер в PDF"
-                                           Style="{StaticResource NiatecSectionTitleTextStyle}"/>
-                                <TextBlock Text="Выберите исходный файл, укажите путь сохранения и сформируйте PDF-документ."
-                                           Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                <TextBlock
+                        Text="Конвертер в PDF"
+                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                                <TextBlock
+                        Text="Выберите исходный файл, укажите путь сохранения и сформируйте PDF-документ."
+                        Style="{StaticResource NiatecCaptionTextStyle}"/>
 
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
                                     <StackPanel Spacing="10">
-                                        <TextBlock Text="Шаг 1. Исходный файл"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <Border x:Name="SourceDropZoneBorder"
-                                                Background="{StaticResource NiatecBackgroundBrush}"
-                                                BorderBrush="{StaticResource NiatecBorderBrush}"
-                                                BorderThickness="1" CornerRadius="12" Padding="18"
-                                                AllowDrop="True"
-                                                DragOver="SourceDropZoneBorder_DragOver"
-                                                Drop="SourceDropZoneBorder_Drop">
+                                        <TextBlock
+                                Text="Шаг 1. Исходный файл"
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                FontWeight="SemiBold"/>
+
+                                        <Border
+                                x:Name="SourceDropZoneBorder"
+                                Background="{StaticResource NiatecBackgroundBrush}"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="18"
+                                AllowDrop="True"
+                                DragOver="SourceDropZoneBorder_DragOver"
+                                Drop="SourceDropZoneBorder_Drop">
+
                                             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                                                <TextBlock Text="Перетащи файл сюда"
-                                                           FontSize="16" FontWeight="SemiBold"
-                                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                                           HorizontalAlignment="Center"/>
-                                                <TextBlock Text="Или выберите файл через кнопку ниже. Если приложение запущено от администратора, drag &amp; drop из проводника может не работать."
-                                                           Style="{StaticResource NiatecCaptionTextStyle}"
-                                                           TextAlignment="Center"
-                                                           HorizontalAlignment="Center"/>
+                                                <TextBlock
+                                        Text="Перетащи файл сюда"
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                        HorizontalAlignment="Center"/>
+
+                                                <TextBlock
+                                        Text="Или выберите файл через кнопку ниже. Если приложение запущено от администратора, drag &amp; drop из проводника может не работать."
+                                        Style="{StaticResource NiatecCaptionTextStyle}"
+                                        TextAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
-                                        <TextBox x:Name="SourceFileTextBox"
-                                                 Header="Исходный файл"
-                                                 IsReadOnly="True"
-                                                 PlaceholderText="Файл пока не выбран"/>
-                                        <Button Content="Выбрать исходный файл"
-                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Click="PickSourceFileButton_Click"/>
+
+                                        <TextBox
+                                x:Name="SourceFileTextBox"
+                                Header="Исходный файл"
+                                IsReadOnly="True"
+                                PlaceholderText="Файл пока не выбран"/>
+
+                                        <Button
+                                Content="Выбрать исходный файл"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Click="PickSourceFileButton_Click"/>
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
                                     <StackPanel Spacing="10">
-                                        <TextBlock Text="Шаг 2. Путь сохранения"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <TextBox x:Name="TargetPdfTextBox"
-                                                 Header="Сохранить PDF как"
-                                                 IsReadOnly="True"
-                                                 PlaceholderText="Путь сохранения пока не выбран"/>
-                                        <Button Content="Выбрать путь сохранения PDF"
-                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Click="PickTargetPdfButton_Click"/>
+                                        <TextBlock
+                                Text="Шаг 2. Путь сохранения"
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                FontWeight="SemiBold"/>
+
+                                        <TextBox
+                                x:Name="TargetPdfTextBox"
+                                Header="Сохранить PDF как"
+                                IsReadOnly="True"
+                                PlaceholderText="Путь сохранения пока не выбран"/>
+
+                                        <Button
+                                Content="Выбрать путь сохранения PDF"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Click="PickTargetPdfButton_Click"/>
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
                                     <StackPanel Spacing="10">
-                                        <TextBlock Text="Шаг 3. Конвертация"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
+                                        <TextBlock
+                                Text="Шаг 3. Конвертация"
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                FontWeight="SemiBold"/>
+
                                         <Grid ColumnSpacing="12">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-                                            <Button x:Name="ConvertToPdfButton" Grid.Column="0"
-                                                    Content="Конвертировать в PDF"
-                                                    Style="{StaticResource NiatecPrimaryButtonStyle}"
-                                                    IsEnabled="False"
-                                                    Click="ConvertToPdfButton_Click"/>
-                                            <Button x:Name="OpenConvertedPdfButton" Grid.Column="1"
-                                                    Content="Открыть PDF"
-                                                    Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                                    IsEnabled="False"
-                                                    Click="OpenConvertedPdfButton_Click"/>
+
+                                            <Button
+                                    x:Name="ConvertToPdfButton"
+                                    Grid.Column="0"
+                                    Content="Конвертировать в PDF"
+                                    Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                    IsEnabled="False"
+                                    Click="ConvertToPdfButton_Click"/>
+
+                                            <Button
+                                    x:Name="OpenConvertedPdfButton"
+                                    Grid.Column="1"
+                                    Content="Открыть PDF"
+                                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                    IsEnabled="False"
+                                    Click="OpenConvertedPdfButton_Click"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <TextBlock x:Name="ToolsStatusTextBlock"
-                                               Text="Выбери исходный файл и путь сохранения."
-                                               Foreground="{StaticResource NiatecAccentBrush}"
-                                               TextWrapping="Wrap"/>
+                                    <TextBlock
+                            x:Name="ToolsStatusTextBlock"
+                            Text="Выбери исходный файл и путь сохранения."
+                            Foreground="{StaticResource NiatecAccentBrush}"
+                            TextWrapping="Wrap"/>
                                 </Border>
                             </StackPanel>
                         </Border>
 
                         <Border Grid.Column="1" Style="{StaticResource NiatecCardBorderStyle}">
                             <StackPanel Spacing="14">
-                                <TextBlock Text="Будущие PDF-инструменты"
-                                           Style="{StaticResource NiatecSectionTitleTextStyle}"/>
-                                <TextBlock Text="Этот раздел можно постепенно расширять дополнительными операциями с PDF-документами."
-                                           Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                <TextBlock
+                        Text="Будущие PDF-инструменты"
+                        Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                                <TextBlock
+                        Text="Этот раздел можно постепенно расширять дополнительными операциями с PDF-документами."
+                        Style="{StaticResource NiatecCaptionTextStyle}"/>
+
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
                                     <StackPanel Spacing="8">
-                                        <TextBlock Text="Планируемые функции"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <TextBlock Text="• Объединение PDF"  Style="{StaticResource NiatecCaptionTextStyle}"/>
-                                        <TextBlock Text="• Разделение PDF"   Style="{StaticResource NiatecCaptionTextStyle}"/>
-                                        <TextBlock Text="• Сжатие PDF"       Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                        <TextBlock
+                                Text="Планируемые функции"
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                FontWeight="SemiBold"/>
+
+                                        <TextBlock Text="• Объединение PDF" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                        <TextBlock Text="• Разделение PDF" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                        <TextBlock Text="• Сжатие PDF" Style="{StaticResource NiatecCaptionTextStyle}"/>
                                         <TextBlock Text="• Проверка длинных путей файлов" Style="{StaticResource NiatecCaptionTextStyle}"/>
                                     </StackPanel>
                                 </Border>
+
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <TextBlock Text="Совет: для файлов клиента удобнее использовать вкладку «Файлы» в карточке клиента — там документ можно сразу сохранить в структуру ClientFiles."
-                                               Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                               TextWrapping="Wrap"/>
+                                    <TextBlock
+                            Text="Совет: для файлов клиента удобнее использовать вкладку «Файлы» в карточке клиента — там документ можно сразу сохранить в структуру ClientFiles."
+                            Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                            TextWrapping="Wrap"/>
                                 </Border>
                             </StackPanel>
                         </Border>
@@ -158,7 +211,19 @@
             <!-- ═══════════════════════════════════════════
                  НДС
                  ═══════════════════════════════════════════ -->
-            <TabViewItem Header="НДС" IsClosable="False">
+            <TabViewItem IsClosable="False">
+                <TabViewItem.Header>
+                    <Border MinWidth="105" Padding="12,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Symbol="Calculator"/>
+                            <TextBlock
+                    Text="НДС"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </TabViewItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid ColumnSpacing="16" Padding="0,16,0,0">
                         <Grid.ColumnDefinitions>
@@ -176,26 +241,28 @@
 
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
                                     <StackPanel Spacing="10">
-                                        <TextBlock Text="Режим расчёта"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <Grid ColumnSpacing="12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button x:Name="VatExtractModeButton" Grid.Column="0"
-                                                    Content="Выделить НДС"
-                                                    Style="{StaticResource NiatecPrimaryButtonStyle}"
-                                                    Click="VatExtractModeButton_Click"/>
-                                            <Button x:Name="VatAddModeButton" Grid.Column="1"
-                                                    Content="Начислить НДС"
-                                                    Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                                    Click="VatAddModeButton_Click"/>
-                                        </Grid>
+                                        <TextBlock
+            Text="Режим расчёта"
+            Foreground="{StaticResource NiatecAccentBrush}"
+            FontWeight="SemiBold"/>
+
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <Button
+                x:Name="VatExtractModeButton"
+                Content="Выделить НДС"
+                MinWidth="150"
+                Padding="16,8"
+                Click="VatExtractModeButton_Click"/>
+
+                                            <Button
+                x:Name="VatAddModeButton"
+                Content="Начислить НДС"
+                MinWidth="150"
+                Padding="16,8"
+                Click="VatAddModeButton_Click"/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
-
                                 <TextBox x:Name="VatAmountTextBox"
                                          Header="Сумма"
                                          PlaceholderText="Например: 125 000,50"
@@ -207,41 +274,52 @@
 
                                 <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
                                     <StackPanel Spacing="10">
-                                        <TextBlock Text="Быстрый выбор ставки"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <Grid ColumnSpacing="8" RowSpacing="8">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Grid.Row="0" Grid.Column="0" Content="22%" Tag="22" Style="{StaticResource NiatecSecondaryButtonStyle}" Click="VatPresetRateButton_Click"/>
-                                            <Button Grid.Row="0" Grid.Column="1" Content="20%" Tag="20" Style="{StaticResource NiatecSecondaryButtonStyle}" Click="VatPresetRateButton_Click"/>
-                                            <Button Grid.Row="0" Grid.Column="2" Content="10%" Tag="10" Style="{StaticResource NiatecSecondaryButtonStyle}" Click="VatPresetRateButton_Click"/>
-                                            <Button Grid.Row="1" Grid.Column="0" Content="7%"  Tag="7"  Style="{StaticResource NiatecSecondaryButtonStyle}" Click="VatPresetRateButton_Click"/>
-                                            <Button Grid.Row="1" Grid.Column="1" Content="5%"  Tag="5"  Style="{StaticResource NiatecSecondaryButtonStyle}" Click="VatPresetRateButton_Click"/>
-                                            <Button Grid.Row="1" Grid.Column="2" Content="0%"  Tag="0"  Style="{StaticResource NiatecSecondaryButtonStyle}" Click="VatPresetRateButton_Click"/>
-                                        </Grid>
+                                        <TextBlock
+            Text="Быстрый выбор ставки"
+            Foreground="{StaticResource NiatecAccentBrush}"
+            FontWeight="SemiBold"/>
+
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Button Content="22%" Tag="22" MinWidth="54"
+                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                    Click="VatPresetRateButton_Click"/>
+
+                                            <Button Content="20%" Tag="20" MinWidth="54"
+                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                    Click="VatPresetRateButton_Click"/>
+
+                                            <Button Content="10%" Tag="10" MinWidth="54"
+                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                    Click="VatPresetRateButton_Click"/>
+
+                                            <Button Content="7%" Tag="7" MinWidth="54"
+                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                    Click="VatPresetRateButton_Click"/>
+
+                                            <Button Content="5%" Tag="5" MinWidth="54"
+                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                    Click="VatPresetRateButton_Click"/>
+
+                                            <Button Content="0%" Tag="0" MinWidth="54"
+                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                    Click="VatPresetRateButton_Click"/>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
 
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Очистить"
-                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                            Click="ClearVatButton_Click"/>
-                                    <Button Grid.Column="1" Content="Скопировать"
-                                            Style="{StaticResource NiatecPrimaryButtonStyle}"
-                                            Click="CopyVatResultButton_Click"/>
-                                </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Button
+        Content="Очистить"
+        MinWidth="120"
+        Style="{StaticResource NiatecSecondaryButtonStyle}"
+        Click="ClearVatButton_Click"/>
+
+                                    <Button
+        Content="Скопировать результат"
+        MinWidth="190"
+        Style="{StaticResource NiatecPrimaryButtonStyle}"
+        Click="CopyVatResultButton_Click"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
 
@@ -294,7 +372,19 @@
             <!-- ═══════════════════════════════════════════
                  395 ГК РФ
                  ═══════════════════════════════════════════ -->
-            <TabViewItem Header="395 ГК РФ" IsClosable="False">
+            <TabViewItem IsClosable="False">
+                <TabViewItem.Header>
+                    <Border MinWidth="135" Padding="12,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Symbol="Clock"/>
+                            <TextBlock
+                    Text="395 ГК РФ"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </TabViewItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid ColumnSpacing="16" Padding="0,16,0,0">
                         <Grid.ColumnDefinitions>
@@ -452,11 +542,44 @@
                     </Grid>
                 </ScrollViewer>
             </TabViewItem>
-
+            <!-- ═══════════════════════════════════════════
+                 РСВ
+                 ═══════════════════════════════════════════ -->
+            <TabViewItem IsClosable="False">
+                <TabViewItem.Header>
+                    <Border MinWidth="140" Padding="12,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Symbol="ReportHacked"/>
+                            <TextBlock
+                    Text="Мастер РСВ"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </TabViewItem.Header>
+                <Grid Padding="0,16,0,0">
+                    <Frame
+                        x:Name="RsvToolFrame"
+                        Loaded="RsvToolFrame_Loaded"/>
+                </Grid>
+            </TabViewItem>
             <!-- ═══════════════════════════════════════════
                  ВЫПИСКА БАНКА
                  ═══════════════════════════════════════════ -->
-            <TabViewItem Header="Мастер выписки" IsClosable="False">
+            <TabViewItem IsClosable="False">
+                <TabViewItem.Header>
+                    <Border MinWidth="165" Padding="12,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Symbol="OpenFile"/>
+                            <TextBlock
+                    Text="Мастер выписки"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </TabViewItem.Header>
                 <ScrollViewer Padding="0,16,0,24"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">

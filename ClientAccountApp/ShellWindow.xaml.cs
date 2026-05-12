@@ -131,21 +131,39 @@ namespace ClientAccountApp
 
         public void RefreshDatabaseFooter()
         {
-            if (DatabaseModeFooterTextBlock == null) return;
+            if (DatabaseModeFooterTextBlock == null)
+                return;
+
             var settings = DatabaseConnectionSettingsService.Load();
+
             if (settings.ProviderMode == DatabaseProviderMode.SqlServer)
             {
                 string db = "SQL Server";
+
                 try
                 {
-                    var b = new SqlConnectionStringBuilder(settings.SqlServerConnectionString);
-                    if (!string.IsNullOrWhiteSpace(b.InitialCatalog)) db = b.InitialCatalog;
+                    var builder = new SqlConnectionStringBuilder(settings.SqlServerConnectionString);
+
+                    if (!string.IsNullOrWhiteSpace(builder.InitialCatalog))
+                        db = builder.InitialCatalog;
                 }
-                catch { }
-                DatabaseModeFooterTextBlock.Text = $"База: SQL Server\n{db}";
+                catch
+                {
+                    // Если строка подключения нестандартная, показываем простой текст.
+                }
+
+                DatabaseModeFooterTextBlock.Text =
+                    "Режим: Совместная работа" +
+                    Environment.NewLine +
+                    db;
+
                 return;
             }
-            DatabaseModeFooterTextBlock.Text = "База: SQLite\nЛокальная база";
+
+            DatabaseModeFooterTextBlock.Text =
+                "Режим: Локальный" +
+                Environment.NewLine +
+                "Сервер не используется";
         }
 
         public void EnterMainApplication()
@@ -217,7 +235,6 @@ namespace ClientAccountApp
                 "contracts" => typeof(ContractsPage),
                 "problem-signatures" => typeof(ProblemSignaturesPage),
                 "tools" => typeof(ToolsPage),
-                "rsv"   => typeof(RsvPage),
                 "billing" => typeof(BillingPage),
                 "catalog" => typeof(ServiceCatalogPage),
                 _ => typeof(DashboardPage)
