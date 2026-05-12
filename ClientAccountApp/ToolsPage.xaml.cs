@@ -49,7 +49,7 @@ namespace ClientAccountApp
             _stmtSearchDebounceTimer = DispatcherQueue.CreateTimer();
             _stmtSearchDebounceTimer.Interval = TimeSpan.FromMilliseconds(280);
             _stmtSearchDebounceTimer.IsRepeating = false;
-            _stmtSearchDebounceTimer.Ticked += StmtSearchDebounceTimer_Ticked;
+            _stmtSearchDebounceTimer.Tick += StmtSearchDebounceTimer_Tick;
 
             this.Unloaded += ToolsPage_Unloaded;
 
@@ -73,7 +73,7 @@ namespace ClientAccountApp
                 });
         }
 
-        private void StmtSearchDebounceTimer_Ticked(DispatcherQueueTimer sender, object args) =>
+        private void StmtSearchDebounceTimer_Tick(DispatcherQueueTimer sender, object args) =>
             ApplyStatementFilters();
 
         private void ToolsPage_Unloaded(object sender, RoutedEventArgs e) =>
