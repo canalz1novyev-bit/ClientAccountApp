@@ -462,6 +462,84 @@
                               HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Spacing="16">
 
+                        <!-- СЕССИИ -->
+                        <Border x:Name="StmtSessionsCard"
+                                Style="{StaticResource NiatecCardBorderStyle}"
+                                Visibility="Collapsed">
+                            <StackPanel Spacing="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Продолжить работу с сохранённой выпиской"
+                                               Style="{StaticResource NiatecStepTitleTextStyle}"
+                                               VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1"
+                                            Content="✕ Скрыть"
+                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                            FontSize="11" Padding="8,4"
+                                            Click="StmtHideSessionsButton_Click"/>
+                                </Grid>
+                                <TextBlock Text="Выберите ранее сохранённую сессию чтобы продолжить разметку — все НДС-метки будут восстановлены."
+                                           Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                                <!-- Список сессий -->
+                                <ListView x:Name="StmtSessionsListView"
+                                          SelectionMode="None"
+                                          MaxHeight="280">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource NiatecInnerPanelBorderStyle}"
+                                                    Margin="0,3">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Spacing="3">
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontWeight="SemiBold" FontSize="13"
+                                                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                                            <TextBlock Text="{Binding OrgName}"
+                                                                       Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                                            <TextBlock Text="{Binding MarkedDisplay}"
+                                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                                       FontSize="12"/>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding SavedAtDisplay}"
+                                                                   Style="{StaticResource NiatecMutedTextStyle}"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1"
+                                                            Content="📂 Загрузить"
+                                                            Tag="{Binding FilePath}"
+                                                            Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                            Padding="12,6" FontSize="12"
+                                                            VerticalAlignment="Center"
+                                                            Click="StmtLoadSessionButton_Click"/>
+                                                    <Button Grid.Column="2"
+                                                            Content="🗑"
+                                                            Tag="{Binding FilePath}"
+                                                            Style="{StaticResource NiatecSmallIconButtonStyle}"
+                                                            VerticalAlignment="Center"
+                                                            Click="StmtDeleteSessionButton_Click"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </StackPanel>
+                        </Border>
+
                         <!-- ШАГ 1: ЗАГРУЗКА -->
                         <Border Style="{StaticResource NiatecCardBorderStyle}">
                             <StackPanel Spacing="12">
@@ -581,11 +659,23 @@
                                     </Grid>
                                 </Border>
 
-                                <Button x:Name="StmtMarkAllButton"
-                                        Content="⚡ Разметить всё"
-                                        HorizontalAlignment="Left"
-                                        Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                        Click="StmtMarkAllButton_Click"/>
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="StmtMarkAllButton"
+                                            Grid.Column="0"
+                                            Content="⚡ Разметить всё"
+                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                            Click="StmtMarkAllButton_Click"/>
+                                    <Button x:Name="StmtSaveSessionButton"
+                                            Grid.Column="1"
+                                            Content="💾 Сохранить сессию"
+                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                            Click="StmtSaveSessionButton_Click"/>
+                                </Grid>
 
                                 <!-- Заголовок таблицы -->
                                 <Border Background="{StaticResource NiatecSurfaceAltBrush}"

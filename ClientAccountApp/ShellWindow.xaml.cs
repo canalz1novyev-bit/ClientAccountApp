@@ -217,6 +217,7 @@ namespace ClientAccountApp
                 "contracts" => typeof(ContractsPage),
                 "problem-signatures" => typeof(ProblemSignaturesPage),
                 "tools" => typeof(ToolsPage),
+                "rsv"   => typeof(RsvPage),
                 "billing" => typeof(BillingPage),
                 "catalog" => typeof(ServiceCatalogPage),
                 _ => typeof(DashboardPage)

@@ -1,6 +1,6 @@
-﻿// Добавить в папку Services/
-// Генерирует XML в формате КНД 1010212 (книга покупок) и КНД 1010213 (книга продаж)
-// для загрузки в СБИС/SABY.
+// Генерирует XML книги покупок (NO_NDS.8) и книги продаж (NO_NDS.9)
+// Формат ВерсФорм 5.12, кодировка WINDOWS-1251.
+// Структура проверена побайтово по образцам СБИС/SABY.
 
 using ClientAccountApp.Models;
 using System;
@@ -16,151 +16,179 @@ namespace ClientAccountApp.Services
     {
         public record OrgInfo(string INN, string KPP, string Name);
 
-        // ─── Публичные точки входа ────────────────────────────────────────────
-
         public static string ExportKnigaPokupok(
             IEnumerable<BankStatementOperation> ops,
             OrgInfo org, int year, int quarter, string outputFolder)
             => Export(
                 ops.Where(o => o.IsMarkedForVatBook && o.VatBookType == "Покупки"),
-                org, year, quarter, isPurchases: true, outputFolder);
+                org, isPurchases: true, outputFolder);
 
         public static string ExportKnigaProdazh(
             IEnumerable<BankStatementOperation> ops,
             OrgInfo org, int year, int quarter, string outputFolder)
             => Export(
                 ops.Where(o => o.IsMarkedForVatBook && o.VatBookType == "Продажи"),
-                org, year, quarter, isPurchases: false, outputFolder);
-
-        // ─── Генерация XML ────────────────────────────────────────────────────
+                org, isPurchases: false, outputFolder);
 
         private static string Export(
             IEnumerable<BankStatementOperation> rawOps,
-            OrgInfo org, int year, int quarter,
-            bool isPurchases, string outputFolder)
+            OrgInfo org,
+            bool isPurchases,
+            string outputFolder)
         {
             var ops = rawOps.OrderBy(o => o.Date).ToList();
-            string knd = isPurchases ? "1010212" : "1010213";
-            string pfx = isPurchases ? "ON_KNPOK" : "ON_KNPR";
-            string g8 = Guid.NewGuid().ToString("N")[..8].ToUpper();
 
-            decimal sum20 = ops.Where(o => o.VatRate == 20m).Sum(o => o.VatAmount);
-            decimal sum10 = ops.Where(o => o.VatRate == 10m).Sum(o => o.VatAmount);
-            decimal sum0 = ops.Where(o => o.VatRate == 0m).Sum(o => o.VatAmount);
+            string region  = org.INN.Length >= 4 ? org.INN[..4] : org.INN;
+            string innKpp  = org.INN + (string.IsNullOrEmpty(org.KPP) ? "" : org.KPP);
+            string date8   = DateTime.Now.ToString("yyyyMMdd");
+            string guid    = Guid.NewGuid().ToString().ToUpper();   // верхний регистр, с дефисами
+            string bookNum = isPurchases ? "8" : "9";
+
+            // ИдФайл: точка после NO_NDS (как в образце СБИС)
+            string idFail   = $"NO_NDS.{bookNum}_{region}_{region}_{innKpp}_{date8}_{guid}";
+            // Имя файла: подчёркивание (как в образце СБИС)
+            string fileName = $"NO_NDS_{bookNum}_{region}_{region}_{innKpp}_{date8}_{guid}.xml";
 
             Directory.CreateDirectory(outputFolder);
-            string fileName = $"{pfx}_{org.INN}_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
             string filePath = Path.Combine(outputFolder, fileName);
 
-            var xSettings = new XmlWriterSettings
+            // Шаг 1: пишем тело XML в StringBuilder (без декларации)
+            var sb = new StringBuilder();
+            var xs = new XmlWriterSettings
             {
-                Indent = true,
-                Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                Indent             = true,
+                IndentChars        = " ",       // 1 пробел — как в образце
+                OmitXmlDeclaration = true,      // декларацию добавим вручную
+                ConformanceLevel   = ConformanceLevel.Document,
             };
 
-            using var fs = File.Create(filePath);
-            using var xw = XmlWriter.Create(fs, xSettings);
-
-            xw.WriteStartDocument();
-
-            // ── Корневой элемент ──────────────────────────────────────────────
-            xw.WriteStartElement("Файл");
-            xw.WriteAttributeString("ИдФайл", $"{pfx}_{org.INN}_{g8}_{DateTime.Now:yyyyMMdd}");
-            xw.WriteAttributeString("ВерсФорм", "5.07");
-            xw.WriteAttributeString("ПрогрОбесп", "ClientAccountApp");
-            xw.WriteAttributeString("ДатаФайл", DateTime.Now.ToString("dd.MM.yyyy"));
-            xw.WriteAttributeString("ВремяФайл", DateTime.Now.ToString("HH.mm.ss"));
-
-            // ── Документ ─────────────────────────────────────────────────────
-            xw.WriteStartElement("Документ");
-            xw.WriteAttributeString("КНД", knd);
-            xw.WriteAttributeString("ДатаДок", DateTime.Now.ToString("dd.MM.yyyy"));
-            xw.WriteAttributeString("НомДок", "1");
-            xw.WriteAttributeString("ОтчетГод", year.ToString());
-            xw.WriteAttributeString("НомКв", quarter.ToString());
-
-            // ── Сведения о налогоплательщике ─────────────────────────────────
-            xw.WriteStartElement("СвНП");
-            xw.WriteAttributeString("ИННЮЛ", org.INN);
-            xw.WriteAttributeString("КПП", org.KPP);
-            xw.WriteAttributeString("НаимОрг", org.Name);
-            xw.WriteEndElement();
-
-            // ── Книга ─────────────────────────────────────────────────────────
-            string bookEl = isPurchases ? "КнигаПокупок" : "КнигаПродаж";
-            string rowsEl = isPurchases ? "СтрокиКнигиПокупок" : "СтрокиКнигиПродаж";
-            string rowEl = isPurchases ? "СтрокКнигиПокупок" : "СтрокКнигиПродаж";
-
-            xw.WriteStartElement(bookEl);
-            xw.WriteStartElement(rowsEl);
-            xw.WriteAttributeString("ВсегоСумНДС20", F(sum20));
-            xw.WriteAttributeString("ВсегоСумНДС10", F(sum10));
-            xw.WriteAttributeString("ВсегоСумНДС0", F(sum0));
-
-            // ── Строки ────────────────────────────────────────────────────────
-            int n = 1;
-            foreach (var op in ops)
+            using (var xw = XmlWriter.Create(sb, xs))
             {
-                string sfNum = op.VatInvoiceNumber;
-                string sfDate = op.VatInvoiceDate?.ToString("dd.MM.yyyy") ?? "";
-                string kpp = string.IsNullOrEmpty(op.CounterpartyKPP) ? "0" : op.CounterpartyKPP;
-                string rateAttr = op.VatRate switch { 20m => "НДС20", 10m => "НДС10", _ => "НДС0" };
+                xw.WriteStartElement("Файл");
+                xw.WriteAttributeString("ИдФайл",  idFail);
+                xw.WriteAttributeString("ВерсПрог", "ClientAccountApp 1.1");
+                xw.WriteAttributeString("ВерсФорм", "5.12");
 
-                xw.WriteStartElement(rowEl);
-                xw.WriteAttributeString("НомСтр", n.ToString());
-                xw.WriteAttributeString("КодВидОпер", "01"); // обычная операция
+                xw.WriteStartElement("Документ");
+                xw.WriteAttributeString("Индекс",  isPurchases ? "0000080" : "0000090");
+                xw.WriteAttributeString("НомКорр", "0");
 
-                if (isPurchases)
-                {
-                    xw.WriteStartElement("СвСчФактПост");
-                    xw.WriteAttributeString("НомСчФ", sfNum);
-                    xw.WriteAttributeString("ДатаСчФ", sfDate);
-                    xw.WriteAttributeString("СумНДС", F(op.VatAmount));
-                    xw.WriteStartElement("СвПрод");
-                    xw.WriteAttributeString("ИННЮЛ", op.CounterpartyINN);
-                    xw.WriteAttributeString("КПП", kpp);
-                    xw.WriteAttributeString("НаимПрод", op.CounterpartyName);
-                    xw.WriteEndElement(); // СвПрод
-                    xw.WriteEndElement(); // СвСчФактПост
+                if (isPurchases) WritePurchases(xw, ops);
+                else             WriteSales(xw, ops);
 
-                    xw.WriteStartElement("СтоимПокупокВс");
-                    xw.WriteAttributeString(rateAttr, F(op.VatAmount));
-                    xw.WriteAttributeString("СумОсн", F(op.AmountWithoutVat));
-                    xw.WriteEndElement();
-                }
-                else
-                {
-                    xw.WriteStartElement("СвСчФактВыст");
-                    xw.WriteAttributeString("НомСчФ", sfNum);
-                    xw.WriteAttributeString("ДатаСчФ", sfDate);
-                    xw.WriteAttributeString("СумНДС", F(op.VatAmount));
-                    xw.WriteStartElement("СвПокуп");
-                    xw.WriteAttributeString("ИННЮЛ", op.CounterpartyINN);
-                    xw.WriteAttributeString("КПП", kpp);
-                    xw.WriteAttributeString("НаимПокуп", op.CounterpartyName);
-                    xw.WriteEndElement(); // СвПокуп
-                    xw.WriteEndElement(); // СвСчФактВыст
-
-                    xw.WriteStartElement("СтоимПродажВс");
-                    xw.WriteAttributeString(rateAttr, F(op.VatAmount));
-                    xw.WriteAttributeString("СумОсн", F(op.AmountWithoutVat));
-                    xw.WriteEndElement();
-                }
-
-                xw.WriteEndElement(); // rowEl
-                n++;
+                xw.WriteEndElement(); // Документ
+                xw.WriteEndElement(); // Файл
             }
 
-            xw.WriteEndElement(); // rowsEl
-            xw.WriteEndElement(); // bookEl
-            xw.WriteEndElement(); // Документ
-            xw.WriteEndElement(); // Файл
-            xw.WriteEndDocument();
+            // Шаг 2: нормализуем под формат СБИС
+            // - прописные WINDOWS-1251 в декларации
+            // - Unix переносы строк (\n), как в образце СБИС
+            // - убираем пробел перед /> в самозакрывающихся тегах
+            string xmlBody = sb.ToString()
+                .Replace("\r\n", "\n")   // Windows → Unix переносы
+                .Replace(" />", "/>");   // <СведИП ... /> → <СведИП .../>
+
+            string fullXml = "<?xml version=\"1.0\" encoding=\"WINDOWS-1251\"?>\n"
+                             + xmlBody;
+
+            // Шаг 3: сохраняем в кодировке Windows-1251
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            File.WriteAllText(filePath, fullXml, Encoding.GetEncoding("windows-1251"));
 
             return filePath;
         }
 
+        private static void WritePurchases(XmlWriter xw, List<BankStatementOperation> ops)
+        {
+            decimal totalVat = ops.Sum(o => o.VatAmount);
+
+            xw.WriteStartElement("КнигаПокуп");
+            xw.WriteAttributeString("СумНДСВсКПк", F(totalVat));
+
+            for (int i = 0; i < ops.Count; i++)
+            {
+                var op = ops[i];
+                xw.WriteStartElement("КнПокСтр");
+                xw.WriteAttributeString("НомерПор",    (i + 1).ToString());
+                xw.WriteAttributeString("НомСчФПрод",  SfNum(op.VatInvoiceNumber));
+                xw.WriteAttributeString("ДатаСчФПрод", DateStr(op.VatInvoiceDate ?? op.Date));
+                xw.WriteAttributeString("СтоимПокупВ", F(op.Amount));
+                xw.WriteAttributeString("СумНДСВыч",   F(op.VatAmount));
+
+                xw.WriteElementString("КодВидОпер", "01");
+
+                xw.WriteStartElement("СвПрод");
+                WriteCounterparty(xw, op.CounterpartyINN, op.CounterpartyKPP);
+                xw.WriteEndElement();
+
+                xw.WriteEndElement(); // КнПокСтр
+            }
+
+            xw.WriteEndElement(); // КнигаПокуп
+        }
+
+        private static void WriteSales(XmlWriter xw, List<BankStatementOperation> ops)
+        {
+            decimal base20 = ops.Where(o => o.VatRate >= 20m).Sum(o => o.AmountWithoutVat);
+            decimal base10 = ops.Where(o => o.VatRate == 10m).Sum(o => o.AmountWithoutVat);
+            decimal base0  = ops.Where(o => o.VatRate == 0m) .Sum(o => o.AmountWithoutVat);
+
+            xw.WriteStartElement("КнигаПрод");
+            if (base20 > 0) xw.WriteAttributeString("СтПродБезНДС20", F(base20));
+            if (base10 > 0) xw.WriteAttributeString("СтПродБезНДС10", F(base10));
+            if (base0  > 0) xw.WriteAttributeString("СтПродНДС0",     F(base0));
+
+            for (int i = 0; i < ops.Count; i++)
+            {
+                var op  = ops[i];
+                string sfx = op.VatRate >= 20m ? "20" : op.VatRate == 10m ? "10" : "0";
+
+                xw.WriteStartElement("КнПродСтр");
+                xw.WriteAttributeString("НомерПор",          (i + 1).ToString());
+                xw.WriteAttributeString("НомСчФПрод",         SfNum(op.VatInvoiceNumber));
+                xw.WriteAttributeString("ДатаСчФПрод",        DateStr(op.VatInvoiceDate ?? op.Date));
+                xw.WriteAttributeString("СтоимПродСФ",        F(op.Amount));
+                xw.WriteAttributeString($"СтоимПродСФ{sfx}", F(op.AmountWithoutVat));
+                xw.WriteAttributeString($"СумНДССФ{sfx}",    F(op.VatAmount));
+
+                xw.WriteElementString("КодВидОпер", "01");
+
+                xw.WriteStartElement("СвПокуп");
+                WriteCounterparty(xw, op.CounterpartyINN, op.CounterpartyKPP);
+                xw.WriteEndElement();
+
+                xw.WriteEndElement(); // КнПродСтр
+            }
+
+            xw.WriteEndElement(); // КнигаПрод
+        }
+
+        private static void WriteCounterparty(XmlWriter xw, string inn, string kpp)
+        {
+            inn = (inn ?? "").Trim();
+            if (inn.Length == 12) // ИП = 12-значный ИНН
+            {
+                xw.WriteStartElement("СведИП");
+                xw.WriteAttributeString("ИННФЛ", inn);
+                xw.WriteEndElement();
+            }
+            else // ЮЛ = 10-значный ИНН
+            {
+                xw.WriteStartElement("СведЮЛ");
+                xw.WriteAttributeString("ИННЮЛ", inn);
+                if (!string.IsNullOrWhiteSpace(kpp))
+                    xw.WriteAttributeString("КПП", kpp);
+                xw.WriteEndElement();
+            }
+        }
+
         private static string F(decimal v) =>
-            v.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+            v.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        private static string DateStr(DateTime d) =>
+            d == default ? "" : d.ToString("dd.MM.yyyy");
+
+        private static string SfNum(string? s) =>
+            string.IsNullOrWhiteSpace(s) ? "б/н" : s.Trim();
     }
 }

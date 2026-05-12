@@ -18,7 +18,10 @@ namespace ClientAccountApp.Services
         public static string GenerateUpd(
             BankStatementOperation op,
             string sellerINN, string sellerKPP, string sellerName,
-            string outputFolder)
+            string outputFolder,
+            string sellerAddress = "",
+            string sellerDirectorName = "",
+            string sellerDirectorPosition = "Руководитель")
         {
             bool isSales = op.VatBookType == "Продажи";
 
@@ -96,7 +99,8 @@ hr{border:.3pt solid #aaa;margin:4pt 0}
             // Реквизиты сторон
             sb.AppendLine("<table class='info'>");
             R2(sb, "Продавец:", "(2)", sellName, "Покупатель:", "(6)", buyName);
-            R2(sb, "Адрес:", "(2а)", "", "Адрес:", "(6а)", "");
+            string dispSellerAddr = isSales ? sellerAddress : "";
+            R2(sb, "Адрес:", "(2а)", dispSellerAddr, "Адрес:", "(6а)", "");
             R2(sb, "ИНН/КПП продавца:", "(2б)", $"{sellINN}/{sellKPP}", "ИНН/КПП покупателя:", "(6б)", $"{buyINN}/{buyKPP}");
             sb.AppendLine($"<tr><td class='lbl'>Грузоотправитель и его адрес: <span class='fn'>(3)</span></td><td colspan='3'>он же</td></tr>");
             sb.AppendLine($"<tr><td class='lbl'>Грузополучатель и его адрес: <span class='fn'>(4)</span></td><td colspan='3'>{H(buyName)}</td></tr>");
@@ -162,10 +166,10 @@ hr{border:.3pt solid #aaa;margin:4pt 0}
 
             // Подписи (стр.1)
             sb.AppendLine("<table class='sig' style='margin-top:5pt'><tr>");
-            SigCell(sb, "Руководитель организации или иное уполномоченное лицо");
-            SigCell(sb, "Главный бухгалтер или иное уполномоченное лицо");
+            SigCell(sb, "Руководитель организации или иное уполномоченное лицо", sellerDirectorPosition, sellerDirectorName);
+            SigCell(sb, "Главный бухгалтер или иное уполномоченное лицо", "", "");
             sb.AppendLine("</tr><tr>");
-            SigCell(sb, "Индивидуальный предприниматель или иное уполномоченное лицо<br><span class='sll'>(ОГРНИП и дата присвоения)</span>");
+            SigCell(sb, "Индивидуальный предприниматель или иное уполномоченное лицо<br><span class='sll'>(ОГРНИП и дата присвоения)</span>", "", "");
             sb.AppendLine("<td></td>");
             sb.AppendLine("</tr></table>");
 
@@ -181,8 +185,11 @@ hr{border:.3pt solid #aaa;margin:4pt 0}
                           $"<td class='rv'>&laquo;{op.Date:dd}&raquo; {op.Date.ToString("MMMM yyyy г.", Ru)}</td></tr>");
             TR(sb, "Иные сведения об отгрузке, передаче (12)", "");
             TRsig(sb, "Ответственный за правильность оформления факта хозяйственной жизни (13)");
+            string sellerSubject = $"{H(sellName)}, ИНН/КПП {H(sellINN)}/{H(sellKPP)}";
+            if (!string.IsNullOrEmpty(sellerDirectorName))
+                sellerSubject += $"<br><b>{H(sellerDirectorPosition)} {H(sellerDirectorName)}</b>";
             sb.AppendLine($"<tr><td class='rl'>Наименование экономического субъекта – составителя документа (в т.ч. комиссионера / агента) <b>(14)</b></td>" +
-                          $"<td class='rv'>{H(sellName)}, ИНН/КПП {H(sellINN)}/{H(sellKPP)} &nbsp;&nbsp;<b>М.П.</b></td></tr>");
+                          $"<td class='rv'>{sellerSubject} &nbsp;&nbsp;<b>М.П.</b></td></tr>");
 
             sb.AppendLine("</table><hr/><table class='tr'>");
 
@@ -232,11 +239,13 @@ hr{border:.3pt solid #aaa;margin:4pt 0}
                 "<span class='sll'>(ф.и.о.)</span></td></tr>");
         }
 
-        private static void SigCell(StringBuilder sb, string title)
+        private static void SigCell(StringBuilder sb, string title, string position = "", string name = "")
         {
-            sb.AppendLine($"<td><b>{title}</b><br><br>" +
+            string posLine = string.IsNullOrEmpty(position) ? "" : $"<br><span class='sll'>{H(position)}</span>";
+            string nameLine = string.IsNullOrEmpty(name) ? "" : $" <b>{H(name)}</b>";
+            sb.AppendLine($"<td><b>{title}</b>{posLine}<br><br>" +
                 "<span class='slns'>&nbsp;</span> / <span class='sll'>(подпись)</span> " +
-                "<span class='sln'>&nbsp;</span> <span class='sll'>(ф.и.о.)</span></td>");
+                $"<span class='sln'>&nbsp;</span>{nameLine} <span class='sll'>(ф.и.о.)</span></td>");
         }
 
         private static string H(string? s) =>

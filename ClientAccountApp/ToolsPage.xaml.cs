@@ -36,6 +36,7 @@ namespace ClientAccountApp
         private static string _savedOrgInn = "";
         private static string _savedOrgKpp = "";
         private static string _savedOrgName = "";
+        private static string? _currentSessionId = null; // ID текущей сохранённой сессии
 
         // ─────────────────────────────────────────────────────────────────────
         public ToolsPage()
@@ -50,11 +51,15 @@ namespace ClientAccountApp
         protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            if (_currentStatement != null)
-                // Откладываем до завершения построения визуального дерева
-                DispatcherQueue.TryEnqueue(
-                    Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
-                    RestoreStatementUI);
+            // Всегда обновляем список сессий
+            DispatcherQueue.TryEnqueue(
+                Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                () =>
+                {
+                    RefreshSessionsList();
+                    if (_currentStatement != null)
+                        RestoreStatementUI();
+                });
         }
 
         private void RestoreStatementUI()
@@ -447,6 +452,7 @@ namespace ClientAccountApp
             _currentStatement = null;
             _allOperations = new();
             _loadedFilePath = "";
+            _currentSessionId = null;
 
             StmtFilePathTextBox.Text = "";
             StmtLoadButton.IsEnabled = false;
@@ -456,6 +462,124 @@ namespace ClientAccountApp
             StmtExportCard.Visibility = Visibility.Collapsed;
             StmtClearButton.Visibility = Visibility.Collapsed;
             StmtOperationsListView.ItemsSource = null;
+
+            RefreshSessionsList();
+        }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // ВЫПИСКА БАНКА — Сессии
+        // ═════════════════════════════════════════════════════════════════════
+
+        private void RefreshSessionsList()
+        {
+            var sessions = BankStatementSessionService.GetAll();
+            if (sessions.Count == 0)
+            {
+                StmtSessionsCard.Visibility = Visibility.Collapsed;
+                return;
+            }
+            StmtSessionsCard.Visibility = Visibility.Visible;
+            StmtSessionsListView.ItemsSource = sessions;
+        }
+
+        private void StmtHideSessionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            StmtSessionsCard.Visibility = Visibility.Collapsed;
+        }
+
+        private void StmtLoadSessionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not string filePath) return;
+            if (!File.Exists(filePath))
+            {
+                StmtLoadStatusText.Text = "Файл сессии не найден. Возможно, он был удалён.";
+                RefreshSessionsList();
+                return;
+            }
+
+            try
+            {
+                var (stmt, ops, inn, kpp, name, id) = BankStatementSessionService.Load(filePath);
+                _currentStatement  = stmt;
+                _allOperations     = ops;
+                _loadedFilePath    = stmt.AccountNumber; // путь к файлу утерян — пишем номер счёта
+                _currentSessionId  = id;
+                _savedOrgInn       = inn;
+                _savedOrgKpp       = kpp;
+                _savedOrgName      = name;
+
+                TryMatchClientsToOperations();
+                ShowStatementSummary();
+                ApplyStatementFilters();
+                InitExportYearCombo();
+
+                // Заполняем Шаг 3
+                if (!string.IsNullOrEmpty(inn))  StmtExportInnBox.Text  = inn;
+                if (!string.IsNullOrEmpty(kpp))  StmtExportKppBox.Text  = kpp;
+                if (!string.IsNullOrEmpty(name)) StmtExportNameBox.Text = name;
+
+                StmtFilePathTextBox.Text = $"[Сессия] {stmt.AccountNumber} | {stmt.PeriodDisplay}";
+                StmtSummaryBorder.Visibility  = Visibility.Visible;
+                StmtOperationsCard.Visibility = Visibility.Visible;
+                StmtExportCard.Visibility     = Visibility.Visible;
+                StmtClearButton.Visibility    = Visibility.Visible;
+                StmtLoadButton.IsEnabled      = false;
+
+                int marked = ops.Count(o => o.IsMarkedForVatBook);
+                StmtLoadStatusText.Text = $"Сессия загружена: {ops.Count} операций, {marked} размечено.";
+            }
+            catch (Exception ex)
+            {
+                StmtLoadStatusText.Text = $"Ошибка загрузки сессии: {ex.Message}";
+            }
+        }
+
+        private void StmtDeleteSessionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not string filePath) return;
+            BankStatementSessionService.Delete(filePath);
+            RefreshSessionsList();
+        }
+
+        private void StmtSaveSessionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentStatement == null || _allOperations.Count == 0)
+            {
+                StmtLoadStatusText.Text = "Нет загруженных операций для сохранения.";
+                return;
+            }
+
+            try
+            {
+                string inn  = StmtExportInnBox.Text.Trim();
+                string kpp  = StmtExportKppBox.Text.Trim();
+                string name = StmtExportNameBox.Text.Trim();
+
+                // Обновляем сохранённые реквизиты
+                if (!string.IsNullOrEmpty(inn))  _savedOrgInn  = inn;
+                if (!string.IsNullOrEmpty(kpp))  _savedOrgKpp  = kpp;
+                if (!string.IsNullOrEmpty(name)) _savedOrgName = name;
+
+                BankStatementSessionService.Save(
+                    _currentStatement, _allOperations, _loadedFilePath,
+                    _savedOrgInn, _savedOrgKpp, _savedOrgName,
+                    _currentSessionId);
+
+                // Если это новая сессия — запомним её ID для обновлений
+                if (_currentSessionId == null)
+                {
+                    var sessions = BankStatementSessionService.GetAll();
+                    _currentSessionId = sessions.FirstOrDefault()?.Id;
+                }
+
+                int marked = _allOperations.Count(o => o.IsMarkedForVatBook);
+                StmtLoadStatusText.Text = $"Сессия сохранена. {marked} операций размечено.";
+                RefreshSessionsList();
+            }
+            catch (Exception ex)
+            {
+                StmtLoadStatusText.Text = $"Ошибка сохранения сессии: {ex.Message}";
+            }
         }
 
         // ═════════════════════════════════════════════════════════════════════
@@ -672,6 +796,7 @@ namespace ClientAccountApp
                 CloseButtonText = "Отмена",
                 XamlRoot = this.XamlRoot,
                 DefaultButton = ContentDialogButton.Primary,
+                RequestedTheme = ThemeService.IsLightTheme ? ElementTheme.Light : ElementTheme.Default,
             };
 
             var result = await dialog.ShowAsync();
@@ -710,15 +835,72 @@ namespace ClientAccountApp
             if (string.IsNullOrEmpty(inn) || string.IsNullOrEmpty(name))
             { StmtLoadStatusText.Text = "Для УПД заполните ИНН и наименование в Шаге 3."; return; }
 
+            // Дополнительные реквизиты из профиля организации
+            string sellerAddress = "";
+            string directorName = "";
             try
             {
+                using var db = new AppDbContext();
+                var org = db.OrganizationProfiles.FirstOrDefault(o => o.Inn == inn)
+                          ?? db.OrganizationProfiles.FirstOrDefault();
+                if (org != null)
+                {
+                    sellerAddress = org.LegalAddress ?? "";
+                    directorName  = org.DirectorName ?? "";
+                }
+            }
+            catch { /* не критично */ }
+
+            try
+            {
+                string sfNum  = string.IsNullOrEmpty(op.VatInvoiceNumber) ? op.DocNumber : op.VatInvoiceNumber;
+                DateTime sfDt = op.VatInvoiceDate ?? op.Date;
+
+                var data = new BillingUpdPdfData
+                {
+                    Status         = "1",
+                    DocumentNumber = sfNum,
+                    DocumentDate   = sfDt,
+
+                    SellerName     = name,
+                    SellerInn      = inn,
+                    SellerKpp      = kpp,
+                    SellerAddress  = sellerAddress,
+                    SellerDirector = directorName,
+
+                    BuyerName      = op.CounterpartyName ?? "",
+                    BuyerInn       = op.CounterpartyINN  ?? "",
+                    BuyerKpp       = op.CounterpartyKPP  ?? "",
+
+                    ShipperName    = "он же",
+                    ConsigneeName  = op.CounterpartyName ?? "",
+
+                    Lines = new System.Collections.Generic.List<BillingUpdPdfLine>
+                    {
+                        new BillingUpdPdfLine
+                        {
+                            Name             = op.PaymentPurpose,
+                            UnitName         = "усл.",
+                            Quantity         = 1,
+                            PriceWithoutVat  = op.AmountWithoutVat,
+                            VatRatePercent   = op.VatRate,
+                        }
+                    }
+                };
+
                 string outDir = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "ClientAccountApp", "УПД");
+                Directory.CreateDirectory(outDir);
 
-                string path = BankStatementUpdHtmlService.GenerateUpd(op, inn, kpp, name, outDir);
-                StmtLoadStatusText.Text = $"УПД сформирован: {path}";
-                Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
+                string safe  = sfNum.Replace("/", "-").Replace("\\", "-");
+                string fname = $"УПД_{safe}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                string fpath = Path.Combine(outDir, fname);
+
+                new BillingUpdPdfService().Generate(data, fpath);
+
+                StmtLoadStatusText.Text = $"УПД сформирован: {fpath}";
+                Process.Start(new ProcessStartInfo { FileName = fpath, UseShellExecute = true });
             }
             catch (Exception ex) { StmtLoadStatusText.Text = $"Ошибка УПД: {ex.Message}"; }
         }
@@ -847,6 +1029,7 @@ namespace ClientAccountApp
                 CloseButtonText = "Отмена",
                 XamlRoot = this.XamlRoot,
                 DefaultButton = ContentDialogButton.Primary,
+                RequestedTheme = ThemeService.IsLightTheme ? ElementTheme.Light : ElementTheme.Default,
             };
 
             if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
@@ -1014,7 +1197,24 @@ namespace ClientAccountApp
                     Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                     "ClientAccountApp", "ВыпискаНДС");
 
-                var org = new BankStatementUsnXmlExporter.OrgInfo(inn, kpp, name);
+                // Банковские реквизиты из профиля организации (для блока <Банки>)
+                string bankName = "", bankAccount = "", bankBic = "";
+                try
+                {
+                    using var db = new AppDbContext();
+                    var orgPr = db.OrganizationProfiles.FirstOrDefault(o => o.Inn == inn)
+                                ?? db.OrganizationProfiles.FirstOrDefault();
+                    if (orgPr != null)
+                    {
+                        bankName    = orgPr.BankName ?? "";
+                        bankAccount = orgPr.SettlementAccount ?? "";
+                        bankBic     = orgPr.BankBic ?? "";
+                    }
+                }
+                catch { }
+
+                var org = new BankStatementUsnXmlExporter.OrgInfo(
+                    inn, kpp, name, bankName, bankAccount, bankBic);
                 string filePath = BankStatementUsnXmlExporter.ExportKudir(
                     _allOperations, org, year, qtr, usnType, outDir);
 

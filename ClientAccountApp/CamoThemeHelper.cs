@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -8,96 +8,132 @@ namespace ClientAccountApp
 {
     public static class CamoThemeHelper
     {
-        // M81 Woodland BGRA
-        private static readonly byte[] ColBase = { 0x24, 0x38, 0x1E, 0xFF };
-        private static readonly byte[] ColBlack = { 0x0C, 0x14, 0x0A, 0xFF };
-        private static readonly byte[] ColDkGreen = { 0x14, 0x2C, 0x16, 0xFF };
-        private static readonly byte[] ColBrown = { 0x28, 0x38, 0x50, 0xFF };
-        private static readonly byte[] ColMdGreen = { 0x38, 0x56, 0x2C, 0xFF };
+        // ── Палитра: тёмные военные оттенки, совпадают с темой Military ──────
+        // Формат BGRA
+        private static readonly byte[] ColBase     = { 0x10, 0x22, 0x16, 0xFF }; // #16220F тёмно-оливковый фон
+        private static readonly byte[] ColDarkest  = { 0x06, 0x10, 0x08, 0xFF }; // #081006 почти чёрный
+        private static readonly byte[] ColForest   = { 0x16, 0x30, 0x1C, 0xFF }; // #1C3016 лесной зелёный
+        private static readonly byte[] ColEarth    = { 0x22, 0x32, 0x3E, 0xFF }; // #3E3222 земляной коричневый
+        private static readonly byte[] ColOlive    = { 0x1C, 0x3C, 0x28, 0xFF }; // #283C1C оливковый
 
         public static WriteableBitmap CreateM81Bitmap()
         {
-            const int W = 220, H = 340;
+            // Высокое разрешение — 2× для чёткости при растяжении
+            const int W = 440, H = 680;
             var pix = new byte[W * H * 4];
 
-            // Фон
+            var rngNoise = new Random(42);
+
+            // ── 1. Заполнение фоном с тонким шумом ───────────────────────────
             for (int i = 0; i < pix.Length; i += 4)
             {
-                pix[i] = ColBase[0]; pix[i + 1] = ColBase[1];
-                pix[i + 2] = ColBase[2]; pix[i + 3] = 255;
+                int n = rngNoise.Next(-6, 7);
+                pix[i]     = Clamp(ColBase[0] + n);
+                pix[i + 1] = Clamp(ColBase[1] + n);
+                pix[i + 2] = Clamp(ColBase[2] + n);
+                pix[i + 3] = 255;
             }
 
-            // Пятна: cx, cy, w, h, angleDeg, colorIdx, seed
-            // Намеренно вытянутые и повёрнутые — как на реальной ткани
-            var blobs = new (float cx, float cy, float w, float h, float ang, int col, int seed)[]
+            // ── 2. Определяем пятна ───────────────────────────────────────────
+            // (cx, cy, rw, rh, angleDeg, colorIdx 1=earth 2=forest 3=darkest 4=olive, seed)
+            // Три уровня масштаба: крупные → средние → мелкие
+
+            var blobs = new (float cx, float cy, float rw, float rh, float ang, int col, int seed)[]
             {
-                // чёрные крупные
-                ( 30,  35,  70, 38,  15, 3,  1),
-                (155,  18,  55, 32, -20, 3,  2),
-                ( 80, 105,  80, 42,  30, 3,  3),
-                (188,  88,  58, 36,  -8, 3,  4),
-                ( 18, 175,  64, 35,  22, 3,  5),
-                (162, 160,  72, 40, -25, 3,  6),
-                ( 65, 248,  68, 38,  18, 3,  7),
-                (198, 230,  56, 34,  -5, 3,  8),
-                ( 30, 308,  60, 36,  28, 3,  9),
-                (148, 298,  70, 42, -15, 3, 10),
+                // ── КРУПНЫЕ якорные пятна (покрывают значительную площадь) ───
+                (  80,  60, 110, 64,  12, 3,  1),
+                ( 330,  40,  96, 58, -18, 3,  2),
+                ( 180, 130, 120, 70,  25, 2,  3),
+                (  50, 200, 100, 62, -10, 3,  4),
+                ( 360, 170,  90, 58,  20, 2,  5),
+                ( 160, 300, 116, 66, -22, 3,  6),
+                ( 360, 330, 104, 60,  14, 3,  7),
+                (  70, 400,  98, 60,  28, 2,  8),
+                ( 280, 430, 114, 66, -16, 3,  9),
+                ( 160, 520, 108, 62,  18, 2, 10),
+                (  60, 580, 100, 58, -24, 3, 11),
+                ( 350, 530,  96, 64,  10, 3, 12),
+                ( 230, 620, 110, 60,  -8, 2, 13),
+                ( 400, 620,  80, 52,  22, 3, 14),
+                ( 120, 660,  88, 54, -14, 3, 15),
 
-                // тёмно-зелёные средние
-                (112,  40,  48, 28,  10, 2, 11),
-                ( 55,  78,  52, 30, -18, 2, 12),
-                (178, 140,  46, 32,  25, 2, 13),
-                ( 25, 128,  44, 26,  -8, 2, 14),
-                (122, 208,  54, 30,  20, 2, 15),
-                ( 88, 285,  48, 28, -22, 2, 16),
-                (210, 172,  40, 26,  12, 2, 17),
-                (168,  52,  44, 28, -10, 2, 18),
-                ( 45, 198,  50, 30,  32, 2, 19),
-                (202, 308,  46, 28,  -6, 2, 20),
+                // ── СРЕДНИЕ перекрывающие пятна ──────────────────────────────
+                ( 220,  30,  72, 44,  -8, 1, 21),
+                (  30, 110,  68, 42,  20, 4, 22),
+                ( 360, 100,  64, 40, -15, 1, 23),
+                ( 140, 180,  70, 46,   8, 4, 24),
+                ( 310, 230,  66, 42,  30, 1, 25),
+                (  90, 270,  62, 40, -20, 4, 26),
+                ( 400, 280,  60, 38,  12, 1, 27),
+                ( 240, 350,  68, 44, -10, 4, 28),
+                (  60, 460,  64, 40,  22, 1, 29),
+                ( 310, 400,  70, 44,  -6, 4, 30),
+                ( 180, 460,  66, 42,  16, 1, 31),
+                ( 420, 460,  58, 38, -18, 4, 32),
+                (  90, 555,  62, 40,  24, 1, 33),
+                ( 300, 560,  70, 44,  -8, 4, 34),
+                ( 420, 580,  60, 38,  14, 1, 35),
+                ( 200, 640,  68, 42, -22, 4, 36),
+                (  30, 640,  64, 40,  10, 1, 37),
+                ( 360, 640,  62, 40,  -4, 4, 38),
 
-                // коричневые
-                (100,  70,  38, 24,  -5, 1, 21),
-                (160, 108,  42, 26,  18, 1, 22),
-                ( 38, 152,  36, 22, -12, 1, 23),
-                (118, 178,  44, 28,  25, 1, 24),
-                (192, 252,  38, 24,  -8, 1, 25),
-                ( 72, 325,  34, 22,  15, 1, 26),
-                (142, 252,  40, 24,  -2, 1, 27),
-                ( 20,  68,  34, 20,  20, 1, 28),
-                (212,  48,  36, 22, -15, 1, 29),
-                (175, 325,  38, 22,  10, 1, 30),
-
-                // светло-зелёные небольшие перекрытия
-                ( 95,  68,  30, 18,  -8, 4, 31),
-                (160, 112,  34, 20,  22, 4, 32),
-                ( 40, 158,  28, 18, -15, 4, 33),
-                (115, 182,  36, 22,  12, 4, 34),
-                (195, 258,  30, 18,  -5, 4, 35),
-                ( 70, 330,  28, 18,  18, 4, 36),
+                // ── МЕЛКИЕ акцентные пятна (детализация) ─────────────────────
+                ( 280,  80,  44, 28,  -5, 3, 41),
+                ( 130,  80,  40, 26,  18, 1, 42),
+                ( 400, 200,  42, 26, -12, 3, 43),
+                (  30, 165,  38, 24,  22, 2, 44),
+                ( 240, 195,  46, 28,   8, 3, 45),
+                ( 100, 325,  40, 26, -18, 1, 46),
+                ( 420, 360,  38, 24,  14, 3, 47),
+                ( 155, 390,  42, 28,  -8, 2, 48),
+                ( 290, 500,  40, 26,  20, 3, 49),
+                (  30, 510,  38, 24, -14, 1, 50),
+                ( 410, 510,  42, 26,  10, 2, 51),
+                ( 230, 590,  40, 26,  -6, 3, 52),
+                ( 110, 610,  38, 24,  18, 1, 53),
+                ( 360, 600,  40, 26, -20, 2, 54),
+                (  60, 695,  42, 28,   8, 3, 55),
+                ( 310, 695,  44, 26, -10, 1, 56),
             };
 
-            int[] drawOrder = { 3, 2, 1, 4 };
+            // Порядок рисования: darkest → earth → forest → olive (как реальный камуфляж)
+            int[] drawOrder = { 3, 1, 2, 4 };
+
             foreach (int pass in drawOrder)
                 foreach (var b in blobs)
                     if (b.col == pass)
                     {
                         var color = pass switch
                         {
-                            1 => ColBrown,
-                            2 => ColDkGreen,
-                            3 => ColBlack,
-                            _ => ColMdGreen
+                            1 => ColEarth,
+                            2 => ColForest,
+                            3 => ColDarkest,
+                            _ => ColOlive
                         };
-                        DrawCamoPatch(pix, W, H, b.cx, b.cy, b.w, b.h, b.ang, color, b.seed);
+                        DrawPremiumPatch(pix, W, H, b.cx, b.cy, b.rw, b.rh, b.ang, color, b.seed);
                     }
 
-            // Тонкое затемнение левого края
+            // ── 3. Шумовая текстура — имитация зернистости ткани ─────────────
+            var rngTex = new Random(999);
+            for (int i = 0; i < pix.Length; i += 4)
+            {
+                int n = rngTex.Next(-9, 10);
+                pix[i]     = Clamp(pix[i]     + n);
+                pix[i + 1] = Clamp(pix[i + 1] + n);
+                pix[i + 2] = Clamp(pix[i + 2] + n);
+            }
+
+            // ── 4. Виньетка левого и правого краёв (плавный переход) ──────────
             for (int y = 0; y < H; y++)
-                for (int x = 0; x < 20; x++)
+                for (int x = 0; x < W; x++)
                 {
-                    float d = 0.6f + 0.4f * (x / 20f);
+                    float left  = x < 40 ? 0.45f + 0.55f * (x / 40f) : 1f;
+                    float right = x > W - 30 ? 0.65f + 0.35f * ((W - x) / 30f) : 1f;
+                    float top   = y < 20 ? 0.70f + 0.30f * (y / 20f) : 1f;
+                    float d     = left * right * top;
+                    if (d >= 1f) continue;
                     int idx = (y * W + x) * 4;
-                    pix[idx] = (byte)(pix[idx] * d);
+                    pix[idx]     = (byte)(pix[idx]     * d);
                     pix[idx + 1] = (byte)(pix[idx + 1] * d);
                     pix[idx + 2] = (byte)(pix[idx + 2] * d);
                 }
@@ -109,43 +145,39 @@ namespace ClientAccountApp
         }
 
         /// <summary>
-        /// Рисует камуфляжное пятно как повёрнутый выпуклый многоугольник
-        /// с 10–14 вершинами, у каждой вершины случайное отклонение ±30% от радиуса.
-        /// Никаких синусоид — только прямолинейные грани, как на ткани.
+        /// Рисует камуфляжное пятно с плавными органическими краями.
+        /// Много вершин (22–28) + малое отклонение = премиальная плавность.
         /// </summary>
-        static void DrawCamoPatch(byte[] pix, int W, int H,
+        static void DrawPremiumPatch(byte[] pix, int W, int H,
             float cx, float cy, float rw, float rh,
             float angleDeg, byte[] color, int seed)
         {
             var rng = new Random(seed * 1031 + 7);
             float baseAngle = angleDeg * MathF.PI / 180f;
 
-            // Генерируем вершины многоугольника
-            int verts = rng.Next(9, 15);
+            // Много вершин → очень гладкий контур
+            int verts = rng.Next(22, 29);
             var vx = new float[verts];
             var vy = new float[verts];
 
             for (int i = 0; i < verts; i++)
             {
-                // Угол вершины — равномерно, но с небольшим случайным сдвигом
-                float a = (float)(2 * Math.PI * i / verts)
-                          + (float)(rng.NextDouble() - 0.5) * (float)(Math.PI / verts * 0.7);
+                // Равномерное угловое распределение с малым случайным сдвигом
+                float a = 2f * MathF.PI * i / verts
+                          + (float)(rng.NextDouble() - 0.5) * (MathF.PI / verts * 0.5f);
 
-                // Радиус — случайный в диапазоне 70%–100%
-                float r = 0.70f + 0.30f * (float)rng.NextDouble();
+                // Малое отклонение радиуса (85%–100%) → плавный абрис
+                float r = 0.85f + 0.15f * (float)rng.NextDouble();
 
-                // Локальные координаты (эллипс)
                 float lx = MathF.Cos(a) * rw * r;
                 float ly = MathF.Sin(a) * rh * r;
 
-                // Поворот
                 float cos = MathF.Cos(baseAngle);
                 float sin = MathF.Sin(baseAngle);
                 vx[i] = cx + lx * cos - ly * sin;
                 vy[i] = cy + lx * sin + ly * cos;
             }
 
-            // Bounding box
             float minX = vx[0], maxX = vx[0], minY = vy[0], maxY = vy[0];
             for (int i = 1; i < verts; i++)
             {
@@ -155,29 +187,34 @@ namespace ClientAccountApp
                 if (vy[i] > maxY) maxY = vy[i];
             }
 
-            int x0 = Math.Max(0, (int)minX - 1);
-            int x1 = Math.Min(W - 1, (int)maxX + 1);
-            int y0 = Math.Max(0, (int)minY - 1);
-            int y1 = Math.Min(H - 1, (int)maxY + 1);
+            int x0 = Math.Max(0, (int)minX - 2);
+            int x1 = Math.Min(W - 1, (int)maxX + 2);
+            int y0 = Math.Max(0, (int)minY - 2);
+            int y1 = Math.Min(H - 1, (int)maxY + 2);
+
+            // Шум внутри пятна — лёгкая вариация тона для имитации ткани
+            var rngInner = new Random(seed * 997 + 13);
 
             for (int py = y0; py <= y1; py++)
                 for (int px = x0; px <= x1; px++)
                 {
                     if (!PointInPolygon(px + 0.5f, py + 0.5f, vx, vy, verts)) continue;
 
-                    // Антиалиас: расстояние до ближайшего ребра
+                    // Широкая зона антиалиаса (3 px) — мягкий переход
                     float edgeDist = MinEdgeDist(px + 0.5f, py + 0.5f, vx, vy, verts);
-                    float alpha = edgeDist < 1.5f ? edgeDist / 1.5f : 1f;
+                    float alpha = edgeDist < 3f ? edgeDist / 3f : 1f;
+
+                    // Тонкий шум внутри пятна (±5) — зернистость
+                    int n = rngInner.Next(-5, 6);
 
                     int idx = (py * W + px) * 4;
-                    pix[idx] = Lerp(pix[idx], color[0], alpha);
-                    pix[idx + 1] = Lerp(pix[idx + 1], color[1], alpha);
-                    pix[idx + 2] = Lerp(pix[idx + 2], color[2], alpha);
+                    pix[idx]     = Lerp(pix[idx],     Clamp(color[0] + n), alpha);
+                    pix[idx + 1] = Lerp(pix[idx + 1], Clamp(color[1] + n), alpha);
+                    pix[idx + 2] = Lerp(pix[idx + 2], Clamp(color[2] + n), alpha);
                     pix[idx + 3] = 255;
                 }
         }
 
-        // Ray-casting point-in-polygon
         static bool PointInPolygon(float px, float py, float[] vx, float[] vy, int n)
         {
             bool inside = false;
@@ -190,7 +227,6 @@ namespace ClientAccountApp
             return inside;
         }
 
-        // Минимальное расстояние до ребра для антиалиаса
         static float MinEdgeDist(float px, float py, float[] vx, float[] vy, int n)
         {
             float minD = float.MaxValue;
@@ -207,6 +243,8 @@ namespace ClientAccountApp
             }
             return minD;
         }
+
+        static byte Clamp(int v) => (byte)Math.Clamp(v, 0, 255);
 
         static byte Lerp(byte a, byte b, float t) =>
             (byte)(a + (b - a) * Math.Clamp(t, 0f, 1f));

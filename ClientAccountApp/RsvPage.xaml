@@ -1,0 +1,514 @@
+<Page
+    x:Class="ClientAccountApp.RsvPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Мастер РСВ"
+                       Style="{StaticResource NiatecPageTitleTextStyle}"/>
+            <TextBlock Text="Формирование Расчёта по Страховым Взносам из файлов ПФС (Персонифицированные сведения ФЛ)"
+                       Style="{StaticResource NiatecPageSubtitleTextStyle}"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="0,8,0,24">
+            <StackPanel Spacing="16">
+
+                <!-- СЕССИИ -->
+                <Border x:Name="RsvSessionsCard"
+                        Style="{StaticResource NiatecCardBorderStyle}"
+                        Visibility="Collapsed">
+                    <StackPanel Spacing="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Продолжить работу с сохранённой сессией РСВ"
+                                       Style="{StaticResource NiatecStepTitleTextStyle}"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="✕ Скрыть"
+                                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                    FontSize="11" Padding="8,4"
+                                    Click="RsvHideSessionsButton_Click"/>
+                        </Grid>
+                        <ListView x:Name="RsvSessionsListView"
+                                  SelectionMode="None" MaxHeight="240">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}" Margin="0,3">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Spacing="3">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <TextBlock Text="{Binding OrgName}" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                                    <TextBlock Text="{Binding EmpCount}" Foreground="{StaticResource NiatecAccentBrush}" FontSize="12"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding SavedAtDisplay}" Style="{StaticResource NiatecMutedTextStyle}"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Content="📂 Загрузить"
+                                                    Tag="{Binding FilePath}"
+                                                    Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                    Padding="12,6" FontSize="12"
+                                                    VerticalAlignment="Center"
+                                                    Click="RsvLoadSessionButton_Click"/>
+                                            <Button Grid.Column="2" Content="🗑"
+                                                    Tag="{Binding FilePath}"
+                                                    Style="{StaticResource NiatecSmallIconButtonStyle}"
+                                                    VerticalAlignment="Center"
+                                                    Click="RsvDeleteSessionButton_Click"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Border>
+
+                                <!-- ШАГ 1: ЗАГРУЗКА ПФС-ФАЙЛОВ -->
+                <Border Style="{StaticResource NiatecCardBorderStyle}">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Шаг 1 — Загрузка файлов ПФС"
+                                   Style="{StaticResource NiatecStepTitleTextStyle}"/>
+                        <TextBlock Text="Загрузите до 3 ПФС-файлов — по одному на каждый месяц квартала. Порядок не важен: месяц определяется из атрибута Период файла."
+                                   Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <!-- Три строки для файлов -->
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="10">
+                                <!-- Месяц 1 -->
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Месяц 1"
+                                               Foreground="{StaticResource NiatecAccentBrush}"
+                                               FontWeight="SemiBold" FontSize="12"
+                                               VerticalAlignment="Center"/>
+                                    <TextBox x:Name="PfsFile1TextBox" Grid.Column="1"
+                                             PlaceholderText="Путь к ПФС-файлу (месяц 1 квартала)"
+                                             IsReadOnly="True"/>
+                                    <Button Grid.Column="2" Content="Обзор…"
+                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                            Tag="1" Click="PfsBrowse_Click"/>
+                                    <Button Grid.Column="3" Content="✕"
+                                            Style="{StaticResource NiatecSmallIconButtonStyle}"
+                                            Tag="1" Click="PfsClear_Click"/>
+                                </Grid>
+                                <!-- Месяц 2 -->
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Месяц 2"
+                                               Foreground="{StaticResource NiatecAccentBrush}"
+                                               FontWeight="SemiBold" FontSize="12"
+                                               VerticalAlignment="Center"/>
+                                    <TextBox x:Name="PfsFile2TextBox" Grid.Column="1"
+                                             PlaceholderText="Путь к ПФС-файлу (месяц 2 квартала)"
+                                             IsReadOnly="True"/>
+                                    <Button Grid.Column="2" Content="Обзор…"
+                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                            Tag="2" Click="PfsBrowse_Click"/>
+                                    <Button Grid.Column="3" Content="✕"
+                                            Style="{StaticResource NiatecSmallIconButtonStyle}"
+                                            Tag="2" Click="PfsClear_Click"/>
+                                </Grid>
+                                <!-- Месяц 3 -->
+                                <Grid ColumnSpacing="10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Месяц 3"
+                                               Foreground="{StaticResource NiatecAccentBrush}"
+                                               FontWeight="SemiBold" FontSize="12"
+                                               VerticalAlignment="Center"/>
+                                    <TextBox x:Name="PfsFile3TextBox" Grid.Column="1"
+                                             PlaceholderText="Путь к ПФС-файлу (месяц 3 квартала)"
+                                             IsReadOnly="True"/>
+                                    <Button Grid.Column="2" Content="Обзор…"
+                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                            Tag="3" Click="PfsBrowse_Click"/>
+                                    <Button Grid.Column="3" Content="✕"
+                                            Style="{StaticResource NiatecSmallIconButtonStyle}"
+                                            Tag="3" Click="PfsClear_Click"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Button Content="⟳ Обработать файлы ПФС"
+                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Click="ProcessPfsButton_Click"/>
+
+                        <TextBlock x:Name="PfsStatusText"
+                                   Style="{StaticResource NiatecMutedTextStyle}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- ШАГ 2: ПАРАМЕТРЫ РАСЧЁТА -->
+                <Border x:Name="RsvSettingsCard"
+                        Style="{StaticResource NiatecCardBorderStyle}"
+                        Visibility="Collapsed">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Шаг 2 — Параметры расчёта"
+                                   Style="{StaticResource NiatecStepTitleTextStyle}"/>
+
+                        <Grid ColumnSpacing="16" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Строка 1: ИНН, КПП, Наименование -->
+                            <TextBox x:Name="RsvInnBox" Grid.Column="0" Grid.Row="0"
+                                     Header="ИНН организации" PlaceholderText="6800000586"/>
+                            <TextBox x:Name="RsvKppBox" Grid.Column="1" Grid.Row="0"
+                                     Header="КПП организации" PlaceholderText="680001001"/>
+                            <TextBox x:Name="RsvNameBox" Grid.Column="2" Grid.Row="0"
+                                     Header="Наименование организации"/>
+
+                            <!-- Строка 2: Телефон, Год, Квартал -->
+                            <TextBox x:Name="RsvPhoneBox" Grid.Column="0" Grid.Row="1"
+                                     Header="Телефон" PlaceholderText="+7 (953) 000-00-00"/>
+                            <ComboBox x:Name="RsvYearCombo" Grid.Column="1" Grid.Row="1"
+                                      Header="Год" HorizontalAlignment="Stretch"/>
+                            <ComboBox x:Name="RsvQuarterCombo" Grid.Column="2" Grid.Row="1"
+                                      Header="Квартал" HorizontalAlignment="Stretch"
+                                      SelectedIndex="0">
+                                <ComboBoxItem Content="I квартал (21)"   Tag="1"/>
+                                <ComboBoxItem Content="II квартал (31)"  Tag="2"/>
+                                <ComboBoxItem Content="III квартал (33)" Tag="3"/>
+                                <ComboBoxItem Content="IV квартал (34)"  Tag="4"/>
+                            </ComboBox>
+
+                            <!-- Строка 3: Код НО, ОКТМО, КБК -->
+                            <TextBox x:Name="RsvKodNoBox" Grid.Column="0" Grid.Row="2"
+                                     Header="Код налогового органа" PlaceholderText="6800"/>
+                            <TextBox x:Name="RsvOktmoBox" Grid.Column="1" Grid.Row="2"
+                                     Header="ОКТМО" PlaceholderText="68508000"/>
+                            <TextBox x:Name="RsvKbkBox" Grid.Column="2" Grid.Row="2"
+                                     Header="КБК"
+                                     Text="18210201000011000160"/>
+
+                            <!-- Строка 4: Тариф, МРОТ/Порог, Среднесписочная -->
+                            <ComboBox x:Name="RsvTariffCombo"
+                                      Grid.Column="0" Grid.Row="3"
+                                      Header="Тариф НР-выплат"
+                                      HorizontalAlignment="Stretch"
+                                      SelectionChanged="RsvTariffCombo_Changed"
+                                      SelectedIndex="0">
+                                <ComboBoxItem Content="01 — Основной 30%"      Tag="01|0.30|НР"/>
+                                <ComboBoxItem Content="06 — ИТ-льгота 7,6%"    Tag="06|0.076|ОДИТ"/>
+                                <ComboBoxItem Content="32 — АПК основной 30%"  Tag="32|0.30|НР"/>
+                                <ComboBoxItem Content="Другой (вручную)"       Tag="custom||"/>
+                            </ComboBox>
+                            <StackPanel Grid.Column="1" Grid.Row="3" Spacing="4">
+                                <TextBox x:Name="RsvMrotBox"
+                                         Header="МРОТ в месяц, ₽ (порог НР/ПВ)"
+                                         Text="27093"
+                                         TextChanged="RsvMrotBox_Changed"/>
+                                <TextBlock x:Name="RsvMrotThresholdText"
+                                           Text="1.5×МРОТ = 40 639,50 ₽"
+                                           Style="{StaticResource NiatecMutedTextStyle}"/>
+                            </StackPanel>
+                            <TextBox x:Name="RsvHeadcountBox"
+                                     Grid.Column="2" Grid.Row="3"
+                                     Header="Среднесписочная численность"
+                                     PlaceholderText="3"/>
+                        </Grid>
+
+                        <!-- Подписант -->
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="RsvDirSurnameBox"
+                                         Header="Фамилия руководителя"/>
+                                <TextBox x:Name="RsvDirNameBox"
+                                         Grid.Column="1"
+                                         Header="Имя руководителя"/>
+                                <TextBox x:Name="RsvDirPatronymicBox"
+                                         Grid.Column="2"
+                                         Header="Отчество руководителя"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- IT-льгота (опционально) -->
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Spacing="10">
+                                <CheckBox x:Name="RsvItBenefitCheckBox"
+                                          Content="Организация включена в реестр IT-компаний (ст. 427 НК РФ)"
+                                          Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                          Checked="RsvItBenefit_Changed"
+                                          Unchecked="RsvItBenefit_Changed"/>
+                                <Grid x:Name="RsvItBenefitPanel"
+                                      ColumnSpacing="12"
+                                      Visibility="Collapsed">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="RsvItRegDateBox"
+                                             Header="Дата включения в реестр"
+                                             PlaceholderText="15.06.2023"/>
+                                    <TextBox x:Name="RsvItRegNumBox"
+                                             Grid.Column="1"
+                                             Header="Номер записи реестра"
+                                             PlaceholderText="АО-20230524-128632"/>
+                                    <TextBox x:Name="RsvItIncomeTotalBox"
+                                             Grid.Column="2"
+                                             Header="Общий доход за период, ₽"/>
+                                    <TextBox x:Name="RsvItIncomeItBox"
+                                             Grid.Column="3"
+                                             Header="Доход от IT за период, ₽"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- АПК-льгота (ПравТариф13.2.427) — для организаций с ПВ-выплатами -->
+                        <Border x:Name="RsvAgrBenefitPanel"
+                                Style="{StaticResource NiatecInnerPanelBorderStyle}"
+                                Visibility="Collapsed">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="АПК-льгота (ПравТариф13.2.427) — для с/х организаций с ПВ-выплатами"
+                                           Foreground="{StaticResource NiatecAccentBrush}"
+                                           FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="ПВ-выплаты автоматически добавят блок тарифа 32 (15%). Укажите доходы для расчёта доли."
+                                           Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                <TextBox x:Name="RsvAgrIncomeBox"
+                                         Header="Доход от основной деятельности за период, ₽"
+                                         PlaceholderText="496454"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ШАГ 3: СОТРУДНИКИ -->
+                <Border x:Name="RsvEmployeesCard"
+                        Style="{StaticResource NiatecCardBorderStyle}"
+                        Visibility="Collapsed">
+                    <StackPanel Spacing="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Шаг 3 — Сотрудники и выплаты"
+                                       Style="{StaticResource NiatecStepTitleTextStyle}"
+                                       VerticalAlignment="Center"/>
+                            <Button Grid.Column="1"
+                                    Content="✎ Изменить"
+                                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                    FontSize="11" Padding="10,4"
+                                    Click="RsvEditEmployee_Click"/>
+                        </Grid>
+
+                        <TextBlock Text="Нажмите на сотрудника чтобы добавить доп. сведения (дата рождения, пол, документ) или изменить сумму необлагаемых выплат."
+                                   Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <!-- Заголовок таблицы -->
+                        <Border Background="{StaticResource NiatecSurfaceAltBrush}"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                BorderThickness="1" CornerRadius="8" Padding="12,6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="170"/>
+                                    <ColumnDefinition Width="125"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="#"                      Style="{StaticResource NiatecMutedTextStyle}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="1" Text="ФИО"                    Style="{StaticResource NiatecMutedTextStyle}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="2" Text="СНИЛС"                  Style="{StaticResource NiatecMutedTextStyle}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="3" Text="НР выплаты М1/М2/М3, ₽" Style="{StaticResource NiatecMutedTextStyle}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="4" Text="ПВ выплаты М1/М2/М3, ₽" Foreground="{StaticResource NiatecWarningBrush}" FontWeight="SemiBold" FontSize="11"/>
+                                <TextBlock Grid.Column="5" Text="Категория"               Style="{StaticResource NiatecMutedTextStyle}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="6" Text="НР взносы"               Style="{StaticResource NiatecMutedTextStyle}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="7" Text="ПВ взносы (15%)"         Foreground="{StaticResource NiatecWarningBrush}" FontWeight="SemiBold" FontSize="11"/>
+                            </Grid>
+                        </Border>
+
+                        <ListView x:Name="RsvEmployeesListView"
+                                  MaxHeight="400"
+                                  SelectionMode="Single">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="Padding" Value="12,4"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="MinHeight" Value="36"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="170"/>
+                                            <ColumnDefinition Width="125"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="100"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding LocalIndex}"
+                                                   Style="{StaticResource NiatecMutedTextStyle}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding FullName}"
+                                                   Style="{StaticResource NiatecCaptionTextStyle}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding SNILS}"
+                                                   Style="{StaticResource NiatecMutedTextStyle}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding NrPayDisplay}"
+                                                   Style="{StaticResource NiatecCaptionTextStyle}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding PvPayDisplay}"
+                                                   Foreground="{StaticResource NiatecWarningBrush}"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="5" Text="{Binding CategoryCode}"
+                                                   Foreground="{StaticResource NiatecAccentBrush}"
+                                                   FontSize="11" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="6" Text="{Binding NrContribDisplay}"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="7" Text="{Binding PvContribDisplay}"
+                                                   FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource NiatecWarningBrush}"
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <!-- Итоговая строка -->
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <StackPanel Orientation="Horizontal" Spacing="20">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Сотрудников" Style="{StaticResource NiatecMutedTextStyle}"/>
+                                    <TextBlock x:Name="RsvTotalEmpText" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="НР выплаты" Style="{StaticResource NiatecMutedTextStyle}"/>
+                                    <TextBlock x:Name="RsvTotalNrPayText" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource NiatecSuccessBrush}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="ПВ выплаты" Foreground="{StaticResource NiatecWarningBrush}" FontSize="11"/>
+                                    <TextBlock x:Name="RsvTotalPvPayText" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource NiatecWarningBrush}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="НР взносы (ставка орг.)" Style="{StaticResource NiatecMutedTextStyle}"/>
+                                    <TextBlock x:Name="RsvTotalNrContribText" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource NiatecAccentBrush}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="ПВ взносы (15%)" Foreground="{StaticResource NiatecWarningBrush}" FontSize="11"/>
+                                    <TextBlock x:Name="RsvTotalPvContribText" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource NiatecWarningBrush}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Итого взносов" Style="{StaticResource NiatecMutedTextStyle}"/>
+                                    <TextBlock x:Name="RsvTotalContribText" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource NiatecAccentBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- ШАГ 4: ГЕНЕРАЦИЯ -->
+                <Border x:Name="RsvGenerateCard"
+                        Style="{StaticResource NiatecCardBorderStyle}"
+                        Visibility="Collapsed">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Шаг 4 — Формирование РСВ XML"
+                                   Style="{StaticResource NiatecStepTitleTextStyle}"/>
+                        <TextBlock Text="Проверьте данные в шагах выше и нажмите кнопку. Файл откроется в папке для загрузки в СБИС."
+                                   Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="📄 Сформировать РСВ XML"
+                                    Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                    Click="RsvGenerateButton_Click"/>
+                            <Button Grid.Column="1"
+                                    Content="💾 Сохранить сессию"
+                                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                    Click="RsvSaveSessionButton_Click"/>
+                            <Button Grid.Column="2"
+                                    Content="📂 Открыть папку"
+                                    Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                    Click="RsvOpenFolderButton_Click"/>
+                        </Grid>
+
+                        <TextBlock x:Name="RsvGenerateStatusText"
+                                   Style="{StaticResource NiatecCaptionTextStyle}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

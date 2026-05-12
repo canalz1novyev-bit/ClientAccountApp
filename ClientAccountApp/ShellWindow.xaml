@@ -44,6 +44,11 @@
                     <SymbolIcon Symbol="Library"/>
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Tag="rsv" Content="Мастер РСВ">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Document"/>
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
             <NavigationViewItem Tag="billing" Content="Начисления">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Calculator"/>
