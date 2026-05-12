@@ -44,12 +44,15 @@ namespace ClientAccountApp
         // ─────────────────────────────────────────────────────────────────────
         public ToolsPage()
         {
-            this.InitializeComponent();
-
-            _stmtSearchDebounceTimer = DispatcherQueue.CreateTimer();
+            // До InitializeComponent: XAML может вызвать SelectionChanged у фильтров —
+            // обработчики не должны обращаться к ещё не созданному таймеру.
+            var dq = DispatcherQueue.GetForCurrentThread();
+            _stmtSearchDebounceTimer = dq.CreateTimer();
             _stmtSearchDebounceTimer.Interval = TimeSpan.FromMilliseconds(280);
             _stmtSearchDebounceTimer.IsRepeating = false;
             _stmtSearchDebounceTimer.Tick += StmtSearchDebounceTimer_Tick;
+
+            this.InitializeComponent();
 
             this.Unloaded += ToolsPage_Unloaded;
 
