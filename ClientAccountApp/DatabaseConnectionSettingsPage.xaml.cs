@@ -1,4 +1,3 @@
-using Microsoft.Data.SqlClient;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -32,17 +31,15 @@ namespace ClientAccountApp
             {
                 CurrentDatabaseModeTextBlock.Text = "Текущий режим: серверная база SQL Server";
 
-                try
+                if (SqlConnectionStringDisplay.TryParseEndpoints(settings.SqlServerConnectionString, out var ds, out var ic))
                 {
-                    var builder = new SqlConnectionStringBuilder(settings.SqlServerConnectionString);
-
                     CurrentDatabaseServerTextBlock.Text =
-                        "Сервер: " + (string.IsNullOrWhiteSpace(builder.DataSource) ? "—" : builder.DataSource);
+                        "Сервер: " + (string.IsNullOrWhiteSpace(ds) ? "—" : ds);
 
                     CurrentDatabaseNameTextBlock.Text =
-                        "База данных: " + (string.IsNullOrWhiteSpace(builder.InitialCatalog) ? "—" : builder.InitialCatalog);
+                        "База данных: " + (string.IsNullOrWhiteSpace(ic) ? "—" : ic);
                 }
-                catch
+                else
                 {
                     CurrentDatabaseServerTextBlock.Text = "Сервер: не удалось разобрать строку подключения";
                     CurrentDatabaseNameTextBlock.Text = "База данных: не удалось определить";

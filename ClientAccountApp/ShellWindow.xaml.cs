@@ -2,7 +2,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
-using Microsoft.Data.SqlClient;
 using Windows.UI;
 
 namespace ClientAccountApp
@@ -135,19 +134,8 @@ namespace ClientAccountApp
 
             if (settings.ProviderMode == DatabaseProviderMode.SqlServer)
             {
-                string db = "SQL Server";
-
-                try
-                {
-                    var builder = new SqlConnectionStringBuilder(settings.SqlServerConnectionString);
-
-                    if (!string.IsNullOrWhiteSpace(builder.InitialCatalog))
-                        db = builder.InitialCatalog;
-                }
-                catch
-                {
-                    // Если строка подключения нестандартная, показываем простой текст.
-                }
+                string db = SqlConnectionStringDisplay.TryGetInitialCatalogOrNull(settings.SqlServerConnectionString)
+                    ?? "SQL Server";
 
                 DatabaseModeFooterTextBlock.Text =
                     "Режим: Совместная работа" +

@@ -2,6 +2,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,10 +39,20 @@ namespace ClientAccountApp
         private static string _savedOrgName = "";
         private static string? _currentSessionId = null; // ID текущей сохранённой сессии
 
+        private readonly DispatcherQueueTimer _stmtSearchDebounceTimer;
+
         // ─────────────────────────────────────────────────────────────────────
         public ToolsPage()
         {
             this.InitializeComponent();
+
+            _stmtSearchDebounceTimer = DispatcherQueue.CreateTimer();
+            _stmtSearchDebounceTimer.Interval = TimeSpan.FromMilliseconds(280);
+            _stmtSearchDebounceTimer.IsRepeating = false;
+            _stmtSearchDebounceTimer.Ticked += StmtSearchDebounceTimer_Ticked;
+
+            this.Unloaded += ToolsPage_Unloaded;
+
             UpdateButtonsState();
             UpdateVatModeButtons();
             RecalculateVat();
@@ -61,6 +72,13 @@ namespace ClientAccountApp
                         RestoreStatementUI();
                 });
         }
+
+        private void StmtSearchDebounceTimer_Ticked(DispatcherQueueTimer sender, object args) =>
+            ApplyStatementFilters();
+
+        private void ToolsPage_Unloaded(object sender, RoutedEventArgs e) =>
+            _stmtSearchDebounceTimer.Stop();
+
         private void RsvToolFrame_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is not Frame frame)
@@ -667,9 +685,23 @@ namespace ClientAccountApp
             StmtCountText.Text = $"{s.OperationCount} (▲{s.CreditCount} / ▼{s.DebitCount})";
         }
 
-        private void StmtTypeFilter_Changed(object s, SelectionChangedEventArgs e) => ApplyStatementFilters();
-        private void StmtSearch_Changed(object s, TextChangedEventArgs e) => ApplyStatementFilters();
-        private void StmtCheck_Changed(object s, RoutedEventArgs e) => ApplyStatementFilters();
+        private void StmtTypeFilter_Changed(object s, SelectionChangedEventArgs e)
+        {
+            _stmtSearchDebounceTimer.Stop();
+            ApplyStatementFilters();
+        }
+
+        private void StmtSearch_Changed(object s, TextChangedEventArgs e)
+        {
+            _stmtSearchDebounceTimer.Stop();
+            _stmtSearchDebounceTimer.Start();
+        }
+
+        private void StmtCheck_Changed(object s, RoutedEventArgs e)
+        {
+            _stmtSearchDebounceTimer.Stop();
+            ApplyStatementFilters();
+        }
 
         private void ApplyStatementFilters()
         {

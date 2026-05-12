@@ -226,20 +226,12 @@ namespace ClientAccountApp
                 ? "не указана"
                 : settings.SharedClientFilesFolder.Trim();
 
-            try
+            if (SqlConnectionStringDisplay.TryParseEndpoints(settings.SqlServerConnectionString, out var ds, out var ic))
             {
-                var builder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(
-                    settings.SqlServerConnectionString ?? "");
-
-                if (!string.IsNullOrWhiteSpace(builder.DataSource))
-                    server = builder.DataSource;
-
-                if (!string.IsNullOrWhiteSpace(builder.InitialCatalog))
-                    database = builder.InitialCatalog;
-            }
-            catch
-            {
-                // Если строка подключения нестандартная, просто покажем то, что есть.
+                if (!string.IsNullOrWhiteSpace(ds))
+                    server = ds;
+                if (!string.IsNullOrWhiteSpace(ic))
+                    database = ic;
             }
 
             return
