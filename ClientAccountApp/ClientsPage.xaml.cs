@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -43,6 +44,12 @@ namespace ClientAccountApp
         private bool _workspaceStateReady = false;
         private int? _pendingSelectedClientIdFromState;
         private Border? _highlightedClientBorder;
+
+        // Дебаунс для поиска клиентов: фильтр большой базы на каждое нажатие
+        // делает ввод заметно тормозящим. 280 мс — комфортный компромисс
+        // между отзывчивостью и нагрузкой (тот же интервал, что и в Tools/Statement).
+        private DispatcherQueueTimer? _searchDebounceTimer;
+        private int? _pendingDebouncedSelectedClientId;
 
         // ─────────────────────────────────────────────
         // БЫСТРЫЙ СЧЁТ: создание счёта из карточки клиента
@@ -332,6 +339,12 @@ namespace ClientAccountApp
             NotesListView.ItemsSource = _notes;
             ClientFilesListView.ItemsSource = _clientFiles;
             UpdateFileActionButtonsState();
+
+            _searchDebounceTimer = DispatcherQueue.CreateTimer();
+            _searchDebounceTimer.Interval = TimeSpan.FromMilliseconds(280);
+            _searchDebounceTimer.IsRepeating = false;
+            _searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
+            this.Unloaded += (_, __) => _searchDebounceTimer?.Stop();
 
             _clients.CollectionChanged += (_, __) => TrySelectPendingClientFromDashboard();
             Loaded += (_, __) => TrySelectPendingClientFromDashboard();
@@ -1278,17 +1291,24 @@ namespace ClientAccountApp
             };
         }
 
-        private void DeleteSelectedClientButton_Click(object sender, RoutedEventArgs e)
+        private async void DeleteSelectedClientButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ClientsListView.SelectedItem is not ClientInfo selectedClient) { StatusTextBlock.Text = "Сначала выбери клиента для удаления."; return; }
+            if (ClientsListView.SelectedItem is not ClientInfo selectedClient)
+            { StatusMessageHelper.Warning(StatusTextBlock, "Сначала выбери клиента для удаления."); return; }
+
             string deletedClientName = selectedClient.Name;
             int clientId = selectedClient.Id;
+
+            if (!await ConfirmCascadeDeleteAsync(clientId, deletedClientName))
+                return;
+
             try
             {
                 using (var db = new AppDbContext())
                 {
                     var clientFromDb = db.Clients.FirstOrDefault(c => c.Id == clientId);
-                    if (clientFromDb == null) { StatusTextBlock.Text = "Не удалось найти клиента в базе данных."; return; }
+                    if (clientFromDb == null)
+                    { StatusMessageHelper.Error(StatusTextBlock, "Не удалось найти клиента в базе данных."); return; }
 
                     var clientFiles = db.ClientFiles.Where(f => f.ClientInfoId == clientId).ToList();
                     foreach (var clientFile in clientFiles) ClientFileStorageService.DeleteFileIfExists(ClientFileStorageService.GetFullPath(clientFile.RelativePath));
@@ -1329,12 +1349,126 @@ namespace ClientAccountApp
                 }
                 ClientFileStorageService.DeleteClientFolderIfEmpty(selectedClient);
                 LoadClientsFromDatabase();
-                StatusTextBlock.Text = $"Клиент «{deletedClientName}» удален.";
+                StatusMessageHelper.Success(StatusTextBlock, $"Клиент «{deletedClientName}» удалён.");
             }
             catch (Exception ex)
             {
                 AppLogger.LogError("ClientsPage.DeleteSelectedClientButton_Click", ex);
-                StatusTextBlock.Text = $"Ошибка удаления клиента: {ex.Message}";
+                StatusMessageHelper.Error(StatusTextBlock, $"Ошибка удаления клиента: {ex.Message}");
+            }
+        }
+
+        // Показывает ContentDialog с перечнем зависимых сущностей,
+        // которые будут удалены каскадно. Возвращает true, если пользователь подтвердил.
+        private async Task<bool> ConfirmCascadeDeleteAsync(int clientId, string clientName)
+        {
+            int invoicesCount = 0;
+            int invoiceItemsCount = 0;
+            int invoiceDocumentsCount = 0;
+            int contractsCount = 0;
+            int recurringCount = 0;
+            int signaturesCount = 0;
+            int accountsCount = 0;
+            int notesCount = 0;
+            int filesCount = 0;
+
+            try
+            {
+                using var db = new AppDbContext();
+                var invoiceIds = db.Invoices.Where(i => i.ClientInfoId == clientId).Select(i => i.Id).ToList();
+                invoicesCount = invoiceIds.Count;
+                if (invoiceIds.Count > 0)
+                {
+                    invoiceItemsCount = db.InvoiceItems.Count(it => invoiceIds.Contains(it.InvoiceId));
+                    invoiceDocumentsCount = db.InvoiceDocuments.Count(d => invoiceIds.Contains(d.InvoiceId) || d.ClientInfoId == clientId);
+                }
+                else
+                {
+                    invoiceDocumentsCount = db.InvoiceDocuments.Count(d => d.ClientInfoId == clientId);
+                }
+                contractsCount = db.ClientContracts.Count(c => c.ClientInfoId == clientId);
+                recurringCount = db.ClientRecurringServices.Count(r => r.ClientInfoId == clientId);
+                signaturesCount = db.DigitalSignatures.Count(s => s.ClientInfoId == clientId);
+                accountsCount = db.BankAccounts.Count(a => a.ClientInfoId == clientId);
+                notesCount = db.ClientNotes.Count(n => n.ClientInfoId == clientId);
+                filesCount = db.ClientFiles.Count(f => f.ClientInfoId == clientId);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("ClientsPage.ConfirmCascadeDeleteAsync.CountQuery", ex);
+            }
+
+            var rows = new List<(string Label, int Count)>
+            {
+                ("Счета",                invoicesCount),
+                ("Позиции счетов",       invoiceItemsCount),
+                ("Документы по счетам",  invoiceDocumentsCount),
+                ("Договоры",             contractsCount),
+                ("Повторяющиеся услуги", recurringCount),
+                ("ЭЦП",                  signaturesCount),
+                ("Банковские реквизиты", accountsCount),
+                ("Заметки",              notesCount),
+                ("Файлы",                filesCount),
+            };
+
+            var details = new StackPanel { Spacing = 4 };
+            details.Children.Add(new TextBlock
+            {
+                Text = $"Будет удалён клиент «{clientName}», а также все связанные данные:",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+
+            bool anyDependents = false;
+            foreach (var (label, count) in rows)
+            {
+                if (count <= 0) continue;
+                anyDependents = true;
+                details.Children.Add(new TextBlock
+                {
+                    Text = $"  • {label}: {count}",
+                    FontSize = 13
+                });
+            }
+
+            if (!anyDependents)
+            {
+                details.Children.Add(new TextBlock
+                {
+                    Text = "  • связанных записей нет",
+                    FontSize = 13,
+                    Foreground = (Brush)Application.Current.Resources["NiatecTextSecondaryBrush"]
+                });
+            }
+
+            details.Children.Add(new TextBlock
+            {
+                Text = "Действие необратимо.",
+                Margin = new Thickness(0, 12, 0, 0),
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Foreground = (Brush)Application.Current.Resources["NiatecDangerBrush"]
+            });
+
+            var dialog = new ContentDialog
+            {
+                Title = "Удалить клиента?",
+                Content = details,
+                PrimaryButtonText = "Удалить",
+                CloseButtonText = "Отмена",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot,
+                RequestedTheme = this.ActualTheme
+            };
+
+            try
+            {
+                var result = await dialog.ShowAsync();
+                return result == ContentDialogResult.Primary;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("ClientsPage.ConfirmCascadeDeleteAsync.Dialog", ex);
+                return false;
             }
         }
 
@@ -1586,17 +1720,42 @@ namespace ClientAccountApp
         {
             if (!_workspaceStateReady) return;
             if (SearchTextBox == null || ClientsListView == null) return;
-            int? selectedClientId = ClientsListView.SelectedItem is ClientInfo sc ? sc.Id : (int?)null;
+            _pendingDebouncedSelectedClientId = ClientsListView.SelectedItem is ClientInfo sc ? sc.Id : (int?)null;
+            _searchDebounceTimer?.Stop();
+            _searchDebounceTimer?.Start();
+        }
+
+        private void SearchDebounceTimer_Tick(DispatcherQueueTimer sender, object args)
+        {
+            if (!_workspaceStateReady) return;
             SaveWorkspaceState();
-            LoadClientsFromDatabase(selectedClientId);
+            LoadClientsFromDatabase(_pendingDebouncedSelectedClientId);
+        }
+
+        private void FocusSearchAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            args.Handled = true;
+            if (SearchTextBox == null) return;
+            SearchTextBox.Focus(FocusState.Programmatic);
+            SearchTextBox.SelectAll();
         }
 
         private async void DownloadEgrulExtractButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ClientsListView.SelectedItem is not ClientInfo selectedClient) { StatusTextBlock.Text = "Сначала выбери клиента."; return; }
+            if (ClientsListView.SelectedItem is not ClientInfo selectedClient)
+            { StatusMessageHelper.Warning(StatusTextBlock, "Сначала выбери клиента."); return; }
+
+            var button = sender as Button;
+            string? originalContent = button?.Content as string;
+            if (button != null)
+            {
+                button.IsEnabled = false;
+                button.Content = "Загрузка выписки...";
+            }
+
             try
             {
-                StatusTextBlock.Text = "Запрашиваю выписку ФНС...";
+                StatusMessageHelper.Info(StatusTextBlock, "Запрашиваю выписку ФНС...");
                 var result = await EgrulExtractService.DownloadExtractAsync(selectedClient, headless: false);
                 var copyResult = ClientFileStorageService.CopyFileForClient(selectedClient, result.TempPdfPath);
                 var clientFile = new ClientFile
@@ -1610,9 +1769,23 @@ namespace ClientAccountApp
                 };
                 using (var db = new AppDbContext()) { db.ClientFiles.Add(clientFile); db.SaveChanges(); }
                 LoadFilesForSelectedClient();
-                StatusTextBlock.Text = $"Выписка ФНС получена и добавлена в файлы клиента «{selectedClient.Name}».";
+                StatusMessageHelper.Success(StatusTextBlock,
+                    $"Выписка ФНС получена и добавлена в файлы клиента «{selectedClient.Name}».");
+                AppToastHelper.Show("Выписка ФНС готова", selectedClient.Name, result.SuggestedFileName);
             }
-            catch (Exception ex) { StatusTextBlock.Text = $"Ошибка получения выписки ФНС: {ex.Message}"; }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("ClientsPage.DownloadEgrulExtractButton_Click", ex);
+                StatusMessageHelper.Error(StatusTextBlock, $"Ошибка получения выписки ФНС: {ex.Message}");
+            }
+            finally
+            {
+                if (button != null)
+                {
+                    button.IsEnabled = true;
+                    button.Content = originalContent ?? "Выписка";
+                }
+            }
         }
 
         private void ExportClientCardToWordButton_Click(object sender, RoutedEventArgs e)

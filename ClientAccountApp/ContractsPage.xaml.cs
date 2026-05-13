@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
@@ -119,6 +120,14 @@ namespace ClientAccountApp
 
             SavePageState();
             LoadContracts();
+        }
+
+        private void FocusSearchAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            args.Handled = true;
+            if (ContractsSearchTextBox == null) return;
+            ContractsSearchTextBox.Focus(FocusState.Programmatic);
+            ContractsSearchTextBox.SelectAll();
         }
 
         private void ContractStatusFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

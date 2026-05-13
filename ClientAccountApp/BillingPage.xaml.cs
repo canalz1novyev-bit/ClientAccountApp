@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
@@ -1575,6 +1576,14 @@ namespace ClientAccountApp
         }
 
         private void BillingSearchTextBox_TextChanged(object sender, TextChangedEventArgs e) { if (!_pageReady) return; LoadInvoices(_selectedInvoiceId); }
+
+        private void FocusSearchAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            args.Handled = true;
+            if (BillingSearchTextBox == null) return;
+            BillingSearchTextBox.Focus(FocusState.Programmatic);
+            BillingSearchTextBox.SelectAll();
+        }
         private void BillingStatusFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!_pageReady) return; LoadInvoices(_selectedInvoiceId); }
         private void BillingSourceFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!_pageReady) return; LoadInvoices(_selectedInvoiceId); }
 

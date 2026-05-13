@@ -1,7 +1,11 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Reflection;
+using Windows.System;
 using Windows.UI;
 
 namespace ClientAccountApp
@@ -41,10 +45,7 @@ namespace ClientAccountApp
 
             ThemeService.ThemeChanged += OnThemeChanged;
 
-            RootFrame.Navigated += (s, e) =>
-            {
-                RootFrame.RequestedTheme = ElementThemeForAppTheme(ThemeService.CurrentTheme);
-            };
+            RootFrame.Navigated += RootFrame_Navigated;
 
             if (PaneFooterContent != null && !AppNavigationView.IsPaneOpen)
                 PaneFooterContent.Visibility = Visibility.Collapsed;
@@ -52,7 +53,8 @@ namespace ClientAccountApp
             ActiveOrganizationService.Initialize();
             ClientFileStorageService.MigrateLegacyClientFoldersOnce();
 
-            this.Title = "NIATEC.Client v1.1";
+            RegisterGlobalAccelerators();
+            UpdateWindowTitle();
 
             ApplyFullTheme(ThemeService.CurrentTheme);
 
@@ -156,6 +158,7 @@ namespace ClientAccountApp
             ActiveOrganizationService.RefreshCurrent();
             RefreshOrganizationFooter();
             RefreshDatabaseFooter();
+            UpdateWindowTitle();
             ClientContractService.EnsureContractsForActiveOrganization();
             DashboardNavItem.IsSelected = true;
             if (RootFrame.CurrentSourcePageType != typeof(DashboardPage))
@@ -226,5 +229,99 @@ namespace ClientAccountApp
             };
             if (RootFrame.CurrentSourcePageType != page) RootFrame.Navigate(page);
         }
+
+        // ──────────────────────────────────────────────────────────────────────
+        //  Заголовок окна и горячие клавиши навигации
+        // ──────────────────────────────────────────────────────────────────────
+
+        private static readonly Lazy<string> AppVersion = new(() =>
+        {
+            try
+            {
+                var asm = Assembly.GetExecutingAssembly();
+                var info = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+                if (!string.IsNullOrWhiteSpace(info))
+                {
+                    int plus = info.IndexOf('+');
+                    return plus > 0 ? info.Substring(0, plus) : info;
+                }
+                return asm.GetName().Version?.ToString(3) ?? "1.0";
+            }
+            catch { return "1.0"; }
+        });
+
+        private void RootFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            RootFrame.RequestedTheme = ElementThemeForAppTheme(ThemeService.CurrentTheme);
+            UpdateWindowTitle();
+        }
+
+        public void UpdateWindowTitle()
+        {
+            string section = SectionNameFor(RootFrame.CurrentSourcePageType);
+            string org = ActiveOrganizationService.Current?.Name?.Trim() ?? "";
+            string version = AppVersion.Value;
+
+            string title = string.IsNullOrEmpty(section) ? "NIATEC.Client" : $"{section} — NIATEC.Client";
+            if (!string.IsNullOrEmpty(org))
+                title = $"{section} — {org} — NIATEC.Client";
+            this.Title = $"{title} v{version}";
+        }
+
+        private static string SectionNameFor(Type? pageType)
+        {
+            if (pageType == null) return "";
+            if (pageType == typeof(DashboardPage)) return "Главная";
+            if (pageType == typeof(ClientsPage)) return "Клиенты";
+            if (pageType == typeof(ContractsPage)) return "Договоры";
+            if (pageType == typeof(BillingPage)) return "Начисления";
+            if (pageType == typeof(ProblemSignaturesPage)) return "ЭЦП";
+            if (pageType == typeof(ServiceCatalogPage)) return "Справочник";
+            if (pageType == typeof(ToolsPage)) return "Инструменты";
+            if (pageType == typeof(SettingsPage)) return "Настройки";
+            if (pageType == typeof(OrganizationSelectPage)) return "Выбор организации";
+            if (pageType == typeof(OrganizationSetupPage)) return "Профиль организации";
+            return "";
+        }
+
+        private void RegisterGlobalAccelerators()
+        {
+            // Ctrl+, → Настройки. Привязываем к корневому Frame, чтобы работало на всех страницах.
+            var openSettings = new KeyboardAccelerator { Key = VirtualKey.OemComma, Modifiers = VirtualKeyModifiers.Control };
+            openSettings.Invoked += (s, args) =>
+            {
+                args.Handled = true;
+                if (RootFrame.CurrentSourcePageType != typeof(SettingsPage))
+                    RootFrame.Navigate(typeof(SettingsPage));
+            };
+            RootFrame.KeyboardAccelerators.Add(openSettings);
+        }
+
+        private void NavigateByTag(string tag)
+        {
+            foreach (var item in AppNavigationView.MenuItems)
+            {
+                if (item is NavigationViewItem nvi && string.Equals(nvi.Tag?.ToString(), tag, StringComparison.OrdinalIgnoreCase))
+                {
+                    nvi.IsSelected = true;
+                    return;
+                }
+            }
+        }
+
+        private void NavAccelerator_Dashboard_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        { args.Handled = true; NavigateByTag("dashboard"); }
+        private void NavAccelerator_Clients_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        { args.Handled = true; NavigateByTag("clients"); }
+        private void NavAccelerator_Contracts_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        { args.Handled = true; NavigateByTag("contracts"); }
+        private void NavAccelerator_Billing_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        { args.Handled = true; NavigateByTag("billing"); }
+        private void NavAccelerator_Signatures_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        { args.Handled = true; NavigateByTag("problem-signatures"); }
+        private void NavAccelerator_Catalog_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        { args.Handled = true; NavigateByTag("catalog"); }
+        private void NavAccelerator_Tools_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        { args.Handled = true; NavigateByTag("tools"); }
     }
 }

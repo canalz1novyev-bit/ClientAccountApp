@@ -6,6 +6,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="F" Modifiers="Control" Invoked="FocusSearchAccelerator_Invoked"/>
+    </Page.KeyboardAccelerators>
+
     <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

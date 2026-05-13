@@ -6,6 +6,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <!-- Прозрачная кнопка-обёртка вокруг метрической карточки.
+             Сохраняет визуал Border'а, добавляет hover/нажатие и фокус. -->
+        <Style x:Key="DashboardMetricButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="UseSystemFocusVisuals" Value="True"/>
+            <Setter Property="CornerRadius" Value="14"/>
+        </Style>
+    </Page.Resources>
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="F5" Invoked="RefreshAccelerator_Invoked"/>
+    </Page.KeyboardAccelerators>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid
             Background="{StaticResource NiatecBackgroundBrush}"
@@ -41,6 +62,13 @@
                         Text="Обновлено: —"
                         Style="{StaticResource NiatecMutedTextStyle}"/>
                 </StackPanel>
+
+                <Button Grid.Column="1"
+                        x:Name="RefreshDashboardButton"
+                        Content="Обновить"
+                        Click="RefreshDashboardButton_Click"
+                        VerticalAlignment="Top"
+                        ToolTipService.ToolTip="Обновить сводку (F5)"/>
             </Grid>
 
             <!-- Карточки показателей -->
@@ -52,76 +80,96 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource NiatecCardBorderStyle}">
-                    <StackPanel Spacing="6">
-                        <TextBlock
-                            Text="Клиенты"
-                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+                <Button Grid.Column="0"
+                        Style="{StaticResource DashboardMetricButtonStyle}"
+                        Click="OpenClientsButton_Click"
+                        ToolTipService.ToolTip="Открыть список клиентов">
+                    <Border Style="{StaticResource NiatecCardBorderStyle}">
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                Text="Клиенты"
+                                Style="{StaticResource NiatecCaptionTextStyle}"/>
 
-                        <TextBlock
-                            x:Name="ClientsTotalTextBlock"
-                            Text="0"
-                            FontSize="28"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            <TextBlock
+                                x:Name="ClientsTotalTextBlock"
+                                Text="0"
+                                FontSize="28"
+                                FontWeight="SemiBold"
+                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
 
-                        <TextBlock
-                            Text="Всего в базе"
-                            Style="{StaticResource NiatecMutedTextStyle}"/>
-                    </StackPanel>
-                </Border>
+                            <TextBlock
+                                Text="Всего в базе"
+                                Style="{StaticResource NiatecMutedTextStyle}"/>
+                        </StackPanel>
+                    </Border>
+                </Button>
 
-                <Border Grid.Column="1" Style="{StaticResource NiatecCardBorderStyle}">
-                    <StackPanel Spacing="6">
-                        <TextBlock
-                            Text="ЭЦП"
-                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+                <Button Grid.Column="1"
+                        Style="{StaticResource DashboardMetricButtonStyle}"
+                        Click="OpenSignaturesButton_Click"
+                        ToolTipService.ToolTip="Открыть проблемные ЭЦП">
+                    <Border Style="{StaticResource NiatecCardBorderStyle}">
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                Text="ЭЦП"
+                                Style="{StaticResource NiatecCaptionTextStyle}"/>
 
-                        <TextBlock
-                            x:Name="SignaturesAttentionTextBlock"
-                            Text="0"
-                            Style="{StaticResource NiatecMetricNumberTextStyle}"/>
+                            <TextBlock
+                                x:Name="SignaturesAttentionTextBlock"
+                                Text="0"
+                                Style="{StaticResource NiatecMetricNumberTextStyle}"/>
 
-                        <TextBlock
-                            Text="Истекают или просрочены"
-                            Style="{StaticResource NiatecMutedTextStyle}"/>
-                    </StackPanel>
-                </Border>
+                            <TextBlock
+                                Text="Истекают или просрочены"
+                                Style="{StaticResource NiatecMutedTextStyle}"/>
+                        </StackPanel>
+                    </Border>
+                </Button>
 
-                <Border Grid.Column="2" Style="{StaticResource NiatecCardBorderStyle}">
-                    <StackPanel Spacing="6">
-                        <TextBlock
-                            Text="Договоры"
-                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+                <Button Grid.Column="2"
+                        Style="{StaticResource DashboardMetricButtonStyle}"
+                        Click="OpenContractsButton_Click"
+                        ToolTipService.ToolTip="Открыть договоры">
+                    <Border Style="{StaticResource NiatecCardBorderStyle}">
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                Text="Договоры"
+                                Style="{StaticResource NiatecCaptionTextStyle}"/>
 
-                        <TextBlock
-                            x:Name="ContractsWorkTextBlock"
-                            Text="0"
-                            Style="{StaticResource NiatecMetricNumberTextStyle}"/>
+                            <TextBlock
+                                x:Name="ContractsWorkTextBlock"
+                                Text="0"
+                                Style="{StaticResource NiatecMetricNumberTextStyle}"/>
 
-                        <TextBlock
-                            Text="В работе по организации"
-                            Style="{StaticResource NiatecMutedTextStyle}"/>
-                    </StackPanel>
-                </Border>
+                            <TextBlock
+                                Text="В работе по организации"
+                                Style="{StaticResource NiatecMutedTextStyle}"/>
+                        </StackPanel>
+                    </Border>
+                </Button>
 
-                <Border Grid.Column="3" Style="{StaticResource NiatecCardBorderStyle}">
-                    <StackPanel Spacing="6">
-                        <TextBlock
-                            Text="Начисления"
-                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+                <Button Grid.Column="3"
+                        Style="{StaticResource DashboardMetricButtonStyle}"
+                        Click="OpenBillingButton_Click"
+                        ToolTipService.ToolTip="Открыть начисления">
+                    <Border Style="{StaticResource NiatecCardBorderStyle}">
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                Text="Начисления"
+                                Style="{StaticResource NiatecCaptionTextStyle}"/>
 
-                        <TextBlock
-                            x:Name="UnpaidInvoicesTextBlock"
-                            Text="0"
-                            Style="{StaticResource NiatecMetricNumberTextStyle}"/>
+                            <TextBlock
+                                x:Name="UnpaidInvoicesTextBlock"
+                                Text="0"
+                                Style="{StaticResource NiatecMetricNumberTextStyle}"/>
 
-                        <TextBlock
-                            x:Name="UnpaidInvoicesAmountTextBlock"
-                            Text="К оплате: 0,00 ₽"
-                            Style="{StaticResource NiatecMutedTextStyle}"/>
-                    </StackPanel>
-                </Border>
+                            <TextBlock
+                                x:Name="UnpaidInvoicesAmountTextBlock"
+                                Text="К оплате: 0,00 ₽"
+                                Style="{StaticResource NiatecMutedTextStyle}"/>
+                        </StackPanel>
+                    </Border>
+                </Button>
             </Grid>
 
             <!-- Нижний рабочий блок -->

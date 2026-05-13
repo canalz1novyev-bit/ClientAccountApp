@@ -30,6 +30,12 @@ namespace ClientAccountApp
             LoadDashboard();
         }
 
+        private void RefreshAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        {
+            args.Handled = true;
+            LoadDashboard();
+        }
+
         private void LoadDashboard()
         {
             try

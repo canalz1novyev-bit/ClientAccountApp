@@ -2,7 +2,7 @@
     x:Class="ClientAccountApp.ShellWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="NIATEC.Client v1.1">
+    Title="NIATEC.Client">
 
     <NavigationView x:Name="AppNavigationView"
                 PaneDisplayMode="Left"
@@ -23,16 +23,27 @@
             <!-- Основное -->
             <NavigationViewItemHeader Content="Основное"/>
 
-            <NavigationViewItem x:Name="DashboardNavItem" Tag="dashboard" Content="Главная">
+            <NavigationViewItem x:Name="DashboardNavItem" Tag="dashboard" Content="Главная"
+                                ToolTipService.ToolTip="Главная (Ctrl+1)"
+                                AccessKey="1">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Home"/>
                 </NavigationViewItem.Icon>
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number1" Modifiers="Control"
+                                         Invoked="NavAccelerator_Dashboard_Invoked"/>
+                </NavigationViewItem.KeyboardAccelerators>
             </NavigationViewItem>
 
-            <NavigationViewItem x:Name="ClientsNavItem" Tag="clients" Content="Клиенты">
+            <NavigationViewItem x:Name="ClientsNavItem" Tag="clients" Content="Клиенты"
+                                ToolTipService.ToolTip="Клиенты (Ctrl+2)">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Contact"/>
                 </NavigationViewItem.Icon>
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number2" Modifiers="Control"
+                                         Invoked="NavAccelerator_Clients_Invoked"/>
+                </NavigationViewItem.KeyboardAccelerators>
             </NavigationViewItem>
 
             <NavigationViewItemSeparator/>
@@ -40,22 +51,37 @@
             <!-- Работа -->
             <NavigationViewItemHeader Content="Работа"/>
 
-            <NavigationViewItem Tag="contracts" Content="Договоры">
+            <NavigationViewItem Tag="contracts" Content="Договоры"
+                                ToolTipService.ToolTip="Договоры (Ctrl+3)">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Document"/>
                 </NavigationViewItem.Icon>
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number3" Modifiers="Control"
+                                         Invoked="NavAccelerator_Contracts_Invoked"/>
+                </NavigationViewItem.KeyboardAccelerators>
             </NavigationViewItem>
 
-            <NavigationViewItem Tag="billing" Content="Начисления">
+            <NavigationViewItem Tag="billing" Content="Начисления"
+                                ToolTipService.ToolTip="Начисления (Ctrl+4)">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Calculator"/>
                 </NavigationViewItem.Icon>
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number4" Modifiers="Control"
+                                         Invoked="NavAccelerator_Billing_Invoked"/>
+                </NavigationViewItem.KeyboardAccelerators>
             </NavigationViewItem>
 
-            <NavigationViewItem Tag="problem-signatures" Content="ЭЦП">
+            <NavigationViewItem Tag="problem-signatures" Content="ЭЦП"
+                                ToolTipService.ToolTip="ЭЦП — проблемные подписи (Ctrl+5)">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Important"/>
                 </NavigationViewItem.Icon>
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number5" Modifiers="Control"
+                                         Invoked="NavAccelerator_Signatures_Invoked"/>
+                </NavigationViewItem.KeyboardAccelerators>
             </NavigationViewItem>
 
             <NavigationViewItemSeparator/>
@@ -63,16 +89,26 @@
             <!-- Дополнительно -->
             <NavigationViewItemHeader Content="Дополнительно"/>
 
-            <NavigationViewItem Tag="catalog" Content="Справочник">
+            <NavigationViewItem Tag="catalog" Content="Справочник"
+                                ToolTipService.ToolTip="Справочник услуг (Ctrl+6)">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="List"/>
                 </NavigationViewItem.Icon>
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number6" Modifiers="Control"
+                                         Invoked="NavAccelerator_Catalog_Invoked"/>
+                </NavigationViewItem.KeyboardAccelerators>
             </NavigationViewItem>
 
-            <NavigationViewItem Tag="tools" Content="Инструменты">
+            <NavigationViewItem Tag="tools" Content="Инструменты"
+                                ToolTipService.ToolTip="Инструменты (Ctrl+7)">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Library"/>
                 </NavigationViewItem.Icon>
+                <NavigationViewItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Number7" Modifiers="Control"
+                                         Invoked="NavAccelerator_Tools_Invoked"/>
+                </NavigationViewItem.KeyboardAccelerators>
             </NavigationViewItem>
 
         </NavigationView.MenuItems>
@@ -97,7 +133,12 @@
                                Foreground="#5A7090" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
                     <Button Content="Профиль организации"
                             HorizontalAlignment="Stretch"
-                            Click="OpenOrganizationProfileButton_Click"/>
+                            Style="{StaticResource AccentButtonStyle}"
+                            Click="OpenOrganizationProfileButton_Click">
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="O" Modifiers="Control"/>
+                        </Button.KeyboardAccelerators>
+                    </Button>
                     <Button Content="Сменить организацию"
                             HorizontalAlignment="Stretch"
                             Click="SwitchOrganizationButton_Click"/>
