@@ -53,7 +53,9 @@ namespace ClientAccountApp
             ActiveOrganizationService.Initialize();
             ClientFileStorageService.MigrateLegacyClientFoldersOnce();
 
-            RegisterGlobalAccelerators();
+            // Горячие клавиши временно отключены, чтобы не ломать запуск приложения.
+            // RegisterGlobalAccelerators();
+
             UpdateWindowTitle();
 
             ApplyFullTheme(ThemeService.CurrentTheme);
@@ -231,7 +233,7 @@ namespace ClientAccountApp
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        //  Заголовок окна и горячие клавиши навигации
+        //  Заголовок окна
         // ──────────────────────────────────────────────────────────────────────
 
         private static readonly Lazy<string> AppVersion = new(() =>
@@ -284,44 +286,5 @@ namespace ClientAccountApp
             return "";
         }
 
-        private void RegisterGlobalAccelerators()
-        {
-            // Ctrl+, → Настройки. Привязываем к корневому Frame, чтобы работало на всех страницах.
-            var openSettings = new KeyboardAccelerator { Key = VirtualKey.OemComma, Modifiers = VirtualKeyModifiers.Control };
-            openSettings.Invoked += (s, args) =>
-            {
-                args.Handled = true;
-                if (RootFrame.CurrentSourcePageType != typeof(SettingsPage))
-                    RootFrame.Navigate(typeof(SettingsPage));
-            };
-            RootFrame.KeyboardAccelerators.Add(openSettings);
-        }
-
-        private void NavigateByTag(string tag)
-        {
-            foreach (var item in AppNavigationView.MenuItems)
-            {
-                if (item is NavigationViewItem nvi && string.Equals(nvi.Tag?.ToString(), tag, StringComparison.OrdinalIgnoreCase))
-                {
-                    nvi.IsSelected = true;
-                    return;
-                }
-            }
-        }
-
-        private void NavAccelerator_Dashboard_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        { args.Handled = true; NavigateByTag("dashboard"); }
-        private void NavAccelerator_Clients_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        { args.Handled = true; NavigateByTag("clients"); }
-        private void NavAccelerator_Contracts_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        { args.Handled = true; NavigateByTag("contracts"); }
-        private void NavAccelerator_Billing_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        { args.Handled = true; NavigateByTag("billing"); }
-        private void NavAccelerator_Signatures_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        { args.Handled = true; NavigateByTag("problem-signatures"); }
-        private void NavAccelerator_Catalog_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        { args.Handled = true; NavigateByTag("catalog"); }
-        private void NavAccelerator_Tools_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        { args.Handled = true; NavigateByTag("tools"); }
     }
 }

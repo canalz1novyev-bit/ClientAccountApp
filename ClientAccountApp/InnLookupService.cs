@@ -100,6 +100,9 @@ namespace ClientAccountApp
                              ?? data.Address?.Value
                              ?? "";
 
+            string mainOkved = data.Okved ?? string.Empty;
+            string businessCategory = OkvedBusinessCategoryService.DetectCategory(mainOkved);
+
             return new InnLookupResult
             {
                 ClientType = clientType,
@@ -107,7 +110,9 @@ namespace ClientAccountApp
                 DirectorName = directorName,
                 Inn = data.Inn ?? string.Empty,
                 Ogrn = data.Ogrn ?? string.Empty,
-                LegalAddress = address
+                LegalAddress = address,
+                MainOkved = mainOkved,
+                BusinessCategory = businessCategory
             };
         }
 
@@ -162,6 +167,8 @@ namespace ClientAccountApp
 
             [JsonPropertyName("ogrn")]
             public string? Ogrn { get; set; }
+            [JsonPropertyName("okved")]
+            public string? Okved { get; set; }
 
             [JsonPropertyName("name")]
             public DadataPartyName? Name { get; set; }

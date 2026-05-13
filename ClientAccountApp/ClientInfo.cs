@@ -19,7 +19,8 @@ namespace ClientAccountApp
         public string Inn { get; set; } = "";
         public string Ogrn { get; set; } = "";
         public string Address { get; set; } = "";
-
+        public string MainOkved { get; set; } = "";
+        public string BusinessCategory { get; set; } = "";
         public string Status { get; set; } = "Активный";
 
         public string ContractStatus { get; set; } = "Требует договора";
@@ -30,7 +31,62 @@ namespace ClientAccountApp
         public ICollection<BankAccount> BankAccounts { get; set; } = new List<BankAccount>();
         public ICollection<ClientNote> Notes { get; set; } = new List<ClientNote>();
         public ICollection<ClientFile> ClientFiles { get; set; } = new List<ClientFile>();
+        [NotMapped]
+        public SolidColorBrush BusinessCategoryChipBackgroundBrush
+        {
+            get
+            {
+                string category = BusinessCategoryChipText;
 
+                if (category.Contains("Торговля", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 38, 96, 150));
+
+                if (category.Contains("Перевозки", StringComparison.OrdinalIgnoreCase) ||
+                    category.Contains("логистика", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 97, 76, 150));
+
+                if (category.Contains("С/Х", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 72, 125, 58));
+
+                if (category.Contains("IT", StringComparison.OrdinalIgnoreCase) ||
+                    category.Contains("связь", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 35, 118, 145));
+
+                if (category.Contains("Строительство", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 158, 99, 32));
+
+                if (category.Contains("Производство", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 94, 103, 120));
+
+                if (category.Contains("общепит", StringComparison.OrdinalIgnoreCase) ||
+                    category.Contains("Гостиницы", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 156, 83, 45));
+
+                if (category.Contains("консалтинг", StringComparison.OrdinalIgnoreCase) ||
+                    category.Contains("бух", StringComparison.OrdinalIgnoreCase) ||
+                    category.Contains("Юр", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 122, 88, 160));
+
+                if (category.Contains("Недвижимость", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 82, 98, 150));
+
+                if (category.Contains("Медицина", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 48, 132, 110));
+
+                if (category.Contains("Образование", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 120, 104, 45));
+
+                if (category.Contains("Не указано", StringComparison.OrdinalIgnoreCase) ||
+                    category.Contains("Без категории", StringComparison.OrdinalIgnoreCase))
+                    return new SolidColorBrush(ColorHelper.FromArgb(255, 90, 96, 110));
+
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 80, 90, 110));
+            }
+        }
+
+        [NotMapped]
+        public SolidColorBrush BusinessCategoryChipForegroundBrush =>
+            new SolidColorBrush(Colors.White);
         [NotMapped]
         public string StatusDisplayText =>
             string.IsNullOrWhiteSpace(Status) ? "Активный" : Status;
@@ -49,6 +105,28 @@ namespace ClientAccountApp
 
         [NotMapped]
         public string StatusBadgeText => "✓";
+        [NotMapped]
+        public string BusinessCategoryChipText =>
+    string.IsNullOrWhiteSpace(BusinessCategory)
+        ? "Без категории"
+        : BusinessCategory;
+
+        [NotMapped]
+        public string MainOkvedDisplayText =>
+            string.IsNullOrWhiteSpace(MainOkved)
+                ? "ОКВЭД не указан"
+                : $"ОКВЭД {MainOkved}";
+
+        [NotMapped]
+        public string ClientTypeAndBusinessCategoryText
+        {
+            get
+            {
+                string type = string.IsNullOrWhiteSpace(ClientType) ? "Клиент" : ClientType;
+                string category = string.IsNullOrWhiteSpace(BusinessCategory) ? "Без категории" : BusinessCategory;
+                return $"{type} · {category}";
+            }
+        }
 
         [NotMapped]
         public SolidColorBrush StatusBadgeBackgroundBrush =>

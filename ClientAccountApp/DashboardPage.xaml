@@ -7,8 +7,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <!-- Прозрачная кнопка-обёртка вокруг метрической карточки.
-             Сохраняет визуал Border'а, добавляет hover/нажатие и фокус. -->
+        <!-- Прозрачная кнопка-обёртка вокруг метрической карточки -->
         <Style x:Key="DashboardMetricButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -22,10 +21,6 @@
             <Setter Property="CornerRadius" Value="14"/>
         </Style>
     </Page.Resources>
-
-    <Page.KeyboardAccelerators>
-        <KeyboardAccelerator Key="F5" Invoked="RefreshAccelerator_Invoked"/>
-    </Page.KeyboardAccelerators>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid
@@ -63,12 +58,13 @@
                         Style="{StaticResource NiatecMutedTextStyle}"/>
                 </StackPanel>
 
-                <Button Grid.Column="1"
-                        x:Name="RefreshDashboardButton"
-                        Content="Обновить"
-                        Click="RefreshDashboardButton_Click"
-                        VerticalAlignment="Top"
-                        ToolTipService.ToolTip="Обновить сводку (F5)"/>
+                <Button
+                    Grid.Column="1"
+                    x:Name="RefreshDashboardButton"
+                    Content="Обновить"
+                    Click="RefreshDashboardButton_Click"
+                    VerticalAlignment="Top"
+                    Style="{StaticResource NiatecSecondaryButtonStyle}"/>
             </Grid>
 
             <!-- Карточки показателей -->
@@ -80,10 +76,10 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0"
-                        Style="{StaticResource DashboardMetricButtonStyle}"
-                        Click="OpenClientsButton_Click"
-                        ToolTipService.ToolTip="Открыть список клиентов">
+                <Button
+                    Grid.Column="0"
+                    Style="{StaticResource DashboardMetricButtonStyle}"
+                    Click="OpenClientsButton_Click">
                     <Border Style="{StaticResource NiatecCardBorderStyle}">
                         <StackPanel Spacing="6">
                             <TextBlock
@@ -104,10 +100,10 @@
                     </Border>
                 </Button>
 
-                <Button Grid.Column="1"
-                        Style="{StaticResource DashboardMetricButtonStyle}"
-                        Click="OpenSignaturesButton_Click"
-                        ToolTipService.ToolTip="Открыть проблемные ЭЦП">
+                <Button
+                    Grid.Column="1"
+                    Style="{StaticResource DashboardMetricButtonStyle}"
+                    Click="OpenSignaturesButton_Click">
                     <Border Style="{StaticResource NiatecCardBorderStyle}">
                         <StackPanel Spacing="6">
                             <TextBlock
@@ -126,10 +122,10 @@
                     </Border>
                 </Button>
 
-                <Button Grid.Column="2"
-                        Style="{StaticResource DashboardMetricButtonStyle}"
-                        Click="OpenContractsButton_Click"
-                        ToolTipService.ToolTip="Открыть договоры">
+                <Button
+                    Grid.Column="2"
+                    Style="{StaticResource DashboardMetricButtonStyle}"
+                    Click="OpenContractsButton_Click">
                     <Border Style="{StaticResource NiatecCardBorderStyle}">
                         <StackPanel Spacing="6">
                             <TextBlock
@@ -148,10 +144,10 @@
                     </Border>
                 </Button>
 
-                <Button Grid.Column="3"
-                        Style="{StaticResource DashboardMetricButtonStyle}"
-                        Click="OpenBillingButton_Click"
-                        ToolTipService.ToolTip="Открыть начисления">
+                <Button
+                    Grid.Column="3"
+                    Style="{StaticResource DashboardMetricButtonStyle}"
+                    Click="OpenBillingButton_Click">
                     <Border Style="{StaticResource NiatecCardBorderStyle}">
                         <StackPanel Spacing="6">
                             <TextBlock
@@ -171,6 +167,40 @@
                     </Border>
                 </Button>
             </Grid>
+
+            <!-- Аналитика по категориям бизнеса -->
+            <Border Grid.Row="2" Style="{StaticResource NiatecCardBorderStyle}">
+                <StackPanel Spacing="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock
+                                Text="Клиенты по категориям"
+                                Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                            <TextBlock
+                                Text="Распределение клиентской базы по основному виду деятельности"
+                                Style="{StaticResource NiatecCaptionTextStyle}"/>
+                        </StackPanel>
+
+                        <TextBlock
+                            x:Name="CategoryAnalyticsTotalTextBlock"
+                            Grid.Column="1"
+                            Text="Всего: 0"
+                            Foreground="{StaticResource NiatecAccentBrush}"
+                            FontWeight="SemiBold"
+                            VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <StackPanel
+                        x:Name="CategoryAnalyticsPanel"
+                        Spacing="8"/>
+                </StackPanel>
+            </Border>
 
             <!-- Нижний рабочий блок -->
             <Grid Grid.Row="3" ColumnSpacing="16">

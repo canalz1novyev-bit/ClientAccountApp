@@ -30,12 +30,6 @@ namespace ClientAccountApp
             LoadDashboard();
         }
 
-        private void RefreshAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
-        {
-            args.Handled = true;
-            LoadDashboard();
-        }
-
         private void LoadDashboard()
         {
             try
@@ -111,6 +105,7 @@ namespace ClientAccountApp
                 UnpaidInvoicesTextBlock.Text = unpaidInvoices.Count.ToString();
                 UnpaidInvoicesAmountTextBlock.Text = $"К оплате: {FormatMoney(unpaidAmount)}";
 
+                FillCategoryAnalyticsPanel(clients);
                 FillAttentionPanel(attentionSignatures, contractsInWork, unpaidInvoices, clientMap, today);
                 FillRecentPanel(clients, invoices, contracts, clientMap);
             }
@@ -122,6 +117,173 @@ namespace ClientAccountApp
                     ex.Message,
                     "#7A2E2E"));
             }
+        }
+
+        private void FillCategoryAnalyticsPanel(List<ClientInfo> clients)
+        {
+            CategoryAnalyticsPanel.Children.Clear();
+
+            int totalClients = clients.Count;
+
+            if (CategoryAnalyticsTotalTextBlock != null)
+                CategoryAnalyticsTotalTextBlock.Text = $"Всего: {totalClients}";
+
+            if (totalClients == 0)
+            {
+                CategoryAnalyticsPanel.Children.Add(CreateInfoRow(
+                    "Пока нет клиентов",
+                    "После добавления клиентов здесь появится распределение по категориям бизнеса.",
+                    "#2F4F6F"));
+
+                return;
+            }
+
+            var categoryGroups = clients
+                .GroupBy(c => string.IsNullOrWhiteSpace(c.BusinessCategory)
+                    ? "Без категории"
+                    : c.BusinessCategory.Trim())
+                .Select(g => new
+                {
+                    Category = g.Key,
+                    Count = g.Count(),
+                    Percent = totalClients == 0
+                        ? 0
+                        : Math.Round((decimal)g.Count() * 100m / totalClients, 1)
+                })
+                .OrderByDescending(x => x.Count)
+                .ThenBy(x => x.Category)
+                .Take(8)
+                .ToList();
+
+            foreach (var item in categoryGroups)
+            {
+                CategoryAnalyticsPanel.Children.Add(
+                    CreateCategoryAnalyticsRow(item.Category, item.Count, item.Percent, totalClients));
+            }
+        }
+
+        private Border CreateCategoryAnalyticsRow(string category, int count, decimal percent, int totalClients)
+        {
+            double barWidth = 40;
+
+            if (totalClients > 0)
+            {
+                double calculated = 320.0 * count / totalClients;
+                barWidth = Math.Max(40, calculated);
+            }
+
+            var titleText = new TextBlock
+            {
+                Text = category,
+                Foreground = ThemeBrush("NiatecTextPrimaryBrush", "#FFFFFF"),
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = TextWrapping.NoWrap
+            };
+
+            var countText = new TextBlock
+            {
+                Text = $"{count} клиент(ов) · {percent:N1}%",
+                Foreground = ThemeBrush("NiatecTextSecondaryBrush", "#B8B8B8"),
+                FontSize = 12,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var bar = new Border
+            {
+                Width = barWidth,
+                Height = 8,
+                CornerRadius = new CornerRadius(4),
+                Background = BusinessCategoryBrush(category),
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+
+            var barBack = new Border
+            {
+                Height = 8,
+                CornerRadius = new CornerRadius(4),
+                Background = ThemeBrush("NiatecBackgroundBrush", "#0F1115"),
+                Child = bar
+            };
+
+            var textGrid = new Grid
+            {
+                ColumnSpacing = 12
+            };
+
+            textGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            textGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            Grid.SetColumn(titleText, 0);
+            Grid.SetColumn(countText, 1);
+
+            textGrid.Children.Add(titleText);
+            textGrid.Children.Add(countText);
+
+            var panel = new StackPanel
+            {
+                Spacing = 8
+            };
+
+            panel.Children.Add(textGrid);
+            panel.Children.Add(barBack);
+
+            return new Border
+            {
+                Background = ThemeBrush("NiatecSurfaceAltBrush", "#11151C"),
+                BorderBrush = ThemeBrush("NiatecBorderBrush", "#243042"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(12),
+                Child = panel
+            };
+        }
+
+        private static SolidColorBrush BusinessCategoryBrush(string category)
+        {
+            if (category.Contains("Торговля", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 38, 96, 150));
+
+            if (category.Contains("Перевозки", StringComparison.OrdinalIgnoreCase) ||
+                category.Contains("логистика", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 97, 76, 150));
+
+            if (category.Contains("С/Х", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 72, 125, 58));
+
+            if (category.Contains("IT", StringComparison.OrdinalIgnoreCase) ||
+                category.Contains("связь", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 35, 118, 145));
+
+            if (category.Contains("Строительство", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 158, 99, 32));
+
+            if (category.Contains("Производство", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 94, 103, 120));
+
+            if (category.Contains("общепит", StringComparison.OrdinalIgnoreCase) ||
+                category.Contains("Гостиницы", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 156, 83, 45));
+
+            if (category.Contains("консалтинг", StringComparison.OrdinalIgnoreCase) ||
+                category.Contains("бух", StringComparison.OrdinalIgnoreCase) ||
+                category.Contains("Юр", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 122, 88, 160));
+
+            if (category.Contains("Недвижимость", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 82, 98, 150));
+
+            if (category.Contains("Медицина", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 48, 132, 110));
+
+            if (category.Contains("Образование", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 120, 104, 45));
+
+            if (category.Contains("Без категории", StringComparison.OrdinalIgnoreCase) ||
+                category.Contains("Не указано", StringComparison.OrdinalIgnoreCase))
+                return new SolidColorBrush(ColorHelper.FromArgb(255, 90, 96, 110));
+
+            return new SolidColorBrush(ColorHelper.FromArgb(255, 80, 90, 110));
         }
 
         private void FillAttentionPanel(
@@ -200,9 +362,13 @@ namespace ClientAccountApp
             {
                 hasItems = true;
 
+                string category = string.IsNullOrWhiteSpace(client.BusinessCategory)
+                    ? "Без категории"
+                    : client.BusinessCategory;
+
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Клиент",
-                    $"{client.Name} · ИНН {client.Inn}",
+                    $"{client.Name} · ИНН {client.Inn} · {category}",
                     "#2F4F6F"));
             }
 
@@ -252,15 +418,15 @@ namespace ClientAccountApp
                 {
                     ColumnSpacing = 10,
                     ColumnDefinitions =
-            {
-                new ColumnDefinition { Width = new GridLength(6) },
-                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
-            },
+                    {
+                        new ColumnDefinition { Width = new GridLength(6) },
+                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
+                    },
                     Children =
-            {
-                CreateAccentBar(colorHex),
-                CreateTextStack(title, description)
-            }
+                    {
+                        CreateAccentBar(colorHex),
+                        CreateTextStack(title, description)
+                    }
                 }
             };
         }
@@ -305,6 +471,7 @@ namespace ClientAccountApp
             Grid.SetColumn(panel, 1);
             return panel;
         }
+
         private static Brush ThemeBrush(string resourceKey, string fallbackHex)
         {
             if (Application.Current.Resources.TryGetValue(resourceKey, out object value) &&
@@ -315,6 +482,7 @@ namespace ClientAccountApp
 
             return BrushFromHex(fallbackHex);
         }
+
         private static SolidColorBrush BrushFromHex(string hex)
         {
             hex = hex.Replace("#", "");

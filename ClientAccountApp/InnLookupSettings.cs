@@ -2,6 +2,6 @@
 {
     public static class InnLookupSettings
     {
-        public const string DadataToken = "4ed47e6d79381264039636689278b88541bbafce";
+        public const string DadataToken = "bb64f1e3f1715f84399c4c2228f954cf1a3165a1";
     }
 }

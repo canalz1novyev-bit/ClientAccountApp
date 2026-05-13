@@ -39,9 +39,15 @@ namespace ClientAccountApp
                 EnsureBankAccountCorrespondentAccountColumn();
                 EnsureClientContractColumns();
                 EnsureOgrnColumn();
-                EnsureNoteReminderDateColumn(); // ← добавили
+                EnsureClientBusinessColumnsSqlite();
+                EnsureNoteReminderDateColumn();
+            }
+            else if (IsSqlServerProvider())
+            {
+                EnsureClientBusinessColumnsSqlServer();
             }
         }
+
         private void EnsureNoteReminderDateColumn()
         {
             using var connection = Database.GetDbConnection();
@@ -81,7 +87,62 @@ namespace ClientAccountApp
                 "Sqlite",
                 StringComparison.OrdinalIgnoreCase);
         }
+        private bool IsSqlServerProvider()
+        {
+            string providerName = Database.ProviderName ?? "";
 
+            return providerName.Contains(
+                "SqlServer",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        private void EnsureClientBusinessColumnsSqlite()
+        {
+            using var connection = Database.GetDbConnection();
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA table_info(Clients);";
+
+            bool hasMainOkved = false;
+            bool hasBusinessCategory = false;
+
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var columnName = reader["name"]?.ToString();
+
+                    if (string.Equals(columnName, "MainOkved", StringComparison.OrdinalIgnoreCase))
+                        hasMainOkved = true;
+
+                    if (string.Equals(columnName, "BusinessCategory", StringComparison.OrdinalIgnoreCase))
+                        hasBusinessCategory = true;
+                }
+            }
+
+            if (!hasMainOkved)
+            {
+                Database.ExecuteSqlRaw(
+                    "ALTER TABLE Clients ADD COLUMN MainOkved TEXT NOT NULL DEFAULT '';");
+            }
+
+            if (!hasBusinessCategory)
+            {
+                Database.ExecuteSqlRaw(
+                    "ALTER TABLE Clients ADD COLUMN BusinessCategory TEXT NOT NULL DEFAULT '';");
+            }
+        }
+
+        private void EnsureClientBusinessColumnsSqlServer()
+        {
+            Database.ExecuteSqlRaw(@"
+IF COL_LENGTH('Clients', 'MainOkved') IS NULL
+    ALTER TABLE Clients ADD MainOkved nvarchar(max) NOT NULL DEFAULT N'';
+
+IF COL_LENGTH('Clients', 'BusinessCategory') IS NULL
+    ALTER TABLE Clients ADD BusinessCategory nvarchar(max) NOT NULL DEFAULT N'';
+");
+        }
         private void EnsureClientStatusColumn()
         {
             using var connection = Database.GetDbConnection();

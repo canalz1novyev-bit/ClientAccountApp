@@ -56,7 +56,7 @@ namespace ClientAccountApp
         // Не публикуй реальный ключ в GitHub.
         // Временно для теста можешь вставить ключ сюда,
         // потом лучше вынесем в Settings.
-        private const string DaDataApiKey = "4ed47e6d79381264039636689278b88541bbafce";
+        private const string DaDataApiKey = "bb64f1e3f1715f84399c4c2228f954cf1a3165a1";
 
         static CounterpartyCheckService()
         {

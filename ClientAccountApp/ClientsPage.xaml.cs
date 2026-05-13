@@ -207,14 +207,12 @@ namespace ClientAccountApp
 
         private string GetCurrentClientViewModeText() => _clientViewMode switch
         {
-            1 => "Компактный",
             2 => "Табличный",
             _ => "Обычный"
         };
 
         private static int ParseClientViewMode(string? viewMode) => viewMode switch
         {
-            "Компактный" => 1,
             "Табличный" => 2,
             _ => 0
         };
@@ -249,6 +247,8 @@ namespace ClientAccountApp
             DirectorTextBox.Text = result.DirectorName;
             OgrnTextBox.Text = result.Ogrn;
             AddressTextBox.Text = result.LegalAddress;
+            MainOkvedTextBox.Text = result.MainOkved;
+            SetBusinessCategoryComboBox(result.BusinessCategory);
             UpdateClientFormLabels();
             ValidateClientForm();
             UpdateClientHeader(null);
@@ -351,6 +351,8 @@ namespace ClientAccountApp
 
             if (ClientFileFilterComboBox != null) ClientFileFilterComboBox.SelectedIndex = 0;
             if (ClientStatusComboBox != null) ClientStatusComboBox.SelectedIndex = 0;
+            if (BusinessCategoryFilterComboBox != null)
+                BusinessCategoryFilterComboBox.SelectedIndex = 0;
 
             RestoreWorkspaceState();
             _clientFormReady = true;
@@ -530,27 +532,56 @@ namespace ClientAccountApp
 
         private void UpdateClientHeader(ClientInfo? client)
         {
-            if (ClientHeaderTitleTextBlock == null || ClientHeaderMetaTextBlock == null ||
-                ClientHeaderSignatureTextBlock == null || ClientHeaderStatusTextBlock == null) return;
+            if (ClientHeaderTitleTextBlock == null ||
+                ClientHeaderMetaTextBlock == null ||
+                ClientHeaderBusinessTextBlock == null ||
+                ClientHeaderSignatureTextBlock == null ||
+                ClientHeaderStatusTextBlock == null)
+            {
+                return;
+            }
 
             if (client == null)
             {
                 ClientHeaderTitleTextBlock.Text = "Новый клиент";
                 ClientHeaderMetaTextBlock.Text = "Заполните реквизиты или используйте автозаполнение по ИНН";
+                ClientHeaderBusinessTextBlock.Text = "Категория: —";
                 ClientHeaderSignatureTextBlock.Text = "ЭЦП: —";
                 ClientHeaderStatusTextBlock.Text = "Новый";
                 return;
             }
 
-            string status = string.IsNullOrWhiteSpace(client.Status) ? "Активный" : client.Status;
-            string clientType = string.IsNullOrWhiteSpace(client.ClientType) ? "Тип не указан" : client.ClientType;
-            string inn = string.IsNullOrWhiteSpace(client.Inn) ? "ИНН не указан" : $"ИНН {client.Inn}";
+            string status = string.IsNullOrWhiteSpace(client.Status)
+                ? "Активный"
+                : client.Status;
 
-            ClientHeaderTitleTextBlock.Text = string.IsNullOrWhiteSpace(client.Name) ? "Клиент без названия" : client.Name;
+            string clientType = string.IsNullOrWhiteSpace(client.ClientType)
+                ? "Тип не указан"
+                : client.ClientType;
+
+            string inn = string.IsNullOrWhiteSpace(client.Inn)
+                ? "ИНН не указан"
+                : $"ИНН {client.Inn}";
+
+            string category = string.IsNullOrWhiteSpace(client.BusinessCategory)
+                ? "Без категории"
+                : client.BusinessCategory;
+
+            string okved = string.IsNullOrWhiteSpace(client.MainOkved)
+                ? "ОКВЭД не указан"
+                : $"ОКВЭД {client.MainOkved}";
+
+            ClientHeaderTitleTextBlock.Text = string.IsNullOrWhiteSpace(client.Name)
+                ? "Клиент без названия"
+                : client.Name;
+
             ClientHeaderMetaTextBlock.Text = $"{status} · {clientType} · {inn}";
+            ClientHeaderBusinessTextBlock.Text = $"Категория: {category} · {okved}";
+
             ClientHeaderSignatureTextBlock.Text = client.NearestSignatureExpiresDate.HasValue
                 ? $"ЭЦП: ближайшая до {client.NearestSignatureExpiresDate.Value:dd.MM.yyyy}"
                 : "ЭЦП: не добавлена";
+
             ClientHeaderStatusTextBlock.Text = status;
         }
 
@@ -640,12 +671,17 @@ namespace ClientAccountApp
 
         private void ClientViewModeToggleButton_Click(object sender, RoutedEventArgs e)
         {
-            _clientViewMode++;
-            if (_clientViewMode > 2) _clientViewMode = 0;
+            // Теперь только два режима:
+            // 0 — обычный вид
+            // 2 — табличный вид
+            _clientViewMode = _clientViewMode == 2 ? 0 : 2;
+
             ResetHighlightedClientCard();
             ApplyClientViewMode();
             RefreshSelectedClientHighlight();
-            if (_workspaceStateReady) SaveWorkspaceState();
+
+            if (_workspaceStateReady)
+                SaveWorkspaceState();
         }
 
         private async Task ShowClientAiAnalysisDialogAsync(string clientName, string analysis)
@@ -670,25 +706,33 @@ namespace ClientAccountApp
 
         private void ApplyClientViewMode()
         {
-            if (ClientsListView == null) return;
-            switch (_clientViewMode)
+            if (ClientsListView == null)
+                return;
+
+            if (_clientViewMode == 2)
             {
-                case 0:
-                    ClientsListView.ItemTemplate = (DataTemplate)Resources["NormalClientItemTemplate"];
-                    if (DenseClientsHeaderGrid != null) DenseClientsHeaderGrid.Visibility = Visibility.Collapsed;
-                    ToolTipService.SetToolTip(ClientViewModeToggleButton, "Обычный вид списка");
-                    break;
-                case 1:
-                    ClientsListView.ItemTemplate = (DataTemplate)Resources["CompactClientItemTemplate"];
-                    if (DenseClientsHeaderGrid != null) DenseClientsHeaderGrid.Visibility = Visibility.Collapsed;
-                    ToolTipService.SetToolTip(ClientViewModeToggleButton, "Компактный вид списка");
-                    break;
-                case 2:
-                    ClientsListView.ItemTemplate = (DataTemplate)Resources["DenseClientItemTemplate"];
-                    if (DenseClientsHeaderGrid != null) DenseClientsHeaderGrid.Visibility = Visibility.Visible;
-                    ToolTipService.SetToolTip(ClientViewModeToggleButton, "Табличный вид списка");
-                    break;
+                // Табличный вид
+                ClientsListView.ItemTemplate = (DataTemplate)Resources["DenseClientItemTemplate"];
+
+                if (DenseClientsHeaderGrid != null)
+                    DenseClientsHeaderGrid.Visibility = Visibility.Visible;
+
+                if (ClientViewModeGlyphTextBlock != null)
+                    ClientViewModeGlyphTextBlock.Text = "▤";
+
+                return;
             }
+
+            // Обычный вид
+            _clientViewMode = 0;
+
+            ClientsListView.ItemTemplate = (DataTemplate)Resources["NormalClientItemTemplate"];
+
+            if (DenseClientsHeaderGrid != null)
+                DenseClientsHeaderGrid.Visibility = Visibility.Collapsed;
+
+            if (ClientViewModeGlyphTextBlock != null)
+                ClientViewModeGlyphTextBlock.Text = "▦";
         }
 
         private void TrySelectPendingClientFromDashboard()
@@ -740,6 +784,8 @@ namespace ClientAccountApp
             if (SearchTextBox != null) SearchTextBox.Text = "";
             if (SignatureFilterComboBox != null) SignatureFilterComboBox.SelectedIndex = 0;
             if (StatusFilterComboBox != null) StatusFilterComboBox.SelectedIndex = 0;
+            if (BusinessCategoryFilterComboBox != null)
+                BusinessCategoryFilterComboBox.SelectedIndex = 0;
             _workspaceStateReady = wasReady;
             LoadClientsFromDatabase();
             SaveWorkspaceState();
@@ -752,7 +798,38 @@ namespace ClientAccountApp
                 return selectedItem.Content?.ToString() ?? "ООО";
             return "ООО";
         }
+        private string GetSelectedBusinessCategory()
+        {
+            if (BusinessCategoryComboBox?.SelectedItem is ComboBoxItem selectedItem)
+                return selectedItem.Content?.ToString() ?? OkvedBusinessCategoryService.EmptyCategory;
 
+            return OkvedBusinessCategoryService.EmptyCategory;
+        }
+        private string GetSelectedBusinessCategoryFilter()
+        {
+            if (BusinessCategoryFilterComboBox?.SelectedItem is ComboBoxItem selectedItem)
+                return selectedItem.Content?.ToString() ?? "Все категории";
+
+            return "Все категории";
+        }
+        private void SetBusinessCategoryComboBox(string? category)
+        {
+            string target = string.IsNullOrWhiteSpace(category)
+                ? OkvedBusinessCategoryService.EmptyCategory
+                : category.Trim();
+
+            foreach (var item in BusinessCategoryComboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem &&
+                    string.Equals(comboBoxItem.Content?.ToString(), target, StringComparison.OrdinalIgnoreCase))
+                {
+                    BusinessCategoryComboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+
+            BusinessCategoryComboBox.SelectedIndex = 0;
+        }
         private string GetSelectedClientStatus()
         {
             if (ClientStatusComboBox.SelectedItem is ComboBoxItem selectedItem)
@@ -1238,6 +1315,8 @@ namespace ClientAccountApp
                     Inn = InnTextBox.Text.Trim(),
                     Ogrn = OgrnTextBox.Text.Trim(),
                     Address = AddressTextBox.Text.Trim(),
+                    MainOkved = MainOkvedTextBox.Text.Trim(),
+                    BusinessCategory = GetSelectedBusinessCategory(),
                     ContractStatus = "Требует договора"
                 };
                 db.Clients.Add(client);
@@ -1262,6 +1341,8 @@ namespace ClientAccountApp
                 clientFromDb.Inn = InnTextBox.Text.Trim();
                 clientFromDb.Ogrn = OgrnTextBox.Text.Trim();
                 clientFromDb.Address = AddressTextBox.Text.Trim();
+                clientFromDb.MainOkved = MainOkvedTextBox.Text.Trim();
+                clientFromDb.BusinessCategory = GetSelectedBusinessCategory();
                 db.SaveChanges();
             }
             LoadClientsFromDatabase(selectedClient.Id);
@@ -1271,24 +1352,57 @@ namespace ClientAccountApp
         private bool MatchesCurrentFilter(ClientInfo client)
         {
             string searchText = SearchTextBox?.Text?.Trim().ToLowerInvariant() ?? "";
+
             int filterIndex = SignatureFilterComboBox?.SelectedIndex ?? 0;
-            if (filterIndex < 0) filterIndex = 0;
+            if (filterIndex < 0)
+                filterIndex = 0;
+
             bool matchesSearch = string.IsNullOrWhiteSpace(searchText) ||
                 (client.Name?.ToLowerInvariant().Contains(searchText) ?? false) ||
                 (client.DirectorFullName?.ToLowerInvariant().Contains(searchText) ?? false) ||
                 (client.Inn?.ToLowerInvariant().Contains(searchText) ?? false) ||
-                (client.Address?.ToLowerInvariant().Contains(searchText) ?? false);
-            if (!matchesSearch) return false;
+                (client.Address?.ToLowerInvariant().Contains(searchText) ?? false) ||
+                (client.MainOkved?.ToLowerInvariant().Contains(searchText) ?? false) ||
+                (client.BusinessCategory?.ToLowerInvariant().Contains(searchText) ?? false);
+
+            if (!matchesSearch)
+                return false;
+
+            string selectedBusinessCategory = GetSelectedBusinessCategoryFilter();
+
+            bool matchesBusinessCategory =
+                selectedBusinessCategory == "Все категории" ||
+                string.Equals(
+                    string.IsNullOrWhiteSpace(client.BusinessCategory)
+                        ? OkvedBusinessCategoryService.EmptyCategory
+                        : client.BusinessCategory,
+                    selectedBusinessCategory,
+                    StringComparison.OrdinalIgnoreCase);
+
+            if (!matchesBusinessCategory)
+                return false;
+
             DateTime today = DateTime.Today;
             DateTime? nearestExpires = client.NearestSignatureExpiresDate;
-            return filterIndex switch
+
+            bool matchesSignatureFilter = filterIndex switch
             {
                 0 => true,
-                1 => nearestExpires.HasValue && nearestExpires.Value.Date >= today && nearestExpires.Value.Date <= today.AddDays(30),
-                2 => nearestExpires.HasValue && nearestExpires.Value.Date >= today && nearestExpires.Value.Date <= today.AddDays(7),
-                3 => nearestExpires.HasValue && nearestExpires.Value.Date < today,
+                1 => nearestExpires.HasValue &&
+                     nearestExpires.Value.Date >= today &&
+                     nearestExpires.Value.Date <= today.AddDays(30),
+
+                2 => nearestExpires.HasValue &&
+                     nearestExpires.Value.Date >= today &&
+                     nearestExpires.Value.Date <= today.AddDays(7),
+
+                3 => nearestExpires.HasValue &&
+                     nearestExpires.Value.Date < today,
+
                 _ => true
             };
+
+            return matchesSignatureFilter;
         }
 
         private async void DeleteSelectedClientButton_Click(object sender, RoutedEventArgs e)
@@ -1608,19 +1722,35 @@ namespace ClientAccountApp
         {
             SetClientTypeComboBox(client.ClientType);
             SetClientStatusComboBox(client.Status);
+            SetBusinessCategoryComboBox(client.BusinessCategory);
+
             ClientNameTextBox.Text = client.Name;
             DirectorTextBox.Text = client.DirectorFullName;
             InnTextBox.Text = client.Inn;
             OgrnTextBox.Text = client.Ogrn;
             AddressTextBox.Text = client.Address;
+            MainOkvedTextBox.Text = client.MainOkved;
         }
 
         private void ClearInputFields()
         {
-            ClientTypeComboBox.SelectedIndex = 0; ClientStatusComboBox.SelectedIndex = 0;
-            ClientNameTextBox.Text = ""; DirectorTextBox.Text = ""; InnTextBox.Text = "";
-            OgrnTextBox.Text = ""; AddressTextBox.Text = "";
-            UpdateClientFormLabels(); ValidateClientForm();
+            ClientTypeComboBox.SelectedIndex = 0;
+            ClientStatusComboBox.SelectedIndex = 0;
+
+            if (BusinessCategoryComboBox != null)
+                BusinessCategoryComboBox.SelectedIndex = 0;
+
+            ClientNameTextBox.Text = "";
+            DirectorTextBox.Text = "";
+            InnTextBox.Text = "";
+            OgrnTextBox.Text = "";
+            AddressTextBox.Text = "";
+
+            if (MainOkvedTextBox != null)
+                MainOkvedTextBox.Text = "";
+
+            UpdateClientFormLabels();
+            ValidateClientForm();
         }
 
         private void ClearSignatureInputFields()
@@ -1715,7 +1845,15 @@ namespace ClientAccountApp
             _notes.Clear(); ClearNoteInputFields();
             SelectedNoteCountTextBlock.Text = "—"; SelectedLatestNoteTextBlock.Text = "—";
         }
+        private void BusinessCategoryFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_workspaceStateReady)
+                return;
 
+            LoadClientsFromDatabase();
+
+            SaveWorkspaceState();
+        }
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!_workspaceStateReady) return;
@@ -1730,14 +1868,6 @@ namespace ClientAccountApp
             if (!_workspaceStateReady) return;
             SaveWorkspaceState();
             LoadClientsFromDatabase(_pendingDebouncedSelectedClientId);
-        }
-
-        private void FocusSearchAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        {
-            args.Handled = true;
-            if (SearchTextBox == null) return;
-            SearchTextBox.Focus(FocusState.Programmatic);
-            SearchTextBox.SelectAll();
         }
 
         private async void DownloadEgrulExtractButton_Click(object sender, RoutedEventArgs e)

@@ -8,5 +8,7 @@
         public string Inn { get; set; } = "";
         public string Ogrn { get; set; } = "";
         public string LegalAddress { get; set; } = "";
+        public string MainOkved { get; set; } = "";
+        public string BusinessCategory { get; set; } = "";
     }
 }
