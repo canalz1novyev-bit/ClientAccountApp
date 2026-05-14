@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace ClientAccountApp
 {
@@ -639,6 +640,142 @@ namespace ClientAccountApp
                     item.StatusBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 80, 80, 80));
                     item.StatusTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 184, 184, 184));
                     break;
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // МАСТЕР ДОГОВОРОВ
+        // ══════════════════════════════════════════════════════════════════
+
+        private async void OpenContractWizardPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            await OpenContractWizardAsync(clientId: null);
+        }
+
+        private async void OpenContractWizardForClientButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement element ||
+                element.DataContext is not ContractsListItemViewModel item)
+                return;
+
+            await OpenContractWizardAsync(clientId: item.ClientId);
+        }
+
+        private async Task OpenContractWizardAsync(int? clientId)
+        {
+            try
+            {
+                var wizard = new ContractWizardDialog { XamlRoot = this.XamlRoot };
+
+                if (clientId.HasValue)
+                    wizard.PreSelectClientId = clientId.Value;
+
+                await wizard.ShowAsync();
+
+                if (!wizard.WizardCompleted ||
+                    wizard.ResultContract == null ||
+                    wizard.ResultParty1 == null ||
+                    wizard.ResultParty2 == null)
+                    return;
+
+                var organization = ActiveOrganizationService.GetRequired();
+
+                int resolvedClientId = wizard.ResultParty2.ClientInfoId ?? clientId ?? 0;
+
+                if (resolvedClientId == 0)
+                {
+                    ContractsEmptyStateTextBlock.Text =
+                        "Не удалось определить клиента. Выберите сторону 2 из базы клиентов.";
+                    return;
+                }
+
+                ContractsEmptyStateTextBlock.Text = "Формирую договор...";
+
+                string tempPath = ContractWordService.GenerateContractDocx(
+                    wizard.ResultContract, wizard.ResultParty1, wizard.ResultParty2);
+
+                using var db = new AppDbContext();
+
+                var client = db.Clients.FirstOrDefault(c => c.Id == resolvedClientId);
+                if (client == null)
+                {
+                    ContractsEmptyStateTextBlock.Text = "Клиент не найден в базе данных.";
+                    return;
+                }
+
+                var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
+                string relativePath = copyResult.RelativePath?.ToString() ?? "";
+                string fileName = Path.GetFileName(tempPath);
+
+                string contractNumber = string.IsNullOrWhiteSpace(wizard.ResultContract.ContractNumber)
+                    ? ExtractContractNumber(fileName, resolvedClientId, DateTime.Now)
+                    : wizard.ResultContract.ContractNumber;
+
+                var contract = ClientContractService.GetOrCreateContract(db, organization.Id, resolvedClientId);
+                contract.ContractType = wizard.ResultContract.ContractType;
+                contract.Subject      = wizard.ResultContract.Subject;
+                contract.Amount       = wizard.ResultContract.Amount;
+                contract.VatMode      = wizard.ResultContract.VatMode;
+                contract.City         = wizard.ResultContract.City;
+                contract.ValidFrom    = wizard.ResultContract.ValidFrom;
+                contract.ValidTo      = wizard.ResultContract.ValidTo;
+                contract.Party1Json   = wizard.ResultParty1.ToJson();
+                contract.Party2Json   = wizard.ResultParty2.ToJson();
+
+                db.ClientFiles.Add(new ClientFile
+                {
+                    ClientInfoId     = resolvedClientId,
+                    OriginalFileName = fileName,
+                    RelativePath     = relativePath,
+                    FileSizeBytes    = copyResult.FileSizeBytes,
+                    AddedAt          = DateTime.Now,
+                    Category         = "Договор"
+                });
+
+                ClientContractService.MarkGenerated(db, contract, contractNumber, relativePath);
+
+                if (!string.Equals(client.ContractStatus, "Договор подписан",
+                        StringComparison.OrdinalIgnoreCase))
+                    client.ContractStatus = "Договор сформирован";
+                client.ContractGeneratedAt = DateTime.Now;
+                db.SaveChanges();
+
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+
+                string finalPath = ClientFileStorageService.GetFullPath(relativePath);
+                LoadContracts();
+                ContractsEmptyStateTextBlock.Text =
+                    $"Договор клиента «{client.Name}» сформирован (№{contractNumber}).";
+
+                if (File.Exists(finalPath))
+                    ClientFileStorageService.OpenFile(finalPath);
+
+                // Предлагаем создать платёжный документ
+                var typeInfo = ContractTypeDefinitions.GetByKey(wizard.ResultContract.ContractType);
+                if (!typeInfo.OffersUPD && !typeInfo.OffersInvoice) return;
+
+                var postDialog = new ContentDialog
+                {
+                    Title               = "Договор готов",
+                    Content             = $"Договор №{contractNumber} для «{client.Name}» сформирован.\n\n" +
+                                          "Создать платёжный документ к договору?",
+                    PrimaryButtonText   = typeInfo.OffersUPD     ? "УПД"            : "",
+                    SecondaryButtonText = typeInfo.OffersInvoice ? "Счёт на оплату" : "",
+                    CloseButtonText     = "Позже",
+                    DefaultButton       = ContentDialogButton.Primary,
+                    XamlRoot            = this.XamlRoot
+                };
+
+                var postResult = await postDialog.ShowAsync();
+
+                if (postResult == ContentDialogResult.Primary && typeInfo.OffersUPD)
+                    Frame?.Navigate(typeof(BillingPage), resolvedClientId);
+                else if (postResult == ContentDialogResult.Secondary && typeInfo.OffersInvoice)
+                    Frame?.Navigate(typeof(BillingPage), resolvedClientId);
+            }
+            catch (Exception ex)
+            {
+                ContractsEmptyStateTextBlock.Text = $"Ошибка мастера: {ex.Message}";
             }
         }
     }

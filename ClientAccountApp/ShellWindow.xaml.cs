@@ -7,6 +7,7 @@ using System;
 using System.Reflection;
 using Windows.System;
 using Windows.UI;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace ClientAccountApp
 {
@@ -32,10 +33,29 @@ namespace ClientAccountApp
 
         public void NavigateTo(Type pageType)
         {
+            NavigateWithoutTransition(pageType);
+        }
+        private void NavigateWithoutTransition(Type pageType)
+        {
             if (RootFrame.CurrentSourcePageType != pageType)
-                RootFrame.Navigate(pageType);
+            {
+                RootFrame.Navigate(
+                    pageType,
+                    null,
+                    new SuppressNavigationTransitionInfo());
+            }
         }
 
+        private void NavigateWithoutTransition(Type pageType, object? parameter)
+        {
+            if (RootFrame.CurrentSourcePageType != pageType)
+            {
+                RootFrame.Navigate(
+                    pageType,
+                    parameter,
+                    new SuppressNavigationTransitionInfo());
+            }
+        }
         public ShellWindow()
         {
             CurrentWindow = this;
@@ -163,8 +183,7 @@ namespace ClientAccountApp
             UpdateWindowTitle();
             ClientContractService.EnsureContractsForActiveOrganization();
             DashboardNavItem.IsSelected = true;
-            if (RootFrame.CurrentSourcePageType != typeof(DashboardPage))
-                RootFrame.Navigate(typeof(DashboardPage));
+            NavigateWithoutTransition(typeof(DashboardPage));
         }
 
         private void AppNavigationView_PaneOpening(NavigationView sender, object args)
@@ -204,16 +223,15 @@ namespace ClientAccountApp
         {
             if (args.IsSettingsSelected)
             {
-                if (RootFrame.CurrentSourcePageType != typeof(SettingsPage))
-                    RootFrame.Navigate(typeof(SettingsPage));
+                NavigateWithoutTransition(typeof(SettingsPage));
                 return;
             }
             if (ActiveOrganizationService.Current == null)
             {
                 if (ActiveOrganizationService.HasAnyOrganizations())
-                    RootFrame.Navigate(typeof(OrganizationSelectPage));
+                    NavigateWithoutTransition(typeof(OrganizationSelectPage));
                 else
-                    RootFrame.Navigate(typeof(OrganizationSetupPage), "new");
+                    NavigateWithoutTransition(typeof(OrganizationSetupPage), "new");
                 return;
             }
             if (args.SelectedItemContainer is not NavigationViewItem item) return;
@@ -229,7 +247,7 @@ namespace ClientAccountApp
                 "catalog" => typeof(ServiceCatalogPage),
                 _ => typeof(DashboardPage)
             };
-            if (RootFrame.CurrentSourcePageType != page) RootFrame.Navigate(page);
+            NavigateWithoutTransition(page);
         }
 
         // ──────────────────────────────────────────────────────────────────────

@@ -106,6 +106,12 @@
                         Click="OpenClientButton_Click"/>
 
                         <Button
+                        Content="Мастер"
+                        Style="{StaticResource NiatecSecondaryButtonStyle}"
+                        ToolTipService.ToolTip="Создать договор через мастер"
+                        Click="OpenContractWizardForClientButton_Click"/>
+
+                        <Button
                         Content="Договор"
                         Style="{StaticResource NiatecPrimaryButtonStyle}"
                         Click="OpenContractButton_Click"/>
@@ -273,6 +279,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock
@@ -286,8 +293,15 @@
         VerticalAlignment="Center"/>
 
                         <Button
-        x:Name="ToggleContractsViewButton"
         Grid.Column="2"
+        Content="＋ Мастер договоров"
+        Style="{StaticResource NiatecPrimaryButtonStyle}"
+        ToolTipService.ToolTip="Создать новый договор через пошаговый мастер"
+        Click="OpenContractWizardPageButton_Click"/>
+
+                        <Button
+        x:Name="ToggleContractsViewButton"
+        Grid.Column="3"
         Style="{StaticResource NiatecSmallIconButtonStyle}"
         ToolTipService.ToolTip="Компактный вид списка"
         Click="ToggleContractsViewButton_Click">
@@ -411,6 +425,12 @@
                                                 Content="Открыть клиента"
                                                 Style="{StaticResource NiatecSecondaryButtonStyle}"
                                                 Click="OpenClientButton_Click"/>
+
+                                            <Button
+                                                Content="Мастер договоров"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                ToolTipService.ToolTip="Создать договор через мастер"
+                                                Click="OpenContractWizardForClientButton_Click"/>
 
                                             <Button
                                                 Content="{Binding ContractFileButtonText}"

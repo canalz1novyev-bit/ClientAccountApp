@@ -175,7 +175,7 @@ namespace ClientAccountApp
             }
             finally
             {
-                FillByInnButton.Content = "Заполнить по ИНН";
+                FillByInnButton.Content = "По ИНН";
                 ValidateClientForm();
             }
         }
@@ -336,6 +336,7 @@ namespace ClientAccountApp
             ClientsListView.ItemsSource = _clients;
             SignaturesListView.ItemsSource = _signatures;
             AccountsListView.ItemsSource = _bankAccounts;
+            _bankAccounts.CollectionChanged += (_, __) => UpdateBankTabSummary();
             NotesListView.ItemsSource = _notes;
             ClientFilesListView.ItemsSource = _clientFiles;
             UpdateFileActionButtonsState();
@@ -529,9 +530,99 @@ namespace ClientAccountApp
             }
             catch (Exception ex) { StatusTextBlock.Text = $"Ошибка поиска банка по БИК: {ex.Message}"; }
         }
+        private void UpdateClientOverview(ClientInfo? client)
+        {
+            if (OverviewClientTitleTextBlock == null ||
+                OverviewClientMetaTextBlock == null ||
+                OverviewClientBusinessTextBlock == null ||
+                OverviewClientStatusTextBlock == null ||
+                OverviewSignatureTextBlock == null ||
+                OverviewAccountsTextBlock == null ||
+                OverviewNotesTextBlock == null ||
+                OverviewFilesTextBlock == null ||
+                OverviewAddressTextBlock == null)
+            {
+                return;
+            }
 
+            if (client == null)
+            {
+                OverviewClientTitleTextBlock.Text = "Клиент не выбран";
+                OverviewClientMetaTextBlock.Text = "Выберите клиента слева, чтобы увидеть краткую карточку";
+                OverviewClientBusinessTextBlock.Text = "Категория: — · ОКВЭД: —";
+                OverviewClientStatusTextBlock.Text = "—";
+
+                OverviewSignatureTextBlock.Text = "ЭЦП: —";
+                OverviewAccountsTextBlock.Text = "Счета: —";
+                OverviewNotesTextBlock.Text = "Заметки: —";
+                OverviewFilesTextBlock.Text = "Файлы: —";
+                OverviewAddressTextBlock.Text = "—";
+
+                return;
+            }
+
+            string name = string.IsNullOrWhiteSpace(client.Name)
+                ? "Клиент без названия"
+                : client.Name;
+
+            string status = string.IsNullOrWhiteSpace(client.Status)
+                ? "Активный"
+                : client.Status;
+
+            string clientType = string.IsNullOrWhiteSpace(client.ClientType)
+                ? "Тип не указан"
+                : client.ClientType;
+
+            string inn = string.IsNullOrWhiteSpace(client.Inn)
+                ? "ИНН не указан"
+                : $"ИНН {client.Inn}";
+
+            string ogrn = string.IsNullOrWhiteSpace(client.Ogrn)
+                ? "ОГРН / ОГРНИП не указан"
+                : $"ОГРН / ОГРНИП {client.Ogrn}";
+
+            string category = string.IsNullOrWhiteSpace(client.BusinessCategory)
+                ? "Без категории"
+                : client.BusinessCategory;
+
+            string okved = string.IsNullOrWhiteSpace(client.MainOkved)
+                ? "ОКВЭД не указан"
+                : $"ОКВЭД {client.MainOkved}";
+
+            string address = string.IsNullOrWhiteSpace(client.Address)
+                ? "Адрес не указан"
+                : client.Address;
+
+            OverviewClientTitleTextBlock.Text = name;
+            OverviewClientMetaTextBlock.Text = $"{clientType} · {inn} · {ogrn}";
+            OverviewClientBusinessTextBlock.Text = $"Категория: {category} · {okved}";
+            OverviewClientStatusTextBlock.Text = status;
+
+            OverviewSignatureTextBlock.Text = string.IsNullOrWhiteSpace(client.SignatureShortInfo)
+                ? "ЭЦП: нет"
+                : client.SignatureShortInfo;
+
+            if (!string.IsNullOrWhiteSpace(client.SignatureWarningText) &&
+                !client.SignatureWarningText.Equals("ЭЦП не добавлена", StringComparison.OrdinalIgnoreCase))
+            {
+                OverviewSignatureTextBlock.Text += Environment.NewLine + client.SignatureWarningText;
+            }
+
+            OverviewAccountsTextBlock.Text = string.IsNullOrWhiteSpace(client.AccountShortInfo)
+                ? "Счета: нет"
+                : client.AccountShortInfo;
+
+            OverviewNotesTextBlock.Text = string.IsNullOrWhiteSpace(client.NoteShortInfo)
+                ? "Заметки: нет"
+                : client.NoteShortInfo;
+
+            OverviewFilesTextBlock.Text = "Файлы и документы клиента доступны во вкладке «Файлы».";
+
+            OverviewAddressTextBlock.Text = address;
+        }
         private void UpdateClientHeader(ClientInfo? client)
         {
+            UpdateClientOverview(client);
             if (ClientHeaderTitleTextBlock == null ||
                 ClientHeaderMetaTextBlock == null ||
                 ClientHeaderBusinessTextBlock == null ||
@@ -667,6 +758,24 @@ namespace ClientAccountApp
                 _pendingClientIdFromDashboard = request.ClientId;
                 TrySelectPendingClientFromDashboard();
             }
+        }
+        private void AddClientQuickButton_Click(object sender, RoutedEventArgs e)
+        {
+            ClientsListView.SelectedItem = null;
+
+            ClearFormButton_Click(sender, e);
+
+            if (ClientDetailsTabView != null && RequisitesTabViewItem != null)
+            {
+                ClientDetailsTabView.SelectedItem = RequisitesTabViewItem;
+            }
+
+            StatusTextBlock.Text = "Режим добавления нового клиента. Заполните реквизиты или используйте поиск по ИНН.";
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                ClientNameTextBox.Focus(FocusState.Programmatic);
+            });
         }
 
         private void ClientViewModeToggleButton_Click(object sender, RoutedEventArgs e)
@@ -1240,7 +1349,7 @@ namespace ClientAccountApp
             if (daysLeft < 0) client.SignatureWarningText = $"ПРОСРОЧЕНО: до {nearestSignature.ExpiresDate:dd.MM.yyyy}";
             else if (daysLeft <= 7) client.SignatureWarningText = $"СРОЧНО: истекает через {daysLeft} дн.";
             else if (daysLeft <= 30) client.SignatureWarningText = $"ВНИМАНИЕ: истекает через {daysLeft} дн.";
-            else client.SignatureWarningText = $"Норма: действует до {nearestSignature.ExpiresDate:dd.MM.yyyy}";
+            else client.SignatureWarningText = $"ЭЦП действует до {nearestSignature.ExpiresDate:dd.MM.yyyy}";
         }
 
         private void ShowClientsSectionButton_Click(object sender, RoutedEventArgs e) => ClientsSectionGrid.Visibility = Visibility.Visible;
@@ -1303,6 +1412,11 @@ namespace ClientAccountApp
 
         private void SaveClientButton_Click(object sender, RoutedEventArgs e)
         {
+            if (ClientsListView.SelectedItem is ClientInfo)
+            {
+                UpdateSelectedClientButton_Click(sender, e);
+                return;
+            }
             if (!ValidateClientForm()) { StatusTextBlock.Text = "Исправь ошибки в форме перед сохранением."; return; }
             using (var db = new AppDbContext())
             {
@@ -1803,8 +1917,95 @@ namespace ClientAccountApp
             SelectedSignatureCountTextBlock.Text = _signatures.Count.ToString();
             if (_signatures.Count == 0) { SelectedNearestSignatureTextBlock.Text = "—"; return; }
             SelectedNearestSignatureTextBlock.Text = _signatures.OrderBy(s => s.ExpiresDate).First().ExpiresDate.ToString("dd.MM.yyyy");
+            UpdateSignatureTabSummary();
         }
+        private void UpdateBankTabSummary()
+        {
+            if (BankTabSummaryTextBlock == null ||
+                BankTabPrimaryTextBlock == null)
+            {
+                return;
+            }
 
+            if (ClientsListView.SelectedItem is not ClientInfo selectedClient)
+            {
+                BankTabSummaryTextBlock.Text = "Выберите клиента слева";
+                BankTabPrimaryTextBlock.Text = "Основной банк: —";
+                return;
+            }
+
+            if (_bankAccounts.Count == 0)
+            {
+                BankTabSummaryTextBlock.Text = $"У клиента «{selectedClient.Name}» банковские счета не добавлены.";
+                BankTabPrimaryTextBlock.Text = "Основной банк: —";
+                return;
+            }
+
+            var primaryAccount = _bankAccounts.FirstOrDefault();
+
+            string primaryBankName = primaryAccount == null || string.IsNullOrWhiteSpace(primaryAccount.BankName)
+                ? "не указан"
+                : primaryAccount.BankName;
+
+            BankTabSummaryTextBlock.Text = $"Всего счетов: {_bankAccounts.Count}.";
+            BankTabPrimaryTextBlock.Text = $"Основной банк: {primaryBankName}";
+        }
+        private void UpdateSignatureTabSummary()
+        {
+            if (SignatureTabSummaryTextBlock == null ||
+                SignatureTabNearestTextBlock == null ||
+                SignatureTabStatusTextBlock == null)
+            {
+                return;
+            }
+
+            if (ClientsListView.SelectedItem is not ClientInfo selectedClient)
+            {
+                SignatureTabSummaryTextBlock.Text = "Выберите клиента слева";
+                SignatureTabNearestTextBlock.Text = "Ближайшая дата окончания: —";
+                SignatureTabStatusTextBlock.Text = "—";
+                return;
+            }
+
+            if (_signatures.Count == 0)
+            {
+                SignatureTabSummaryTextBlock.Text = $"У клиента «{selectedClient.Name}» ЭЦП не добавлены.";
+                SignatureTabNearestTextBlock.Text = "Ближайшая дата окончания: —";
+                SignatureTabStatusTextBlock.Text = "Нет ЭЦП";
+                return;
+            }
+
+            DateTime today = DateTime.Today;
+
+            var nearestSignature = _signatures
+                .OrderBy(s => s.ExpiresDate)
+                .First();
+
+            int daysLeft = (nearestSignature.ExpiresDate.Date - today).Days;
+
+            SignatureTabSummaryTextBlock.Text =
+                $"Всего ЭЦП: {_signatures.Count}. УЦ: {nearestSignature.CertificationAuthority}";
+
+            SignatureTabNearestTextBlock.Text =
+                $"Ближайшая дата окончания: {nearestSignature.ExpiresDate:dd.MM.yyyy}";
+
+            if (daysLeft < 0)
+            {
+                SignatureTabStatusTextBlock.Text = $"Просрочена на {Math.Abs(daysLeft)} дн.";
+            }
+            else if (daysLeft <= 7)
+            {
+                SignatureTabStatusTextBlock.Text = $"Срочно: {daysLeft} дн.";
+            }
+            else if (daysLeft <= 30)
+            {
+                SignatureTabStatusTextBlock.Text = $"Внимание: {daysLeft} дн.";
+            }
+            else
+            {
+                SignatureTabStatusTextBlock.Text = $"В порядке: {daysLeft} дн.";
+            }
+        }
         private void UpdateBankAccountSummary()
         {
             SelectedAccountCountTextBlock.Text = _bankAccounts.Count.ToString();

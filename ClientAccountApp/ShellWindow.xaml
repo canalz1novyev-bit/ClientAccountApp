@@ -34,41 +34,38 @@
             </NavigationViewItem>
 
             <NavigationViewItem
-                x:Name="ClientsNavItem"
-                Tag="clients"
-                Content="Клиенты">
+    x:Name="ClientsNavItem"
+    Tag="clients"
+    Content="Клиенты">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Contact"/>
                 </NavigationViewItem.Icon>
-            </NavigationViewItem>
 
-            <NavigationViewItemSeparator/>
+                <NavigationViewItem.MenuItems>
+                    <NavigationViewItem
+            Tag="contracts"
+            Content="Договоры">
+                        <NavigationViewItem.Icon>
+                            <SymbolIcon Symbol="Document"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
 
-            <!-- Работа -->
-            <NavigationViewItemHeader Content="Работа"/>
+                    <NavigationViewItem
+            Tag="billing"
+            Content="Начисления">
+                        <NavigationViewItem.Icon>
+                            <SymbolIcon Symbol="Calculator"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
 
-            <NavigationViewItem
-                Tag="contracts"
-                Content="Договоры">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Document"/>
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-
-            <NavigationViewItem
-                Tag="billing"
-                Content="Начисления">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Calculator"/>
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-
-            <NavigationViewItem
-                Tag="problem-signatures"
-                Content="ЭЦП">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Important"/>
-                </NavigationViewItem.Icon>
+                    <NavigationViewItem
+            Tag="problem-signatures"
+            Content="ЭЦП">
+                        <NavigationViewItem.Icon>
+                            <SymbolIcon Symbol="Important"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationViewItem.MenuItems>
             </NavigationViewItem>
 
             <NavigationViewItemSeparator/>
