@@ -7,41 +7,65 @@
     mc:Ignorable="d"
     Title="Мастер договоров"
     CloseButtonText="Отмена"
-    DefaultButton="None"
-    MinWidth="580"
-    MaxWidth="620">
+    DefaultButton="None">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="680">
-        <StackPanel Spacing="0" Width="560">
+    <!-- Переопределяем встроенный MaxWidth ContentDialog в WinUI 3 (по умолчанию ~548px) -->
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">860</x:Double>
+        <x:Double x:Key="ContentDialogMinWidth">800</x:Double>
+    </ContentDialog.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="720" Width="800">
+        <StackPanel Spacing="0">
 
             <!-- ИНДИКАТОР ШАГОВ -->
-            <Border Padding="0,0,0,16">
-                <Grid ColumnDefinitions="*,*,*,*">
-                    <StackPanel Grid.Column="0" HorizontalAlignment="Center" Spacing="4">
-                        <Ellipse x:Name="StepDot1" Width="28" Height="28"
-                                 Fill="{StaticResource NiatecAccentBrush}"/>
+            <Border Padding="0,0,0,20">
+                <Grid ColumnDefinitions="*,Auto,*,Auto,*,Auto,*">
+                    <!-- Шаг 1 -->
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Center" Spacing="6">
+                        <Ellipse x:Name="StepDot1" Width="32" Height="32"
+                                 Fill="{StaticResource NiatecAccentBrush}"
+                                 HorizontalAlignment="Center"/>
                         <TextBlock x:Name="StepLabel1" Text="1. Тип" FontSize="11"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource NiatecAccentBrush}"
                                    FontWeight="SemiBold"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="4">
-                        <Ellipse x:Name="StepDot2" Width="28" Height="28"
-                                 Fill="{StaticResource NiatecBorderBrush}"/>
+                    <!-- Линия -->
+                    <Rectangle Grid.Column="1" Height="2" Width="40"
+                               Fill="{StaticResource NiatecBorderBrush}" VerticalAlignment="Center"
+                               Margin="0,0,0,18"/>
+                    <!-- Шаг 2 -->
+                    <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="6">
+                        <Ellipse x:Name="StepDot2" Width="32" Height="32"
+                                 Fill="{StaticResource NiatecBorderBrush}"
+                                 HorizontalAlignment="Center"/>
                         <TextBlock x:Name="StepLabel2" Text="2. Сторона 1" FontSize="11"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource NiatecTextMutedBrush}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="4">
-                        <Ellipse x:Name="StepDot3" Width="28" Height="28"
-                                 Fill="{StaticResource NiatecBorderBrush}"/>
+                    <!-- Линия -->
+                    <Rectangle Grid.Column="3" Height="2" Width="40"
+                               Fill="{StaticResource NiatecBorderBrush}" VerticalAlignment="Center"
+                               Margin="0,0,0,18"/>
+                    <!-- Шаг 3 -->
+                    <StackPanel Grid.Column="4" HorizontalAlignment="Center" Spacing="6">
+                        <Ellipse x:Name="StepDot3" Width="32" Height="32"
+                                 Fill="{StaticResource NiatecBorderBrush}"
+                                 HorizontalAlignment="Center"/>
                         <TextBlock x:Name="StepLabel3" Text="3. Сторона 2" FontSize="11"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource NiatecTextMutedBrush}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="3" HorizontalAlignment="Center" Spacing="4">
-                        <Ellipse x:Name="StepDot4" Width="28" Height="28"
-                                 Fill="{StaticResource NiatecBorderBrush}"/>
+                    <!-- Линия -->
+                    <Rectangle Grid.Column="5" Height="2" Width="40"
+                               Fill="{StaticResource NiatecBorderBrush}" VerticalAlignment="Center"
+                               Margin="0,0,0,18"/>
+                    <!-- Шаг 4 -->
+                    <StackPanel Grid.Column="6" HorizontalAlignment="Center" Spacing="6">
+                        <Ellipse x:Name="StepDot4" Width="32" Height="32"
+                                 Fill="{StaticResource NiatecBorderBrush}"
+                                 HorizontalAlignment="Center"/>
                         <TextBlock x:Name="StepLabel4" Text="4. Условия" FontSize="11"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource NiatecTextMutedBrush}"/>
@@ -49,20 +73,20 @@
                 </Grid>
             </Border>
 
-            <!-- ШАГ 1: ТИП ДОГОВОРА -->
-            <StackPanel x:Name="Step1Panel" Visibility="Visible" Spacing="12">
+            <!-- ══════════ ШАГ 1: ТИП ДОГОВОРА ══════════ -->
+            <StackPanel x:Name="Step1Panel" Visibility="Visible" Spacing="14">
                 <TextBlock Style="{StaticResource NiatecSectionTitleTextStyle}"
                            Text="Выберите тип договора"/>
                 <TextBlock Style="{StaticResource NiatecCaptionTextStyle}"
-                           Text="От типа зависит шаблон и доступные документы"/>
+                           Text="От типа зависит шаблон документа и доступные платёжные документы"/>
 
                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
-                      ColumnSpacing="10" RowSpacing="10">
+                      ColumnSpacing="12" RowSpacing="12">
 
                     <Border x:Name="TypeCard_services" Grid.Row="0" Grid.Column="0"
                             Background="{StaticResource NiatecSurfaceBrush}"
                             BorderBrush="{StaticResource NiatecAccentBrush}"
-                            BorderThickness="2" CornerRadius="12" Padding="12"
+                            BorderThickness="2" CornerRadius="12" Padding="14"
                             PointerPressed="TypeCard_PointerPressed" Tag="services">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Оказание услуг" FontWeight="SemiBold" FontSize="13"
@@ -70,14 +94,14 @@
                             <TextBlock Text="ИТ, бухгалтерия, консалтинг" FontSize="11"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Text="УПД · Счёт" FontSize="10"
-                                       Foreground="{StaticResource NiatecAccentBrush}"/>
+                                       Foreground="{StaticResource NiatecAccentBrush}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <Border x:Name="TypeCard_supply" Grid.Row="0" Grid.Column="1"
                             Background="{StaticResource NiatecSurfaceBrush}"
                             BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="12"
+                            BorderThickness="1" CornerRadius="12" Padding="14"
                             PointerPressed="TypeCard_PointerPressed" Tag="supply">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Поставка товаров" FontWeight="SemiBold" FontSize="13"
@@ -85,14 +109,14 @@
                             <TextBlock Text="Продажа материальных ценностей" FontSize="11"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Text="УПД · Счёт" FontSize="10"
-                                       Foreground="{StaticResource NiatecAccentBrush}"/>
+                                       Foreground="{StaticResource NiatecAccentBrush}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <Border x:Name="TypeCard_lease" Grid.Row="1" Grid.Column="0"
                             Background="{StaticResource NiatecSurfaceBrush}"
                             BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="12"
+                            BorderThickness="1" CornerRadius="12" Padding="14"
                             PointerPressed="TypeCard_PointerPressed" Tag="lease">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Аренда" FontWeight="SemiBold" FontSize="13"
@@ -100,14 +124,14 @@
                             <TextBlock Text="Помещения, оборудование, транспорт" FontSize="11"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Text="Счёт" FontSize="10"
-                                       Foreground="{StaticResource NiatecAccentBrush}"/>
+                                       Foreground="{StaticResource NiatecAccentBrush}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <Border x:Name="TypeCard_work" Grid.Row="1" Grid.Column="1"
                             Background="{StaticResource NiatecSurfaceBrush}"
                             BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="12"
+                            BorderThickness="1" CornerRadius="12" Padding="14"
                             PointerPressed="TypeCard_PointerPressed" Tag="work">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Подряд" FontWeight="SemiBold" FontSize="13"
@@ -115,14 +139,14 @@
                             <TextBlock Text="Строительство, монтаж, разработка" FontSize="11"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Text="УПД · Счёт" FontSize="10"
-                                       Foreground="{StaticResource NiatecAccentBrush}"/>
+                                       Foreground="{StaticResource NiatecAccentBrush}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <Border x:Name="TypeCard_agency" Grid.Row="2" Grid.Column="0"
                             Background="{StaticResource NiatecSurfaceBrush}"
                             BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="12"
+                            BorderThickness="1" CornerRadius="12" Padding="14"
                             PointerPressed="TypeCard_PointerPressed" Tag="agency">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Агентский" FontWeight="SemiBold" FontSize="13"
@@ -130,14 +154,14 @@
                             <TextBlock Text="Посреднические услуги" FontSize="11"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Text="Счёт" FontSize="10"
-                                       Foreground="{StaticResource NiatecAccentBrush}"/>
+                                       Foreground="{StaticResource NiatecAccentBrush}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <Border x:Name="TypeCard_nda" Grid.Row="2" Grid.Column="1"
                             Background="{StaticResource NiatecSurfaceBrush}"
                             BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="12"
+                            BorderThickness="1" CornerRadius="12" Padding="14"
                             PointerPressed="TypeCard_PointerPressed" Tag="nda">
                         <StackPanel Spacing="4">
                             <TextBlock Text="НДА" FontWeight="SemiBold" FontSize="13"
@@ -145,7 +169,7 @@
                             <TextBlock Text="Соглашение о конфиденциальности" FontSize="11"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Text="Без платёжных документов" FontSize="10"
-                                       Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                       Foreground="{StaticResource NiatecTextMutedBrush}" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -159,64 +183,164 @@
                 </Border>
             </StackPanel>
 
-            <!-- ШАГ 2: СТОРОНА 1 -->
-            <StackPanel x:Name="Step2Panel" Visibility="Collapsed" Spacing="12">
+            <!-- ══════════ ШАГ 2: СТОРОНА 1 ══════════ -->
+            <StackPanel x:Name="Step2Panel" Visibility="Collapsed" Spacing="14">
                 <TextBlock x:Name="Step2TitleBlock"
                            Style="{StaticResource NiatecSectionTitleTextStyle}"
                            Text="Сторона 1 — Исполнитель"/>
-                <TextBlock Style="{StaticResource NiatecCaptionTextStyle}"
-                           Text="Ваша организация или другая сторона договора"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="16">
+                <!-- Три источника -->
+                <StackPanel Orientation="Horizontal" Spacing="20">
                     <RadioButton x:Name="P1FromOrgRadio" Content="Из профиля организации"
                                  IsChecked="True" Checked="P1Source_Changed"/>
+                    <RadioButton x:Name="P1FromDbRadio" Content="Из базы клиентов"
+                                 Checked="P1Source_Changed"/>
                     <RadioButton x:Name="P1ManualRadio" Content="Ввести вручную"
                                  Checked="P1Source_Changed"/>
                 </StackPanel>
 
+                <!-- Блок: профиль организации -->
                 <Border x:Name="P1OrgPanel"
                         Background="{StaticResource NiatecSurfaceAltBrush}"
                         BorderBrush="{StaticResource NiatecBorderBrush}"
-                        BorderThickness="1" CornerRadius="12" Padding="12">
+                        BorderThickness="1" CornerRadius="12" Padding="14">
                     <StackPanel Spacing="8">
                         <TextBlock x:Name="P1OrgNameBlock" FontWeight="SemiBold" FontSize="14"
                                    Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
-                        <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                        <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto"
                               ColumnSpacing="8" RowSpacing="4">
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="ИНН / КПП:" FontSize="12"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
-                            <TextBlock x:Name="P1OrgInnBlock" Grid.Row="0" Grid.Column="1"
-                                       FontSize="12" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            <TextBlock x:Name="P1OrgInnBlock" Grid.Row="0" Grid.Column="1" FontSize="12"
+                                       Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Подписант:" FontSize="12"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
-                            <TextBlock x:Name="P1OrgSignerBlock" Grid.Row="1" Grid.Column="1"
-                                       FontSize="12" Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                       TextWrapping="Wrap"/>
+                            <TextBlock x:Name="P1OrgSignerBlock" Grid.Row="1" Grid.Column="1" FontSize="12"
+                                       Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Банк:" FontSize="12"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
-                            <TextBlock x:Name="P1OrgBankBlock" Grid.Row="2" Grid.Column="1"
-                                       FontSize="12" Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                       TextWrapping="Wrap"/>
+                            <TextBlock x:Name="P1OrgBankBlock" Grid.Row="2" Grid.Column="1" FontSize="12"
+                                       Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Р/с:" FontSize="12"
                                        Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
-                            <TextBlock x:Name="P1OrgAccountBlock" Grid.Row="3" Grid.Column="1"
-                                       FontSize="12" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            <TextBlock x:Name="P1OrgAccountBlock" Grid.Row="3" Grid.Column="1" FontSize="12"
+                                       Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                         </Grid>
-                        <TextBlock Text="Данные берутся из настроек организации" FontSize="11"
-                                   Foreground="{StaticResource NiatecTextMutedBrush}"/>
                     </StackPanel>
                 </Border>
 
-                <StackPanel x:Name="P1ManualPanel" Visibility="Collapsed" Spacing="8">
-                    <TextBox x:Name="P1NameBox" Header="Полное наименование *"
-                             PlaceholderText="ООО «Название организации»"/>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <!-- Блок: из базы клиентов -->
+                <StackPanel x:Name="P1DbPanel" Visibility="Collapsed" Spacing="10">
+                    <AutoSuggestBox x:Name="P1SearchBox"
+                                    PlaceholderText="Поиск по названию или ИНН..."
+                                    QueryIcon="Find"
+                                    TextMemberPath="Name"
+                                    TextChanged="P1SearchBox_TextChanged"
+                                    SuggestionChosen="P1SearchBox_SuggestionChosen">
+                        <AutoSuggestBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Padding="4,6" Spacing="2">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding Inn}" FontSize="11"
+                                               Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </AutoSuggestBox.ItemTemplate>
+                    </AutoSuggestBox>
+                    <Border x:Name="P1DbDetailsPanel" Visibility="Collapsed"
+                            Background="{StaticResource NiatecSurfaceAltBrush}"
+                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                            BorderThickness="1" CornerRadius="12" Padding="14">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="P1DbNameBlock" FontWeight="SemiBold" FontSize="13"
+                                       Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
+                            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto"
+                                  ColumnSpacing="8" RowSpacing="4">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ИНН:" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                                <TextBlock x:Name="P1DbInnBlock" Grid.Row="0" Grid.Column="1" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Директор:" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                                <TextBlock x:Name="P1DbSignerBlock" Grid.Row="1" Grid.Column="1" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
+                            </Grid>
+
+                            <!-- Выбор счёта или добавление нового -->
+                            <ComboBox x:Name="P1BankAccountComboBox"
+                                      Header="Банковский счёт"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="Нет счетов"
+                                      SelectionChanged="P1BankAccountComboBox_SelectionChanged"/>
+
+                            <StackPanel x:Name="P1NoBankPanel" Visibility="Collapsed" Spacing="6">
+                                <TextBlock Text="У клиента нет банковских счетов"
+                                           FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                <Button x:Name="P1AddBankButton"
+                                        Content="＋ Добавить банковский счёт"
+                                        Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                        Click="P1AddBankButton_Click"/>
+                            </StackPanel>
+
+                            <!-- Форма добавления счёта (скрыта по умолчанию) -->
+                            <Border x:Name="P1AddBankForm" Visibility="Collapsed"
+                                    Background="{StaticResource NiatecBackgroundBrush}"
+                                    BorderBrush="{StaticResource NiatecAccentBrush}"
+                                    BorderThickness="1" CornerRadius="8" Padding="12">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Новый банковский счёт" FontWeight="SemiBold" FontSize="12"
+                                               Foreground="{StaticResource NiatecAccentBrush}"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                        <TextBox x:Name="P1NewBicBox" Grid.Column="0"
+                                                 Header="БИК" PlaceholderText="044525225"
+                                                 TextChanged="P1NewBicBox_TextChanged"/>
+                                        <TextBox x:Name="P1NewAccountBox" Grid.Column="1"
+                                                 Header="Расчётный счёт" PlaceholderText="40702810..."/>
+                                    </Grid>
+                                    <TextBox x:Name="P1NewBankNameBox"
+                                             Header="Банк" PlaceholderText="ПАО Сбербанк"/>
+                                    <TextBox x:Name="P1NewCorrAccountBox"
+                                             Header="Корр. счёт" PlaceholderText="30101810..."/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="Сохранить счёт"
+                                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                Click="P1SaveNewBankButton_Click"/>
+                                        <Button Content="Отмена"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="P1CancelAddBankButton_Click"/>
+                                    </StackPanel>
+                                    <TextBlock x:Name="P1NewBankStatusBlock" FontSize="11"
+                                               TextWrapping="Wrap"
+                                               Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Блок: ручной ввод стороны 1 -->
+                <StackPanel x:Name="P1ManualPanel" Visibility="Collapsed" Spacing="10">
+                    <!-- ИНН + кнопка автозаполнения -->
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <TextBox x:Name="P1InnBox" Grid.Column="0"
-                                 Header="ИНН *" PlaceholderText="0000000000"/>
-                        <TextBox x:Name="P1KppBox" Grid.Column="1"
-                                 Header="КПП" PlaceholderText="000000000"/>
+                                 Header="ИНН *" PlaceholderText="0000000000"
+                                 TextChanged="P1InnBox_TextChanged"/>
+                        <Button x:Name="P1FillByInnButton" Grid.Column="1"
+                                Content="Заполнить по ИНН"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                VerticalAlignment="Bottom"
+                                Click="P1FillByInnButton_Click"/>
                     </Grid>
-                    <TextBox x:Name="P1OgrnBox" Header="ОГРН" PlaceholderText="0000000000000"/>
+                    <TextBox x:Name="P1NameBox" Header="Полное наименование *"
+                             PlaceholderText="ООО «Название»"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <TextBox x:Name="P1KppBox" Grid.Column="0"
+                                 Header="КПП" PlaceholderText="000000000"/>
+                        <TextBox x:Name="P1OgrnBox" Grid.Column="1"
+                                 Header="ОГРН" PlaceholderText="0000000000000"/>
+                    </Grid>
                     <TextBox x:Name="P1AddressBox" Header="Юридический адрес"
                              PlaceholderText="000000, г. Город, ул. Улица, д. 1"/>
                     <TextBox x:Name="P1SignerBox" Header="ФИО подписанта"
@@ -227,83 +351,154 @@
                         <TextBox x:Name="P1BasisBox" Grid.Column="1"
                                  Header="Основание" Text="Устава"/>
                     </Grid>
-                    <TextBox x:Name="P1BankNameBox" Header="Банк" PlaceholderText="ПАО Сбербанк"/>
+                    <!-- БИК + автозаполнение банка -->
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <TextBox x:Name="P1BicBox" Grid.Column="0"
-                                 Header="БИК" PlaceholderText="044525225"/>
+                                 Header="БИК" PlaceholderText="044525225"
+                                 TextChanged="P1BicBox_TextChanged"/>
                         <TextBox x:Name="P1AccountBox" Grid.Column="1"
-                                 Header="Расчётный счёт" PlaceholderText="40702810000000000000"/>
+                                 Header="Расчётный счёт" PlaceholderText="40702810..."/>
                     </Grid>
+                    <TextBox x:Name="P1BankNameBox" Header="Банк" PlaceholderText="ПАО Сбербанк"/>
                     <TextBox x:Name="P1CorrAccountBox" Header="Корреспондентский счёт"
-                             PlaceholderText="30101810400000000225"/>
+                             PlaceholderText="30101810..."/>
+
+                    <CheckBox x:Name="P1SaveToDbCheckBox"
+                              Content="Сохранить как клиента в базу"
+                              Foreground="{StaticResource NiatecAccentBrush}"/>
+                    <TextBlock x:Name="P1InnStatusBlock" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
                 </StackPanel>
             </StackPanel>
 
-            <!-- ШАГ 3: СТОРОНА 2 -->
-            <StackPanel x:Name="Step3Panel" Visibility="Collapsed" Spacing="12">
+            <!-- ══════════ ШАГ 3: СТОРОНА 2 ══════════ -->
+            <StackPanel x:Name="Step3Panel" Visibility="Collapsed" Spacing="14">
                 <TextBlock x:Name="Step3TitleBlock"
                            Style="{StaticResource NiatecSectionTitleTextStyle}"
                            Text="Сторона 2 — Заказчик"/>
-                <TextBlock Style="{StaticResource NiatecCaptionTextStyle}"
-                           Text="Выберите клиента из базы или введите данные вручную"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="20">
                     <RadioButton x:Name="P2FromDbRadio" Content="Из базы клиентов"
                                  IsChecked="True" Checked="P2Source_Changed"/>
                     <RadioButton x:Name="P2ManualRadio" Content="Ввести вручную"
                                  Checked="P2Source_Changed"/>
                 </StackPanel>
 
+                <!-- Блок: из базы -->
                 <StackPanel x:Name="P2DbPanel" Spacing="10">
-                    <ComboBox x:Name="P2ClientComboBox"
-                              Header="Клиент"
-                              PlaceholderText="Выберите клиента..."
-                              HorizontalAlignment="Stretch"
-                              SelectionChanged="P2ClientComboBox_SelectionChanged"/>
-
+                    <AutoSuggestBox x:Name="P2SearchBox"
+                                    PlaceholderText="Поиск по названию или ИНН..."
+                                    QueryIcon="Find"
+                                    TextMemberPath="Name"
+                                    TextChanged="P2SearchBox_TextChanged"
+                                    SuggestionChosen="P2SearchBox_SuggestionChosen">
+                        <AutoSuggestBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Padding="4,6" Spacing="2">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding Inn}" FontSize="11"
+                                               Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </AutoSuggestBox.ItemTemplate>
+                    </AutoSuggestBox>
                     <Border x:Name="P2ClientDetailsPanel" Visibility="Collapsed"
                             Background="{StaticResource NiatecSurfaceAltBrush}"
                             BorderBrush="{StaticResource NiatecBorderBrush}"
-                            BorderThickness="1" CornerRadius="12" Padding="12">
-                        <StackPanel Spacing="6">
+                            BorderThickness="1" CornerRadius="12" Padding="14">
+                        <StackPanel Spacing="8">
                             <TextBlock x:Name="P2ClientNameBlock" FontWeight="SemiBold" FontSize="13"
                                        Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
-                            <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto"
+                            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto"
                                   ColumnSpacing="8" RowSpacing="4">
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="ИНН / КПП:" FontSize="12"
                                            Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
-                                <TextBlock x:Name="P2ClientInnBlock" Grid.Row="0" Grid.Column="1"
-                                           FontSize="12" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                                <TextBlock x:Name="P2ClientInnBlock" Grid.Row="0" Grid.Column="1" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Директор:" FontSize="12"
                                            Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
-                                <TextBlock x:Name="P2ClientSignerBlock" Grid.Row="1" Grid.Column="1"
-                                           FontSize="12" Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                           TextWrapping="Wrap"/>
+                                <TextBlock x:Name="P2ClientSignerBlock" Grid.Row="1" Grid.Column="1" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Адрес:" FontSize="12"
                                            Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
-                                <TextBlock x:Name="P2ClientAddressBlock" Grid.Row="2" Grid.Column="1"
-                                           FontSize="12" Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                           TextWrapping="Wrap"/>
+                                <TextBlock x:Name="P2ClientAddressBlock" Grid.Row="2" Grid.Column="1" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
                             </Grid>
+
+                            <!-- Выбор счёта или добавление нового -->
                             <ComboBox x:Name="P2BankAccountComboBox"
                                       Header="Банковский счёт для реквизитов"
                                       HorizontalAlignment="Stretch"
                                       PlaceholderText="Нет банковских счетов"
                                       SelectionChanged="P2BankAccountComboBox_SelectionChanged"/>
+
+                            <StackPanel x:Name="P2NoBankPanel" Visibility="Collapsed" Spacing="6">
+                                <TextBlock Text="У клиента нет банковских счетов"
+                                           FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
+                                <Button x:Name="P2AddBankButton"
+                                        Content="＋ Добавить банковский счёт"
+                                        Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                        Click="P2AddBankButton_Click"/>
+                            </StackPanel>
+
+                            <!-- Форма добавления счёта -->
+                            <Border x:Name="P2AddBankForm" Visibility="Collapsed"
+                                    Background="{StaticResource NiatecBackgroundBrush}"
+                                    BorderBrush="{StaticResource NiatecAccentBrush}"
+                                    BorderThickness="1" CornerRadius="8" Padding="12">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Новый банковский счёт" FontWeight="SemiBold" FontSize="12"
+                                               Foreground="{StaticResource NiatecAccentBrush}"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                        <TextBox x:Name="P2NewBicBox" Grid.Column="0"
+                                                 Header="БИК" PlaceholderText="044525225"
+                                                 TextChanged="P2NewBicBox_TextChanged"/>
+                                        <TextBox x:Name="P2NewAccountBox" Grid.Column="1"
+                                                 Header="Расчётный счёт" PlaceholderText="40702810..."/>
+                                    </Grid>
+                                    <TextBox x:Name="P2NewBankNameBox"
+                                             Header="Банк" PlaceholderText="ПАО Сбербанк"/>
+                                    <TextBox x:Name="P2NewCorrAccountBox"
+                                             Header="Корр. счёт" PlaceholderText="30101810..."/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="Сохранить счёт"
+                                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                Click="P2SaveNewBankButton_Click"/>
+                                        <Button Content="Отмена"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="P2CancelAddBankButton_Click"/>
+                                    </StackPanel>
+                                    <TextBlock x:Name="P2NewBankStatusBlock" FontSize="11"
+                                               TextWrapping="Wrap"
+                                               Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
-                <StackPanel x:Name="P2ManualPanel" Visibility="Collapsed" Spacing="8">
-                    <TextBox x:Name="P2NameBox" Header="Полное наименование *"
-                             PlaceholderText="ООО «Название организации»"/>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <!-- Блок: ручной ввод стороны 2 -->
+                <StackPanel x:Name="P2ManualPanel" Visibility="Collapsed" Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <TextBox x:Name="P2InnBox" Grid.Column="0"
-                                 Header="ИНН *" PlaceholderText="0000000000"/>
-                        <TextBox x:Name="P2KppBox" Grid.Column="1"
-                                 Header="КПП" PlaceholderText="000000000"/>
+                                 Header="ИНН *" PlaceholderText="0000000000"
+                                 TextChanged="P2InnBox_TextChanged"/>
+                        <Button x:Name="P2FillByInnButton" Grid.Column="1"
+                                Content="Заполнить по ИНН"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                VerticalAlignment="Bottom"
+                                Click="P2FillByInnButton_Click"/>
                     </Grid>
-                    <TextBox x:Name="P2OgrnBox" Header="ОГРН" PlaceholderText="0000000000000"/>
+                    <TextBox x:Name="P2NameBox" Header="Полное наименование *"
+                             PlaceholderText="ООО «Название»"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <TextBox x:Name="P2KppBox" Grid.Column="0"
+                                 Header="КПП" PlaceholderText="000000000"/>
+                        <TextBox x:Name="P2OgrnBox" Grid.Column="1"
+                                 Header="ОГРН" PlaceholderText="0000000000000"/>
+                    </Grid>
                     <TextBox x:Name="P2AddressBox" Header="Юридический адрес"
                              PlaceholderText="000000, г. Город, ул. Улица, д. 1"/>
                     <TextBox x:Name="P2SignerBox" Header="ФИО подписанта"
@@ -314,20 +509,27 @@
                         <TextBox x:Name="P2BasisBox" Grid.Column="1"
                                  Header="Основание" Text="Устава"/>
                     </Grid>
-                    <TextBox x:Name="P2BankNameBox" Header="Банк" PlaceholderText="ПАО Сбербанк"/>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                         <TextBox x:Name="P2BicBox" Grid.Column="0"
-                                 Header="БИК" PlaceholderText="044525225"/>
+                                 Header="БИК" PlaceholderText="044525225"
+                                 TextChanged="P2BicBox_TextChanged"/>
                         <TextBox x:Name="P2AccountBox" Grid.Column="1"
-                                 Header="Расчётный счёт" PlaceholderText="40702810000000000000"/>
+                                 Header="Расчётный счёт" PlaceholderText="40702810..."/>
                     </Grid>
+                    <TextBox x:Name="P2BankNameBox" Header="Банк" PlaceholderText="ПАО Сбербанк"/>
                     <TextBox x:Name="P2CorrAccountBox" Header="Корреспондентский счёт"
-                             PlaceholderText="30101810400000000225"/>
+                             PlaceholderText="30101810..."/>
+
+                    <CheckBox x:Name="P2SaveToDbCheckBox"
+                              Content="Сохранить как клиента в базу"
+                              Foreground="{StaticResource NiatecAccentBrush}"/>
+                    <TextBlock x:Name="P2InnStatusBlock" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
                 </StackPanel>
             </StackPanel>
 
-            <!-- ШАГ 4: УСЛОВИЯ -->
-            <StackPanel x:Name="Step4Panel" Visibility="Collapsed" Spacing="12">
+            <!-- ══════════ ШАГ 4: УСЛОВИЯ ══════════ -->
+            <StackPanel x:Name="Step4Panel" Visibility="Collapsed" Spacing="14">
                 <TextBlock Style="{StaticResource NiatecSectionTitleTextStyle}"
                            Text="Условия договора"/>
                 <TextBlock Style="{StaticResource NiatecCaptionTextStyle}"
@@ -346,7 +548,7 @@
 
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                     <TextBox x:Name="AmountBox" Grid.Column="0"
-                             Header="Сумма (руб.)" PlaceholderText="0.00"/>
+                             Header="Сумма договора (руб.)" PlaceholderText="0.00"/>
                     <StackPanel Grid.Column="1" Spacing="4">
                         <TextBlock Text="НДС" FontSize="12"
                                    Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
@@ -358,7 +560,7 @@
                     </StackPanel>
                 </Grid>
 
-                <TextBlock Text="Срок действия" FontSize="12"
+                <TextBlock Text="Срок действия договора" FontSize="12"
                            Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                     <StackPanel Grid.Column="0" Spacing="4">
@@ -377,9 +579,10 @@
                     </StackPanel>
                 </Grid>
 
+                <!-- Итоговый блок -->
                 <Border Background="{StaticResource NiatecSurfaceAltBrush}"
                         BorderBrush="{StaticResource NiatecBorderBrush}"
-                        BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,4,0,0">
+                        BorderThickness="1" CornerRadius="12" Padding="14" Margin="0,4,0,0">
                     <StackPanel Spacing="4">
                         <TextBlock Text="Итог" FontWeight="SemiBold" FontSize="12"
                                    Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
@@ -394,7 +597,7 @@
             </StackPanel>
 
             <!-- НАВИГАЦИЯ -->
-            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,20,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,24,0,0">
                 <Button x:Name="BackButton" Grid.Column="0"
                         Content="← Назад"
                         Style="{StaticResource NiatecSecondaryButtonStyle}"

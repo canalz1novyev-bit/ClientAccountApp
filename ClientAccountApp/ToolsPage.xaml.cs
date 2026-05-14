@@ -82,6 +82,42 @@ namespace ClientAccountApp
         private void ToolsPage_Unloaded(object sender, RoutedEventArgs e) =>
             _stmtSearchDebounceTimer.Stop();
 
+        // ══════════════════════════════════════════════════════════════════
+        // КАЛЬКУЛЯТОРЫ — переключение НДС / 395 ГК РФ
+        // ══════════════════════════════════════════════════════════════════
+
+        private void CalcNavVatButton_Click(object sender, RoutedEventArgs e)
+        {
+            VatCalcPanel.Visibility  = Visibility.Visible;
+            Civil395Panel.Visibility = Visibility.Collapsed;
+            SetCalcNavActive(CalcNavVatButton, CalcNav395Button);
+        }
+
+        private void CalcNav395Button_Click(object sender, RoutedEventArgs e)
+        {
+            VatCalcPanel.Visibility  = Visibility.Collapsed;
+            Civil395Panel.Visibility = Visibility.Visible;
+            SetCalcNavActive(CalcNav395Button, CalcNavVatButton);
+        }
+
+        private static void SetCalcNavActive(Button active, Button inactive)
+        {
+            var appRes = Application.Current.Resources;
+            var accent = (Microsoft.UI.Xaml.Media.SolidColorBrush)appRes["NiatecAccentBrush"];
+            var muted  = (Microsoft.UI.Xaml.Media.SolidColorBrush)appRes["NiatecTextSecondaryBrush"];
+            active.Background   = accent;
+            active.Foreground   = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.White);
+            inactive.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+            inactive.Foreground = muted;
+        }
+
+        private void ContractWizardToolFrame_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Frame frame) return;
+            if (frame.CurrentSourcePageType != typeof(ContractWizardPage))
+                frame.Navigate(typeof(ContractWizardPage));
+        }
+
         private void RsvToolFrame_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is not Frame frame)

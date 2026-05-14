@@ -1,54 +1,43 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ClientAccountApp
 {
     public sealed partial class ContractWizardDialog : ContentDialog
     {
-        // ─────────────────────────────────────────────────────────────────────
-        // Результат работы мастера
-        // ─────────────────────────────────────────────────────────────────────
-
-        /// <summary>Заполняется при успешном завершении мастера.</summary>
+        // ─── Результат ─────────────────────────────────────────────────────
         public ClientContract? ResultContract { get; private set; }
         public ContractParty? ResultParty1 { get; private set; }
         public ContractParty? ResultParty2 { get; private set; }
         public bool WizardCompleted { get; private set; }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Внутреннее состояние
-        // ─────────────────────────────────────────────────────────────────────
-
+        // ─── Внутреннее состояние ──────────────────────────────────────────
         private int _currentStep = 1;
-
-        /// <summary>Если задан — предвыбирает клиента на шаге 3 (передаётся из строки списка).</summary>
-        public int PreSelectClientId { get; set; } = 0;
         private string _selectedContractType = "services";
 
+        /// <summary>Если задан — предвыбирает клиента на шаге 3.</summary>
+        public int PreSelectClientId { get; set; } = 0;
+
         private OrganizationProfile? _orgProfile;
-        private ContractParty? _party1;
-        private ContractParty? _party2;
-
         private List<ClientInfo> _allClients = new();
-        private ClientInfo? _selectedClient;
-        private BankAccount? _selectedBankAccount;
 
-        // Карточки типов для управления выделением
+        // Стороны из базы
+        private ClientInfo? _p1SelectedClient;
+        private BankAccount? _p1SelectedBank;
+        private ClientInfo? _p2SelectedClient;
+        private BankAccount? _p2SelectedBank;
+
         private readonly Dictionary<string, Border> _typeCards = new();
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Конструктор
-        // ─────────────────────────────────────────────────────────────────────
-
+        // ─── Конструктор ───────────────────────────────────────────────────
         public ContractWizardDialog()
         {
             this.InitializeComponent();
@@ -59,325 +48,502 @@ namespace ClientAccountApp
 
         private void LoadInitialData()
         {
-            try
-            {
-                _orgProfile = ActiveOrganizationService.GetRequired();
-                FillOrgProfileDisplay();
-            }
-            catch
-            {
-                // Профиль не настроен — позволим ввести вручную
-            }
+            try { _orgProfile = ActiveOrganizationService.GetRequired(); FillOrgProfileDisplay(); }
+            catch { /* профиль не настроен — покажем ручной ввод */ }
 
             using var db = new AppDbContext();
-            _allClients = db.Clients
-                .AsNoTracking()
+            _allClients = db.Clients.AsNoTracking()
                 .Where(c => c.Status != "Архив")
                 .OrderBy(c => c.Name)
                 .ToList();
 
-            P2ClientComboBox.ItemsSource = _allClients;
-            P2ClientComboBox.DisplayMemberPath = "Name";
+            // Настраиваем AutoSuggestBox
+            P1SearchBox.ItemsSource = _allClients;
+            P2SearchBox.ItemsSource = _allClients;
 
-            // Предвыбираем клиента если передан clientId (из строки списка)
+            // Предвыбор клиента на шаге 3
             if (PreSelectClientId > 0)
             {
-                var preSelected = _allClients.FirstOrDefault(c => c.Id == PreSelectClientId);
-                if (preSelected != null)
-                    P2ClientComboBox.SelectedItem = preSelected;
+                var pre = _allClients.FirstOrDefault(c => c.Id == PreSelectClientId);
+                if (pre != null) ApplyP2Client(pre);
             }
         }
 
         private void BuildTypeCardDictionary()
         {
             _typeCards["services"] = TypeCard_services;
-            _typeCards["supply"] = TypeCard_supply;
-            _typeCards["lease"] = TypeCard_lease;
-            _typeCards["work"] = TypeCard_work;
-            _typeCards["agency"] = TypeCard_agency;
-            _typeCards["nda"] = TypeCard_nda;
+            _typeCards["supply"]   = TypeCard_supply;
+            _typeCards["lease"]    = TypeCard_lease;
+            _typeCards["work"]     = TypeCard_work;
+            _typeCards["agency"]   = TypeCard_agency;
+            _typeCards["nda"]      = TypeCard_nda;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // ШАГ 1: Выбор типа договора
-        // ─────────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════════
+        // ШАГ 1: Тип договора
+        // ═══════════════════════════════════════════════════════════════════
 
         private void TypeCard_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (sender is not Border card || card.Tag is not string key) return;
-
             _selectedContractType = key;
             HighlightSelectedTypeCard(key);
-            CheckTemplateAvailability(key);
         }
 
         private void HighlightSelectedTypeCard(string selectedKey)
         {
-            var appRes = Application.Current.Resources;
-            var accentBrush  = (SolidColorBrush)appRes["NiatecAccentBrush"];
-            var borderBrush  = (SolidColorBrush)appRes["NiatecBorderBrush"];
+            var appRes     = Application.Current.Resources;
+            var accentBrush = (Microsoft.UI.Xaml.Media.SolidColorBrush)appRes["NiatecAccentBrush"];
+            var borderBrush = (Microsoft.UI.Xaml.Media.SolidColorBrush)appRes["NiatecBorderBrush"];
 
             foreach (var (key, card) in _typeCards)
             {
-                bool isSelected = key == selectedKey;
-                card.BorderBrush     = isSelected ? accentBrush : borderBrush;
-                card.BorderThickness = new Thickness(isSelected ? 2 : 1);
+                bool sel = key == selectedKey;
+                card.BorderBrush     = sel ? accentBrush : borderBrush;
+                card.BorderThickness = new Thickness(sel ? 2 : 1);
             }
         }
 
-        private void CheckTemplateAvailability(string key)
-        {
-            try
-            {
-                ContractTypeDefinitions.ResolveTemplatePath(key);
-                TemplateMissingBanner.Visibility = Visibility.Collapsed;
-            }
-            catch (FileNotFoundException ex)
-            {
-                TemplateMissingText.Text = $"⚠ Специализированный шаблон не найден — будет использован базовый.\n{ex.Message}";
-                TemplateMissingBanner.Visibility = Visibility.Visible;
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════════
         // ШАГ 2: Сторона 1
-        // ─────────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════════
 
         private void FillOrgProfileDisplay()
         {
             if (_orgProfile == null) return;
-
             P1OrgNameBlock.Text = _orgProfile.Name;
-
-            string innKpp = _orgProfile.Inn;
-            if (!string.IsNullOrWhiteSpace(_orgProfile.Kpp))
-                innKpp += " / " + _orgProfile.Kpp;
+            string innKpp = _orgProfile.Inn +
+                (string.IsNullOrWhiteSpace(_orgProfile.Kpp) ? "" : " / " + _orgProfile.Kpp);
             P1OrgInnBlock.Text = innKpp;
-
             P1OrgSignerBlock.Text = string.IsNullOrWhiteSpace(_orgProfile.DirectorName)
                 ? "— не указан —"
                 : $"{_orgProfile.DirectorPosition}, {_orgProfile.DirectorName}";
-
             P1OrgBankBlock.Text = string.IsNullOrWhiteSpace(_orgProfile.BankName)
-                ? "— не указан —"
-                : _orgProfile.BankName;
-
+                ? "— не указан —" : _orgProfile.BankName;
             P1OrgAccountBlock.Text = string.IsNullOrWhiteSpace(_orgProfile.SettlementAccount)
-                ? "—"
-                : _orgProfile.SettlementAccount;
+                ? "—" : _orgProfile.SettlementAccount;
         }
 
         private void P1Source_Changed(object sender, RoutedEventArgs e)
         {
-            // Guard: событие может сработать во время InitializeComponent до создания элементов
-            if (P1OrgPanel == null || P1ManualPanel == null) return;
+            if (P1OrgPanel == null || P1DbPanel == null || P1ManualPanel == null) return;
+            bool fromOrg    = P1FromOrgRadio.IsChecked == true;
+            bool fromDb     = P1FromDbRadio.IsChecked == true;
+            bool fromManual = P1ManualRadio.IsChecked == true;
 
-            bool fromOrg = P1FromOrgRadio.IsChecked == true;
-            P1OrgPanel.Visibility = fromOrg ? Visibility.Visible : Visibility.Collapsed;
-            P1ManualPanel.Visibility = fromOrg ? Visibility.Collapsed : Visibility.Visible;
+            P1OrgPanel.Visibility    = fromOrg    ? Visibility.Visible : Visibility.Collapsed;
+            P1DbPanel.Visibility     = fromDb     ? Visibility.Visible : Visibility.Collapsed;
+            P1ManualPanel.Visibility = fromManual ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private ContractParty BuildParty1()
+        // AutoSuggestBox — Сторона 1 из базы
+        private void P1SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (P1FromOrgRadio.IsChecked == true && _orgProfile != null)
-                return ContractParty.FromOrganizationProfile(_orgProfile);
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
+            var q = sender.Text.Trim().ToLowerInvariant();
+            sender.ItemsSource = string.IsNullOrWhiteSpace(q)
+                ? _allClients
+                : _allClients.Where(c =>
+                    c.Name.ToLowerInvariant().Contains(q) ||
+                    c.Inn.Contains(q)).ToList();
+        }
 
-            return new ContractParty
+        private void P1SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            if (args.SelectedItem is not ClientInfo client) return;
+            sender.Text = client.Name;
+            ApplyP1Client(client);
+        }
+
+        private void ApplyP1Client(ClientInfo client)
+        {
+            _p1SelectedClient = client;
+            P1DbNameBlock.Text = client.Name;
+            P1DbInnBlock.Text  = client.Inn;
+            P1DbSignerBlock.Text = string.IsNullOrWhiteSpace(client.DirectorFullName)
+                ? "—" : client.DirectorFullName;
+
+            using var db = new AppDbContext();
+            var banks = db.BankAccounts.AsNoTracking()
+                .Where(b => b.ClientInfoId == client.Id).OrderBy(b => b.BankName).ToList();
+
+            P1BankAccountComboBox.ItemsSource = banks;
+            P1BankAccountComboBox.DisplayMemberPath = "DisplayText";
+
+            if (banks.Count > 0)
             {
-                SourceType = ContractPartySourceType.Manual,
-                Name = P1NameBox.Text.Trim(),
-                ShortName = P1NameBox.Text.Trim(),
-                Inn = P1InnBox.Text.Trim(),
-                Kpp = P1KppBox.Text.Trim(),
-                Ogrn = P1OgrnBox.Text.Trim(),
-                Address = P1AddressBox.Text.Trim(),
-                SignerFullName = P1SignerBox.Text.Trim(),
-                SignerPosition = string.IsNullOrWhiteSpace(P1PositionBox.Text) ? "Директор" : P1PositionBox.Text.Trim(),
-                SignerBasis = string.IsNullOrWhiteSpace(P1BasisBox.Text) ? "Устава" : P1BasisBox.Text.Trim(),
-                BankName = P1BankNameBox.Text.Trim(),
-                BankBic = P1BicBox.Text.Trim(),
-                SettlementAccount = P1AccountBox.Text.Trim(),
-                CorrespondentAccount = P1CorrAccountBox.Text.Trim()
-            };
+                P1BankAccountComboBox.Visibility = Visibility.Visible;
+                P1BankAccountComboBox.SelectedIndex = 0;
+                P1NoBankPanel.Visibility = Visibility.Collapsed;
+                P1AddBankForm.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                P1BankAccountComboBox.Visibility = Visibility.Collapsed;
+                P1NoBankPanel.Visibility = Visibility.Visible;
+                P1AddBankForm.Visibility = Visibility.Collapsed;
+            }
+
+            P1DbDetailsPanel.Visibility = Visibility.Visible;
         }
 
-        private string? ValidateParty1()
+        private void P1BankAccountComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            => _p1SelectedBank = P1BankAccountComboBox.SelectedItem as BankAccount;
+
+        // ── Добавление счёта к стороне 1 ──────────────────────────────────
+        private void P1AddBankButton_Click(object sender, RoutedEventArgs e)
         {
-            var p = BuildParty1();
-            if (string.IsNullOrWhiteSpace(p.Name)) return "Укажите наименование стороны 1.";
-            if (string.IsNullOrWhiteSpace(p.Inn)) return "Укажите ИНН стороны 1.";
-            return null;
+            P1AddBankForm.Visibility    = Visibility.Visible;
+            P1NoBankPanel.Visibility    = Visibility.Collapsed;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
+        private void P1CancelAddBankButton_Click(object sender, RoutedEventArgs e)
+        {
+            P1AddBankForm.Visibility = Visibility.Collapsed;
+            P1NoBankPanel.Visibility = Visibility.Visible;
+            P1NewBicBox.Text = P1NewAccountBox.Text = P1NewBankNameBox.Text = P1NewCorrAccountBox.Text = "";
+            P1NewBankStatusBlock.Text = "";
+        }
+
+        private async void P1NewBicLookupButton_Click(object sender, RoutedEventArgs e) { } // не используется
+
+        private void P1SaveNewBankButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_p1SelectedClient == null) return;
+            if (string.IsNullOrWhiteSpace(P1NewAccountBox.Text))
+            {
+                P1NewBankStatusBlock.Text = "Укажите расчётный счёт.";
+                P1NewBankStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecDangerBrush"];
+                return;
+            }
+            try
+            {
+                using var db = new AppDbContext();
+                var bank = new BankAccount
+                {
+                    ClientInfoId         = _p1SelectedClient.Id,
+                    BIC                  = P1NewBicBox.Text.Trim(),
+                    AccountNumber        = P1NewAccountBox.Text.Trim(),
+                    BankName             = P1NewBankNameBox.Text.Trim(),
+                    CorrespondentAccount = P1NewCorrAccountBox.Text.Trim()
+                };
+                db.BankAccounts.Add(bank);
+                db.SaveChanges();
+
+                var banks = db.BankAccounts.AsNoTracking()
+                    .Where(b => b.ClientInfoId == _p1SelectedClient.Id).OrderBy(b => b.BankName).ToList();
+                P1BankAccountComboBox.ItemsSource = banks;
+                P1BankAccountComboBox.DisplayMemberPath = "DisplayText";
+                P1BankAccountComboBox.SelectedIndex = banks.Count - 1;
+                _p1SelectedBank = banks.LastOrDefault();
+
+                P1BankAccountComboBox.Visibility = Visibility.Visible;
+                P1AddBankForm.Visibility = Visibility.Collapsed;
+                P1NoBankPanel.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                P1NewBankStatusBlock.Text = $"Ошибка сохранения: {ex.Message}";
+                P1NewBankStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecDangerBrush"];
+            }
+        }
+
+        // Ручной ввод — ИНН автозаполнение
+        private void P1InnBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            bool canLookup = P1InnBox.Text.Trim().Length >= 10;
+            P1FillByInnButton.IsEnabled = canLookup;
+        }
+
+        private async void P1FillByInnButton_Click(object sender, RoutedEventArgs e)
+        {
+            string inn = P1InnBox.Text.Trim();
+            P1FillByInnButton.IsEnabled = false;
+            P1FillByInnButton.Content = "Поиск...";
+            P1InnStatusBlock.Text = "";
+            try
+            {
+                var result = await InnLookupService.FindByInnAsync(inn, "ООО");
+                P1NameBox.Text    = result.ClientName;
+                P1OgrnBox.Text    = result.Ogrn;
+                P1AddressBox.Text = result.LegalAddress;
+                P1SignerBox.Text  = result.DirectorName;
+                P1InnStatusBlock.Text = $"✓ Данные по ИНН {inn} заполнены.";
+                P1InnStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecSuccessBrush"];
+            }
+            catch (Exception ex)
+            {
+                P1InnStatusBlock.Text = $"Ошибка: {ex.Message}";
+                P1InnStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecDangerBrush"];
+            }
+            finally
+            {
+                P1FillByInnButton.Content   = "Заполнить по ИНН";
+                P1FillByInnButton.IsEnabled = true;
+            }
+        }
+
+        // Ручной ввод — БИК автозаполнение (P1 manual)
+        private async void P1BicBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string bic = new string(P1BicBox.Text.Where(char.IsDigit).ToArray());
+            if (bic.Length == 9)
+                await LookupBicAsync(P1BicBox, P1BankNameBox, P1CorrAccountBox, P1InnStatusBlock);
+        }
+
+        // Форма нового счёта стороны 1
+        private async void P1NewBicBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string bic = new string(P1NewBicBox.Text.Where(char.IsDigit).ToArray());
+            if (bic.Length == 9)
+                await LookupBicAsync(P1NewBicBox, P1NewBankNameBox, P1NewCorrAccountBox, P1NewBankStatusBlock);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
         // ШАГ 3: Сторона 2
-        // ─────────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════════
 
         private void P2Source_Changed(object sender, RoutedEventArgs e)
         {
-            // Guard: событие может сработать во время InitializeComponent до создания элементов
             if (P2DbPanel == null || P2ManualPanel == null) return;
-
             bool fromDb = P2FromDbRadio.IsChecked == true;
-            P2DbPanel.Visibility = fromDb ? Visibility.Visible : Visibility.Collapsed;
-            P2ManualPanel.Visibility = fromDb ? Visibility.Collapsed : Visibility.Visible;
+            P2DbPanel.Visibility     = fromDb  ? Visibility.Visible : Visibility.Collapsed;
+            P2ManualPanel.Visibility = fromDb  ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void P2ClientComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void P2SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            _selectedClient = P2ClientComboBox.SelectedItem as ClientInfo;
-            _selectedBankAccount = null;
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput) return;
+            var q = sender.Text.Trim().ToLowerInvariant();
+            sender.ItemsSource = string.IsNullOrWhiteSpace(q)
+                ? _allClients
+                : _allClients.Where(c =>
+                    c.Name.ToLowerInvariant().Contains(q) ||
+                    c.Inn.Contains(q)).ToList();
+        }
 
-            if (_selectedClient == null)
-            {
-                P2ClientDetailsPanel.Visibility = Visibility.Collapsed;
-                return;
-            }
+        private void P2SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            if (args.SelectedItem is not ClientInfo client) return;
+            sender.Text = client.Name;
+            ApplyP2Client(client);
+        }
 
-            // Заполняем реквизиты
-            P2ClientNameBlock.Text = _selectedClient.Name;
+        private void ApplyP2Client(ClientInfo client)
+        {
+            _p2SelectedClient = client;
+            P2ClientNameBlock.Text    = client.Name;
+            P2ClientInnBlock.Text     = client.Inn;
+            P2ClientSignerBlock.Text  = string.IsNullOrWhiteSpace(client.DirectorFullName)
+                ? "—" : client.DirectorFullName;
+            P2ClientAddressBlock.Text = string.IsNullOrWhiteSpace(client.Address)
+                ? "—" : client.Address;
 
-            string innKpp = _selectedClient.Inn;
-            if (!string.IsNullOrWhiteSpace(GetKpp(_selectedClient)))
-                innKpp += " / " + GetKpp(_selectedClient);
-            P2ClientInnBlock.Text = innKpp;
-
-            P2ClientSignerBlock.Text = string.IsNullOrWhiteSpace(_selectedClient.DirectorFullName)
-                ? "—"
-                : _selectedClient.DirectorFullName;
-
-            P2ClientAddressBlock.Text = string.IsNullOrWhiteSpace(_selectedClient.Address)
-                ? "—"
-                : _selectedClient.Address;
-
-            // Загружаем банковские счета
             using var db = new AppDbContext();
             var banks = db.BankAccounts.AsNoTracking()
-                .Where(b => b.ClientInfoId == _selectedClient.Id)
-                .OrderBy(b => b.BankName)
-                .ToList();
+                .Where(b => b.ClientInfoId == client.Id).OrderBy(b => b.BankName).ToList();
 
             P2BankAccountComboBox.ItemsSource = banks;
             P2BankAccountComboBox.DisplayMemberPath = "DisplayText";
-            P2BankAccountComboBox.PlaceholderText = banks.Count == 0
-                ? "Нет банковских счетов"
-                : "Выберите счёт для реквизитов";
 
             if (banks.Count > 0)
+            {
+                P2BankAccountComboBox.Visibility = Visibility.Visible;
                 P2BankAccountComboBox.SelectedIndex = 0;
+                P2NoBankPanel.Visibility = Visibility.Collapsed;
+                P2AddBankForm.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                P2BankAccountComboBox.Visibility = Visibility.Collapsed;
+                P2NoBankPanel.Visibility = Visibility.Visible;
+                P2AddBankForm.Visibility = Visibility.Collapsed;
+            }
 
             P2ClientDetailsPanel.Visibility = Visibility.Visible;
+
+            if (P2SearchBox != null && string.IsNullOrWhiteSpace(P2SearchBox.Text))
+                P2SearchBox.Text = client.Name;
         }
 
         private void P2BankAccountComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            => _p2SelectedBank = P2BankAccountComboBox.SelectedItem as BankAccount;
+
+        // ── Добавление счёта к стороне 2 ──────────────────────────────────
+        private void P2AddBankButton_Click(object sender, RoutedEventArgs e)
         {
-            _selectedBankAccount = P2BankAccountComboBox.SelectedItem as BankAccount;
+            P2AddBankForm.Visibility = Visibility.Visible;
+            P2NoBankPanel.Visibility = Visibility.Collapsed;
         }
 
-        private ContractParty BuildParty2()
+        private void P2CancelAddBankButton_Click(object sender, RoutedEventArgs e)
         {
-            if (P2FromDbRadio.IsChecked == true && _selectedClient != null)
-                return ContractParty.FromClientInfo(_selectedClient, _selectedBankAccount);
+            P2AddBankForm.Visibility = Visibility.Collapsed;
+            P2NoBankPanel.Visibility = Visibility.Visible;
+            P2NewBicBox.Text = P2NewAccountBox.Text = P2NewBankNameBox.Text = P2NewCorrAccountBox.Text = "";
+            P2NewBankStatusBlock.Text = "";
+        }
 
-            return new ContractParty
+        private async void P2NewBicLookupButton_Click(object sender, RoutedEventArgs e) { } // не используется
+
+        private void P2SaveNewBankButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_p2SelectedClient == null) return;
+            if (string.IsNullOrWhiteSpace(P2NewAccountBox.Text))
             {
-                SourceType = ContractPartySourceType.Manual,
-                Name = P2NameBox.Text.Trim(),
-                ShortName = P2NameBox.Text.Trim(),
-                Inn = P2InnBox.Text.Trim(),
-                Kpp = P2KppBox.Text.Trim(),
-                Ogrn = P2OgrnBox.Text.Trim(),
-                Address = P2AddressBox.Text.Trim(),
-                SignerFullName = P2SignerBox.Text.Trim(),
-                SignerPosition = string.IsNullOrWhiteSpace(P2PositionBox.Text) ? "Директор" : P2PositionBox.Text.Trim(),
-                SignerBasis = string.IsNullOrWhiteSpace(P2BasisBox.Text) ? "Устава" : P2BasisBox.Text.Trim(),
-                BankName = P2BankNameBox.Text.Trim(),
-                BankBic = P2BicBox.Text.Trim(),
-                SettlementAccount = P2AccountBox.Text.Trim(),
-                CorrespondentAccount = P2CorrAccountBox.Text.Trim()
-            };
+                P2NewBankStatusBlock.Text = "Укажите расчётный счёт.";
+                P2NewBankStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecDangerBrush"];
+                return;
+            }
+            try
+            {
+                using var db = new AppDbContext();
+                var bank = new BankAccount
+                {
+                    ClientInfoId         = _p2SelectedClient.Id,
+                    BIC                  = P2NewBicBox.Text.Trim(),
+                    AccountNumber        = P2NewAccountBox.Text.Trim(),
+                    BankName             = P2NewBankNameBox.Text.Trim(),
+                    CorrespondentAccount = P2NewCorrAccountBox.Text.Trim()
+                };
+                db.BankAccounts.Add(bank);
+                db.SaveChanges();
+
+                var banks = db.BankAccounts.AsNoTracking()
+                    .Where(b => b.ClientInfoId == _p2SelectedClient.Id).OrderBy(b => b.BankName).ToList();
+                P2BankAccountComboBox.ItemsSource = banks;
+                P2BankAccountComboBox.DisplayMemberPath = "DisplayText";
+                P2BankAccountComboBox.SelectedIndex = banks.Count - 1;
+                _p2SelectedBank = banks.LastOrDefault();
+
+                P2BankAccountComboBox.Visibility = Visibility.Visible;
+                P2AddBankForm.Visibility = Visibility.Collapsed;
+                P2NoBankPanel.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                P2NewBankStatusBlock.Text = $"Ошибка сохранения: {ex.Message}";
+                P2NewBankStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecDangerBrush"];
+            }
         }
 
-        private string? ValidateParty2()
+        private void P2InnBox_TextChanged(object sender, TextChangedEventArgs e)
+            => P2FillByInnButton.IsEnabled = P2InnBox.Text.Trim().Length >= 10;
+
+        private async void P2FillByInnButton_Click(object sender, RoutedEventArgs e)
         {
-            if (P2FromDbRadio.IsChecked == true && _selectedClient == null)
-                return "Выберите клиента из базы или переключитесь на ввод вручную.";
-
-            var p = BuildParty2();
-            if (string.IsNullOrWhiteSpace(p.Name)) return "Укажите наименование стороны 2.";
-            if (string.IsNullOrWhiteSpace(p.Inn)) return "Укажите ИНН стороны 2.";
-            return null;
+            string inn = P2InnBox.Text.Trim();
+            P2FillByInnButton.IsEnabled = false;
+            P2FillByInnButton.Content = "Поиск...";
+            P2InnStatusBlock.Text = "";
+            try
+            {
+                var result = await InnLookupService.FindByInnAsync(inn, "ООО");
+                P2NameBox.Text    = result.ClientName;
+                P2OgrnBox.Text    = result.Ogrn;
+                P2AddressBox.Text = result.LegalAddress;
+                P2SignerBox.Text  = result.DirectorName;
+                P2InnStatusBlock.Text = $"✓ Данные по ИНН {inn} заполнены.";
+                P2InnStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecSuccessBrush"];
+            }
+            catch (Exception ex)
+            {
+                P2InnStatusBlock.Text = $"Ошибка: {ex.Message}";
+                P2InnStatusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecDangerBrush"];
+            }
+            finally
+            {
+                P2FillByInnButton.Content   = "Заполнить по ИНН";
+                P2FillByInnButton.IsEnabled = true;
+            }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // ШАГ 4: Условия + итог
-        // ─────────────────────────────────────────────────────────────────────
+        // Ручной ввод — БИК автозаполнение (P2 manual)
+        private async void P2BicBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string bic = new string(P2BicBox.Text.Where(char.IsDigit).ToArray());
+            if (bic.Length == 9)
+                await LookupBicAsync(P2BicBox, P2BankNameBox, P2CorrAccountBox, P2InnStatusBlock);
+        }
+
+        // Форма нового счёта стороны 2
+        private async void P2NewBicBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string bic = new string(P2NewBicBox.Text.Where(char.IsDigit).ToArray());
+            if (bic.Length == 9)
+                await LookupBicAsync(P2NewBicBox, P2NewBankNameBox, P2NewCorrAccountBox, P2NewBankStatusBlock);
+        }
+
+        // ─── Общий метод поиска банка по БИК ──────────────────────────────
+        private static async Task LookupBicAsync(
+            TextBox bicBox, TextBox bankNameBox, TextBox corrBox, TextBlock statusBlock)
+        {
+            string bic = new string(bicBox.Text.Trim().Where(char.IsDigit).ToArray());
+            if (bic.Length != 9) return;
+            try
+            {
+                var result = await BankLookupService.FindByBicAsync(bic);
+                if (result == null) { statusBlock.Text = $"Банк по БИК {bic} не найден."; return; }
+                bicBox.Text      = result.Bic;
+                bankNameBox.Text = result.BankName;
+                corrBox.Text     = result.CorrespondentAccount;
+                statusBlock.Text = $"✓ Реквизиты банка заполнены по БИК {bic}.";
+                statusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecSuccessBrush"];
+            }
+            catch (Exception ex)
+            {
+                statusBlock.Text = $"Ошибка БИК: {ex.Message}";
+                statusBlock.Foreground = (Microsoft.UI.Xaml.Media.SolidColorBrush)Application.Current.Resources["NiatecDangerBrush"];
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // ШАГ 4: Условия
+        // ═══════════════════════════════════════════════════════════════════
 
         private void EnterStep4()
         {
             var typeInfo = ContractTypeDefinitions.GetByKey(_selectedContractType);
-
-            // Ставим дефолтный предмет если пусто
             if (string.IsNullOrWhiteSpace(SubjectBox.Text))
                 SubjectBox.Text = typeInfo.DefaultSubject;
-
-            // Дефолтные даты
             if (ValidFromPicker.Date == null)
                 ValidFromPicker.Date = DateTimeOffset.Now;
             if (ValidToPicker.Date == null)
                 ValidToPicker.Date = new DateTimeOffset(DateTime.Today.Year, 12, 31, 0, 0, 0, TimeSpan.Zero);
 
-            // Меняем кнопку на "Создать договор"
             NextButton.Content = "Создать договор ✓";
-
             UpdateSummary();
         }
 
         private void UpdateSummary()
         {
-            var p1 = _party1 ?? BuildParty1();
-            var p2 = _party2 ?? BuildParty2();
-            var typeInfo = ContractTypeDefinitions.GetByKey(_selectedContractType);
+            var p1 = BuildParty1();
+            var p2 = BuildParty2();
+            var ti = ContractTypeDefinitions.GetByKey(_selectedContractType);
 
-            string p1Name = string.IsNullOrWhiteSpace(p1.Name) ? "—" : p1.Name;
-            string p2Name = string.IsNullOrWhiteSpace(p2.Name) ? "—" : p2.Name;
-
-            decimal amount = decimal.TryParse(AmountBox.Text.Replace(',', '.'),
+            decimal amount = decimal.TryParse(
+                AmountBox.Text.Replace(',', '.'),
                 System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture, out var a) ? a : 0;
+            string vat = (VatModeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Без НДС";
 
-            string vatMode = (VatModeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Без НДС";
-
-            SummaryBlock.Text = $"Тип: {typeInfo.DisplayName}\n" +
-                                $"{typeInfo.Party1Role}: {p1Name}\n" +
-                                $"{typeInfo.Party2Role}: {p2Name}\n" +
-                                $"Сумма: {amount:N2} руб. ({vatMode})";
+            SummaryBlock.Text =
+                $"Тип: {ti.DisplayName}\n" +
+                $"{ti.Party1Role}: {(string.IsNullOrWhiteSpace(p1?.Name) ? "—" : p1!.Name)}\n" +
+                $"{ti.Party2Role}: {(string.IsNullOrWhiteSpace(p2?.Name) ? "—" : p2!.Name)}\n" +
+                $"Сумма: {amount:N2} руб. ({vat})";
         }
 
-        private string? ValidateStep4()
-        {
-            if (string.IsNullOrWhiteSpace(SubjectBox.Text))
-                return "Укажите предмет договора.";
-            return null;
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // НАВИГАЦИЯ
-        // ─────────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════════
+        // Навигация
+        // ═══════════════════════════════════════════════════════════════════
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             if (_currentStep < 4)
             {
                 string? error = ValidateCurrentStep();
-                if (error != null)
-                {
-                    ShowInlineError(error);
-                    return;
-                }
-
-                // Сохраняем данные шага перед переходом
-                SaveCurrentStepData();
+                if (error != null) { ShowStepError(error); return; }
 
                 _currentStep++;
                 ShowStep(_currentStep);
@@ -385,15 +551,8 @@ namespace ClientAccountApp
             }
             else
             {
-                // Финальный шаг — создаём договор
                 string? error = ValidateStep4();
-                if (error != null)
-                {
-                    Step4StatusBlock.Text = error;
-                    Step4StatusBlock.Visibility = Visibility.Visible;
-                    return;
-                }
-
+                if (error != null) { Step4StatusBlock.Text = error; Step4StatusBlock.Visibility = Visibility.Visible; return; }
                 Step4StatusBlock.Visibility = Visibility.Collapsed;
                 BuildResult();
                 WizardCompleted = true;
@@ -405,27 +564,9 @@ namespace ClientAccountApp
         {
             if (_currentStep <= 1) return;
             _currentStep--;
-            if (_currentStep == 3) NextButton.Content = "Далее →";
+            if (_currentStep < 4) NextButton.Content = "Далее →";
             ShowStep(_currentStep);
             UpdateStepIndicator();
-        }
-
-        private string? ValidateCurrentStep()
-        {
-            return _currentStep switch
-            {
-                1 => null, // тип выбран по умолчанию
-                2 => ValidateParty1(),
-                3 => ValidateParty2(),
-                4 => ValidateStep4(),
-                _ => null
-            };
-        }
-
-        private void SaveCurrentStepData()
-        {
-            if (_currentStep == 2) _party1 = BuildParty1();
-            if (_currentStep == 3) _party2 = BuildParty2();
         }
 
         private void ShowStep(int step)
@@ -444,100 +585,227 @@ namespace ClientAccountApp
 
         private void UpdateStep2Roles()
         {
-            var typeInfo = ContractTypeDefinitions.GetByKey(_selectedContractType);
-            Step2TitleBlock.Text = $"Сторона 1 — {typeInfo.Party1Role}";
-
-            // Если профиль не настроен — сразу переводим на ручной ввод
-            if (_orgProfile == null)
+            var ti = ContractTypeDefinitions.GetByKey(_selectedContractType);
+            Step2TitleBlock.Text = $"Сторона 1 — {ti.Party1Role}";
+            if (_orgProfile == null && P1ManualRadio != null)
             {
                 P1ManualRadio.IsChecked = true;
-                P1OrgPanel.Visibility = Visibility.Collapsed;
-                P1ManualPanel.Visibility = Visibility.Visible;
+                P1Source_Changed(this, new RoutedEventArgs());
             }
         }
 
         private void UpdateStep3Roles()
         {
-            var typeInfo = ContractTypeDefinitions.GetByKey(_selectedContractType);
-            Step3TitleBlock.Text = $"Сторона 2 — {typeInfo.Party2Role}";
+            var ti = ContractTypeDefinitions.GetByKey(_selectedContractType);
+            Step3TitleBlock.Text = $"Сторона 2 — {ti.Party2Role}";
         }
 
         private void UpdateStepIndicator()
         {
             StepCounterBlock.Text = $"Шаг {_currentStep} из 4";
 
-            var appRes             = Application.Current.Resources;
-            var activeBrush        = (SolidColorBrush)appRes["NiatecAccentBrush"];
-            var inactiveBrush      = (SolidColorBrush)appRes["NiatecBorderBrush"];
-            var activeLabelBrush   = activeBrush;
-            var inactiveLabelBrush = (SolidColorBrush)appRes["NiatecTextMutedBrush"];
-            var semiBold = Microsoft.UI.Text.FontWeights.SemiBold;
-            var normal   = Microsoft.UI.Text.FontWeights.Normal;
+            var appRes    = Application.Current.Resources;
+            var active    = (Microsoft.UI.Xaml.Media.SolidColorBrush)appRes["NiatecAccentBrush"];
+            var inactive  = (Microsoft.UI.Xaml.Media.SolidColorBrush)appRes["NiatecBorderBrush"];
+            var mutedText = (Microsoft.UI.Xaml.Media.SolidColorBrush)appRes["NiatecTextMutedBrush"];
+            var bold      = Microsoft.UI.Text.FontWeights.SemiBold;
+            var normal    = Microsoft.UI.Text.FontWeights.Normal;
 
-            void SetDot(Ellipse dot, TextBlock label, int stepNum)
+            void Set(Ellipse dot, TextBlock lbl, int n)
             {
-                bool active = _currentStep >= stepNum;
-                dot.Fill         = active ? activeBrush      : inactiveBrush;
-                label.Foreground = active ? activeLabelBrush : inactiveLabelBrush;
-                label.FontWeight = active ? semiBold         : normal;
+                bool on = _currentStep >= n;
+                dot.Fill         = on ? active   : inactive;
+                lbl.Foreground   = on ? active   : mutedText;
+                lbl.FontWeight   = on ? bold     : normal;
             }
 
-            SetDot(StepDot1, StepLabel1, 1);
-            SetDot(StepDot2, StepLabel2, 2);
-            SetDot(StepDot3, StepLabel3, 3);
-            SetDot(StepDot4, StepLabel4, 4);
+            Set(StepDot1, StepLabel1, 1);
+            Set(StepDot2, StepLabel2, 2);
+            Set(StepDot3, StepLabel3, 3);
+            Set(StepDot4, StepLabel4, 4);
         }
 
-        private void ShowInlineError(string message)
+        private void ShowStepError(string msg)
         {
-            if (_currentStep == 4)
-            {
-                Step4StatusBlock.Text = message;
-                Step4StatusBlock.Visibility = Visibility.Visible;
-            }
-            // На шагах 1-3 можно добавить аналогичный блок при необходимости
+            // На шаге 4 есть отдельный блок, на остальных — через InfoBar можно добавить
+            if (_currentStep == 4) { Step4StatusBlock.Text = msg; Step4StatusBlock.Visibility = Visibility.Visible; }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // ФИНАЛЬНАЯ СБОРКА РЕЗУЛЬТАТА
-        // ─────────────────────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════════════
+        // Валидация
+        // ═══════════════════════════════════════════════════════════════════
+
+        private string? ValidateCurrentStep() => _currentStep switch
+        {
+            1 => null,
+            2 => ValidateParty1(),
+            3 => ValidateParty2(),
+            4 => ValidateStep4(),
+            _ => null
+        };
+
+        private string? ValidateParty1()
+        {
+            if (P1FromOrgRadio.IsChecked == true)
+            {
+                if (_orgProfile == null) return "Профиль организации не настроен. Используйте другой источник.";
+                return null;
+            }
+            if (P1FromDbRadio.IsChecked == true)
+            {
+                if (_p1SelectedClient == null) return "Выберите клиента из базы или переключитесь на ручной ввод.";
+                return null;
+            }
+            // Ручной
+            if (string.IsNullOrWhiteSpace(P1NameBox.Text)) return "Укажите наименование стороны 1.";
+            if (string.IsNullOrWhiteSpace(P1InnBox.Text))  return "Укажите ИНН стороны 1.";
+            return null;
+        }
+
+        private string? ValidateParty2()
+        {
+            if (P2FromDbRadio.IsChecked == true)
+            {
+                if (_p2SelectedClient == null) return "Выберите клиента из базы или переключитесь на ручной ввод.";
+                return null;
+            }
+            if (string.IsNullOrWhiteSpace(P2NameBox.Text)) return "Укажите наименование стороны 2.";
+            if (string.IsNullOrWhiteSpace(P2InnBox.Text))  return "Укажите ИНН стороны 2.";
+            return null;
+        }
+
+        private string? ValidateStep4()
+        {
+            if (string.IsNullOrWhiteSpace(SubjectBox.Text)) return "Укажите предмет договора.";
+            return null;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Построение сторон и результата
+        // ═══════════════════════════════════════════════════════════════════
+
+        private ContractParty? BuildParty1()
+        {
+            if (P1FromOrgRadio.IsChecked == true && _orgProfile != null)
+                return ContractParty.FromOrganizationProfile(_orgProfile);
+
+            if (P1FromDbRadio.IsChecked == true && _p1SelectedClient != null)
+                return ContractParty.FromClientInfo(_p1SelectedClient, _p1SelectedBank);
+
+            return new ContractParty
+            {
+                SourceType       = ContractPartySourceType.Manual,
+                Name             = P1NameBox.Text.Trim(),
+                ShortName        = P1NameBox.Text.Trim(),
+                Inn              = P1InnBox.Text.Trim(),
+                Kpp              = P1KppBox.Text.Trim(),
+                Ogrn             = P1OgrnBox.Text.Trim(),
+                Address          = P1AddressBox.Text.Trim(),
+                SignerFullName   = P1SignerBox.Text.Trim(),
+                SignerPosition   = string.IsNullOrWhiteSpace(P1PositionBox.Text) ? "Директор" : P1PositionBox.Text.Trim(),
+                SignerBasis      = string.IsNullOrWhiteSpace(P1BasisBox.Text)    ? "Устава"    : P1BasisBox.Text.Trim(),
+                BankName         = P1BankNameBox.Text.Trim(),
+                BankBic          = P1BicBox.Text.Trim(),
+                SettlementAccount    = P1AccountBox.Text.Trim(),
+                CorrespondentAccount = P1CorrAccountBox.Text.Trim()
+            };
+        }
+
+        private ContractParty? BuildParty2()
+        {
+            if (P2FromDbRadio.IsChecked == true && _p2SelectedClient != null)
+                return ContractParty.FromClientInfo(_p2SelectedClient, _p2SelectedBank);
+
+            return new ContractParty
+            {
+                SourceType       = ContractPartySourceType.Manual,
+                Name             = P2NameBox.Text.Trim(),
+                ShortName        = P2NameBox.Text.Trim(),
+                Inn              = P2InnBox.Text.Trim(),
+                Kpp              = P2KppBox.Text.Trim(),
+                Ogrn             = P2OgrnBox.Text.Trim(),
+                Address          = P2AddressBox.Text.Trim(),
+                SignerFullName   = P2SignerBox.Text.Trim(),
+                SignerPosition   = string.IsNullOrWhiteSpace(P2PositionBox.Text) ? "Директор" : P2PositionBox.Text.Trim(),
+                SignerBasis      = string.IsNullOrWhiteSpace(P2BasisBox.Text)    ? "Устава"    : P2BasisBox.Text.Trim(),
+                BankName         = P2BankNameBox.Text.Trim(),
+                BankBic          = P2BicBox.Text.Trim(),
+                SettlementAccount    = P2AccountBox.Text.Trim(),
+                CorrespondentAccount = P2CorrAccountBox.Text.Trim()
+            };
+        }
 
         private void BuildResult()
         {
-            ResultParty1 = _party1 ?? BuildParty1();
-            ResultParty2 = _party2 ?? BuildParty2();
+            ResultParty1 = BuildParty1() ?? ContractParty.Empty();
+            ResultParty2 = BuildParty2() ?? ContractParty.Empty();
 
             decimal amount = decimal.TryParse(
                 AmountBox.Text.Replace(',', '.'),
                 System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var a) ? a : 0;
-
-            string vatMode = (VatModeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Без НДС";
+                System.Globalization.CultureInfo.InvariantCulture, out var a) ? a : 0;
 
             ResultContract = new ClientContract
             {
-                ContractType = _selectedContractType,
-                Subject = SubjectBox.Text.Trim(),
-                Amount = amount,
-                VatMode = vatMode,
-                City = CityBox.Text.Trim(),
+                ContractType   = _selectedContractType,
+                Subject        = SubjectBox.Text.Trim(),
+                Amount         = amount,
+                VatMode        = (VatModeComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Без НДС",
+                City           = CityBox.Text.Trim(),
                 ContractNumber = ContractNumberBox.Text.Trim(),
-                ValidFrom = ValidFromPicker.Date?.DateTime,
-                ValidTo = ValidToPicker.Date?.DateTime,
-                Party1Json = ResultParty1.ToJson(),
-                Party2Json = ResultParty2.ToJson()
+                ValidFrom      = ValidFromPicker.Date?.DateTime,
+                ValidTo        = ValidToPicker.Date?.DateTime,
+                Party1Json     = ResultParty1.ToJson(),
+                Party2Json     = ResultParty2.ToJson()
             };
+
+            // Сохраняем новых клиентов в базу если отмечено
+            SaveManualPartiesIfRequested();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // ВСПОМОГАТЕЛЬНЫЕ
-        // ─────────────────────────────────────────────────────────────────────
-
-        private static string GetKpp(ClientInfo client)
+        private void SaveManualPartiesIfRequested()
         {
-            var prop = client.GetType().GetProperty("Kpp") ?? client.GetType().GetProperty("KPP");
-            return prop?.GetValue(client)?.ToString() ?? "";
+            if (P1ManualRadio?.IsChecked == true && P1SaveToDbCheckBox?.IsChecked == true && ResultParty1 != null)
+                SavePartyAsClient(ResultParty1);
+            if (P2ManualRadio?.IsChecked == true && P2SaveToDbCheckBox?.IsChecked == true && ResultParty2 != null)
+                SavePartyAsClient(ResultParty2);
+        }
+
+        private static void SavePartyAsClient(ContractParty party)
+        {
+            if (string.IsNullOrWhiteSpace(party.Name) || string.IsNullOrWhiteSpace(party.Inn)) return;
+            try
+            {
+                using var db = new AppDbContext();
+                bool exists = db.Clients.Any(c => c.Inn == party.Inn);
+                if (exists) return;
+
+                var client = new ClientInfo
+                {
+                    Name             = party.Name,
+                    Inn              = party.Inn,
+                    Ogrn             = party.Ogrn,
+                    Address          = party.Address,
+                    DirectorFullName = party.SignerFullName,
+                    Status           = "Активный"
+                };
+                db.Clients.Add(client);
+                db.SaveChanges();
+
+                if (!string.IsNullOrWhiteSpace(party.BankBic) || !string.IsNullOrWhiteSpace(party.SettlementAccount))
+                {
+                    db.BankAccounts.Add(new BankAccount
+                    {
+                        ClientInfoId         = client.Id,
+                        BankName             = party.BankName,
+                        BIC                  = party.BankBic,
+                        AccountNumber        = party.SettlementAccount,
+                        CorrespondentAccount = party.CorrespondentAccount
+                    });
+                    db.SaveChanges();
+                }
+            }
+            catch { /* не прерываем создание договора из-за ошибки сохранения клиента */ }
         }
     }
 }

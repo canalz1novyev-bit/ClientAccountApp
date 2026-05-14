@@ -209,21 +209,59 @@
             </TabViewItem>
 
             <!-- ═══════════════════════════════════════════
-                 НДС
+                 КАЛЬКУЛЯТОРЫ (НДС + 395 ГК РФ)
                  ═══════════════════════════════════════════ -->
             <TabViewItem IsClosable="False">
                 <TabViewItem.Header>
-                    <Border MinWidth="105" Padding="12,8">
+                    <Border MinWidth="155" Padding="12,8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <SymbolIcon Symbol="Calculator"/>
                             <TextBlock
-                    Text="НДС"
+                    Text="Калькуляторы"
                     FontSize="13"
                     FontWeight="SemiBold"
                     VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </TabViewItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="0">
+
+                        <!-- Переключатель калькуляторов — сегментированный контрол -->
+                        <Border Padding="0,16,0,20">
+                            <Border Background="{StaticResource NiatecSurfaceAltBrush}"
+                                    BorderBrush="{StaticResource NiatecBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="3"
+                                    HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" Spacing="2">
+                                    <Button x:Name="CalcNavVatButton"
+                                            Content="НДС"
+                                            MinWidth="110"
+                                            Padding="16,8"
+                                            CornerRadius="8"
+                                            FontWeight="SemiBold"
+                                            Background="{StaticResource NiatecAccentBrush}"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            Click="CalcNavVatButton_Click"/>
+                                    <Button x:Name="CalcNav395Button"
+                                            Content="395 ГК РФ"
+                                            MinWidth="110"
+                                            Padding="16,8"
+                                            CornerRadius="8"
+                                            FontWeight="SemiBold"
+                                            Background="Transparent"
+                                            Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                                            BorderThickness="0"
+                                            Click="CalcNav395Button_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+
+                        <!-- НДС панель -->
+                        <Grid x:Name="VatCalcPanel" Visibility="Visible">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid ColumnSpacing="16" Padding="0,16,0,0">
                         <Grid.ColumnDefinitions>
@@ -283,23 +321,18 @@
                                             <Button Content="22%" Tag="22" MinWidth="54"
                     Style="{StaticResource NiatecSecondaryButtonStyle}"
                     Click="VatPresetRateButton_Click"/>
-
                                             <Button Content="20%" Tag="20" MinWidth="54"
                     Style="{StaticResource NiatecSecondaryButtonStyle}"
                     Click="VatPresetRateButton_Click"/>
-
                                             <Button Content="10%" Tag="10" MinWidth="54"
                     Style="{StaticResource NiatecSecondaryButtonStyle}"
                     Click="VatPresetRateButton_Click"/>
-
                                             <Button Content="7%" Tag="7" MinWidth="54"
                     Style="{StaticResource NiatecSecondaryButtonStyle}"
                     Click="VatPresetRateButton_Click"/>
-
                                             <Button Content="5%" Tag="5" MinWidth="54"
                     Style="{StaticResource NiatecSecondaryButtonStyle}"
                     Click="VatPresetRateButton_Click"/>
-
                                             <Button Content="0%" Tag="0" MinWidth="54"
                     Style="{StaticResource NiatecSecondaryButtonStyle}"
                     Click="VatPresetRateButton_Click"/>
@@ -367,179 +400,162 @@
                         </Border>
                     </Grid>
                 </ScrollViewer>
-            </TabViewItem>
+                        </Grid>
 
-            <!-- ═══════════════════════════════════════════
-                 395 ГК РФ
-                 ═══════════════════════════════════════════ -->
-            <TabViewItem IsClosable="False">
-                <TabViewItem.Header>
-                    <Border MinWidth="135" Padding="12,8">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <SymbolIcon Symbol="Clock"/>
-                            <TextBlock
-                    Text="395 ГК РФ"
-                    FontSize="13"
-                    FontWeight="SemiBold"
-                    VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </TabViewItem.Header>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid ColumnSpacing="16" Padding="0,16,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.05*"/>
-                            <ColumnDefinition Width="0.95*"/>
-                        </Grid.ColumnDefinitions>
+                        <!-- 395 ГК РФ панель -->
+                        <Grid x:Name="Civil395Panel" Visibility="Collapsed"
+                              ColumnSpacing="16" Padding="0,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.05*"/>
+                                <ColumnDefinition Width="0.95*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Style="{StaticResource NiatecCardBorderStyle}">
-                            <StackPanel Spacing="14">
-                                <TextBlock Text="Расчёт процентов по ст. 395 ГК РФ"
-                                           Style="{StaticResource NiatecSectionTitleTextStyle}"/>
-                                <TextBlock Text="Расчёт процентов за просрочку денежного обязательства. Текущий вариант использует одну ставку за весь период."
-                                           Style="{StaticResource NiatecCaptionTextStyle}"/>
+                            <Border Grid.Column="0" Style="{StaticResource NiatecCardBorderStyle}">
+                                <StackPanel Spacing="14">
+                                    <TextBlock Text="Расчёт процентов по ст. 395 ГК РФ"
+                                               Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+                                    <TextBlock Text="Расчёт процентов за просрочку денежного обязательства. Текущий вариант использует одну ставку за весь период."
+                                               Style="{StaticResource NiatecCaptionTextStyle}"/>
 
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Шаг 1. Сумма задолженности"
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Шаг 1. Сумма задолженности"
+                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                       FontWeight="SemiBold"/>
+                                            <TextBox x:Name="Civil395DebtTextBox"
+                                                     Header="Сумма долга"
+                                                     PlaceholderText="Например: 100 000"
+                                                     TextChanged="Civil395Inputs_TextChanged"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Шаг 2. Период просрочки"
+                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                       FontWeight="SemiBold"/>
+                                            <Grid ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <DatePicker x:Name="Civil395StartDatePicker" Grid.Column="0"
+                                                            Header="Дата начала"
+                                                            DateChanged="Civil395DatePicker_DateChanged"/>
+                                                <DatePicker x:Name="Civil395EndDatePicker" Grid.Column="1"
+                                                            Header="Дата окончания"
+                                                            DateChanged="Civil395DatePicker_DateChanged"/>
+                                            </Grid>
+                                            <CheckBox x:Name="Civil395IncludeEndDateCheckBox"
+                                                      Content="Включить последний день"
+                                                      IsChecked="True"
+                                                      Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                      Checked="Civil395IncludeEndDateCheckBox_Changed"
+                                                      Unchecked="Civil395IncludeEndDateCheckBox_Changed"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Шаг 3. Ставка"
+                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                       FontWeight="SemiBold"/>
+                                            <TextBox x:Name="Civil395RateTextBox"
+                                                     Header="Ставка, % годовых"
+                                                     Text="15"
+                                                     TextChanged="Civil395Inputs_TextChanged"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Content="Рассчитать"
+                                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                                Click="CalculateCivil395Button_Click"/>
+                                        <Button Grid.Column="1" Content="Очистить"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="ClearCivil395Button_Click"/>
+                                        <Button Grid.Column="2" Content="Скопировать"
+                                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                                Click="CopyCivil395ResultButton_Click"/>
+                                    </Grid>
+
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <TextBlock x:Name="Civil395StatusTextBlock"
+                                                   Text="Введите сумму, период и ставку."
                                                    Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <TextBox x:Name="Civil395DebtTextBox"
-                                                 Header="Сумма долга"
-                                                 PlaceholderText="Например: 100 000"
-                                                 TextChanged="Civil395Inputs_TextChanged"/>
-                                    </StackPanel>
-                                </Border>
+                                                   TextWrapping="Wrap"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
 
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Шаг 2. Период просрочки"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <Grid ColumnSpacing="12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <DatePicker x:Name="Civil395StartDatePicker" Grid.Column="0"
-                                                        Header="Дата начала"
-                                                        DateChanged="Civil395DatePicker_DateChanged"/>
-                                            <DatePicker x:Name="Civil395EndDatePicker" Grid.Column="1"
-                                                        Header="Дата окончания"
-                                                        DateChanged="Civil395DatePicker_DateChanged"/>
-                                        </Grid>
-                                        <CheckBox x:Name="Civil395IncludeEndDateCheckBox"
-                                                  Content="Включить последний день"
-                                                  IsChecked="True"
-                                                  Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                                  Checked="Civil395IncludeEndDateCheckBox_Changed"
-                                                  Unchecked="Civil395IncludeEndDateCheckBox_Changed"/>
-                                    </StackPanel>
-                                </Border>
+                            <Border Grid.Column="1" Style="{StaticResource NiatecCardBorderStyle}">
+                                <StackPanel Spacing="14">
+                                    <TextBlock Text="Результат" Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+                                    <TextBlock Text="Итоговый расчёт можно скопировать и использовать как черновик для претензии или расчёта."
+                                               Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Период" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                            <TextBox x:Name="Civil395DaysResultTextBox"
+                                                     Text="Дней просрочки: —" IsReadOnly="True" TextWrapping="Wrap"
+                                                     Background="{StaticResource NiatecBackgroundBrush}"
+                                                     BorderBrush="{StaticResource NiatecBorderBrush}"
+                                                     BorderThickness="1"
+                                                     Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                     Padding="10,8"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Проценты" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                            <TextBox x:Name="Civil395InterestResultTextBox"
+                                                     Text="Проценты: —" IsReadOnly="True" TextWrapping="Wrap"
+                                                     Background="{StaticResource NiatecBackgroundBrush}"
+                                                     BorderBrush="{StaticResource NiatecBorderBrush}"
+                                                     BorderThickness="1"
+                                                     Foreground="{StaticResource NiatecAccentBrush}"
+                                                     FontSize="22" FontWeight="SemiBold" Padding="10,8"/>
+                                            <TextBox x:Name="Civil395TotalResultTextBox"
+                                                     Text="Итого к взысканию: —" IsReadOnly="True" TextWrapping="Wrap"
+                                                     Background="{StaticResource NiatecBackgroundBrush}"
+                                                     BorderBrush="{StaticResource NiatecBorderBrush}"
+                                                     BorderThickness="1"
+                                                     Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                     FontWeight="SemiBold" Padding="10,8"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Формула" Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                            <TextBox x:Name="Civil395FormulaResultTextBox"
+                                                     Text="Формула: —" IsReadOnly="True"
+                                                     AcceptsReturn="True" TextWrapping="Wrap" Height="120"
+                                                     Background="{StaticResource NiatecBackgroundBrush}"
+                                                     BorderBrush="{StaticResource NiatecBorderBrush}"
+                                                     BorderThickness="1"
+                                                     Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                                                     Padding="10,8"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="Важно"
+                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                       FontWeight="SemiBold"/>
+                                            <TextBlock Text="Это упрощённый вариант расчёта по одной ставке. Для судебного расчёта за длительный период позже можно добавить разбивку по изменениям ключевой ставки ЦБ."
+                                                       Style="{StaticResource NiatecCaptionTextStyle}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
 
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Шаг 3. Ставка"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <TextBox x:Name="Civil395RateTextBox"
-                                                 Header="Ставка, % годовых"
-                                                 Text="15"
-                                                 TextChanged="Civil395Inputs_TextChanged"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Рассчитать"
-                                            Style="{StaticResource NiatecPrimaryButtonStyle}"
-                                            Click="CalculateCivil395Button_Click"/>
-                                    <Button Grid.Column="1" Content="Очистить"
-                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                            Click="ClearCivil395Button_Click"/>
-                                    <Button Grid.Column="2" Content="Скопировать"
-                                            Style="{StaticResource NiatecSecondaryButtonStyle}"
-                                            Click="CopyCivil395ResultButton_Click"/>
-                                </Grid>
-
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <TextBlock x:Name="Civil395StatusTextBlock"
-                                               Text="Введите сумму, период и ставку."
-                                               Foreground="{StaticResource NiatecAccentBrush}"
-                                               TextWrapping="Wrap"/>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-
-                        <Border Grid.Column="1" Style="{StaticResource NiatecCardBorderStyle}">
-                            <StackPanel Spacing="14">
-                                <TextBlock Text="Результат" Style="{StaticResource NiatecSectionTitleTextStyle}"/>
-                                <TextBlock Text="Итоговый расчёт можно скопировать и использовать как черновик для претензии или расчёта."
-                                           Style="{StaticResource NiatecCaptionTextStyle}"/>
-
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Период" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                                        <TextBox x:Name="Civil395DaysResultTextBox"
-                                                 Text="Дней просрочки: —" IsReadOnly="True" TextWrapping="Wrap"
-                                                 Background="{StaticResource NiatecBackgroundBrush}"
-                                                 BorderBrush="{StaticResource NiatecBorderBrush}"
-                                                 BorderThickness="1"
-                                                 Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                                 Padding="10,8"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Проценты" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                                        <TextBox x:Name="Civil395InterestResultTextBox"
-                                                 Text="Проценты: —" IsReadOnly="True" TextWrapping="Wrap"
-                                                 Background="{StaticResource NiatecBackgroundBrush}"
-                                                 BorderBrush="{StaticResource NiatecBorderBrush}"
-                                                 BorderThickness="1"
-                                                 Foreground="{StaticResource NiatecAccentBrush}"
-                                                 FontSize="22" FontWeight="SemiBold" Padding="10,8"/>
-                                        <TextBox x:Name="Civil395TotalResultTextBox"
-                                                 Text="Итого к взысканию: —" IsReadOnly="True" TextWrapping="Wrap"
-                                                 Background="{StaticResource NiatecBackgroundBrush}"
-                                                 BorderBrush="{StaticResource NiatecBorderBrush}"
-                                                 BorderThickness="1"
-                                                 Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                                 FontWeight="SemiBold" Padding="10,8"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Формула" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                                        <TextBox x:Name="Civil395FormulaResultTextBox"
-                                                 Text="Формула: —" IsReadOnly="True"
-                                                 AcceptsReturn="True" TextWrapping="Wrap" Height="120"
-                                                 Background="{StaticResource NiatecBackgroundBrush}"
-                                                 BorderBrush="{StaticResource NiatecBorderBrush}"
-                                                 BorderThickness="1"
-                                                 Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                                 Padding="10,8"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
-                                    <StackPanel Spacing="6">
-                                        <TextBlock Text="Важно"
-                                                   Foreground="{StaticResource NiatecAccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <TextBlock Text="Это упрощённый вариант расчёта по одной ставке. Для судебного расчёта за длительный период позже можно добавить разбивку по изменениям ключевой ставки ЦБ."
-                                                   Style="{StaticResource NiatecCaptionTextStyle}"/>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
+                    </StackPanel>
                 </ScrollViewer>
             </TabViewItem>
             <!-- ═══════════════════════════════════════════
@@ -1052,6 +1068,29 @@
 
                     </StackPanel>
                 </ScrollViewer>
+            </TabViewItem>
+
+            <!-- ═══════════════════════════════════════════
+                 МАСТЕР ДОГОВОРОВ
+                 ═══════════════════════════════════════════ -->
+            <TabViewItem IsClosable="False">
+                <TabViewItem.Header>
+                    <Border MinWidth="175" Padding="12,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <SymbolIcon Symbol="Page2"/>
+                            <TextBlock
+                    Text="Мастер договоров"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </TabViewItem.Header>
+                <Grid Padding="0,16,0,0">
+                    <Frame
+                        x:Name="ContractWizardToolFrame"
+                        Loaded="ContractWizardToolFrame_Loaded"/>
+                </Grid>
             </TabViewItem>
 
         </TabView>
