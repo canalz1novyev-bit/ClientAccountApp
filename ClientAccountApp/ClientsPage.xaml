@@ -550,123 +550,122 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Быстрый обзор -->
-                                <Grid ColumnSpacing="12" RowSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <Border Grid.Row="0" Grid.Column="0"
-                        Background="{StaticResource NiatecSurfaceBrush}"
-                        CornerRadius="14"
-                        Padding="14"
-                        BorderBrush="{StaticResource NiatecBorderBrush}"
-                        BorderThickness="1">
-                                        <StackPanel Spacing="6">
-                                            <TextBlock Text="ЭЦП"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-                                            <TextBlock x:Name="OverviewSignatureTextBlock"
-                                   Text="—"
-                                   FontSize="13"
-                                   Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                   TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="0" Grid.Column="1"
-                        Background="{StaticResource NiatecSurfaceBrush}"
-                        CornerRadius="14"
-                        Padding="14"
-                        BorderBrush="{StaticResource NiatecBorderBrush}"
-                        BorderThickness="1">
-                                        <StackPanel Spacing="6">
-                                            <TextBlock Text="Банковские счета"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-                                            <TextBlock x:Name="OverviewAccountsTextBlock"
-                                   Text="—"
-                                   FontSize="13"
-                                   Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                   TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="0"
-                        Background="{StaticResource NiatecSurfaceBrush}"
-                        CornerRadius="14"
-                        Padding="14"
-                        BorderBrush="{StaticResource NiatecBorderBrush}"
-                        BorderThickness="1">
-                                        <StackPanel Spacing="6">
-                                            <TextBlock Text="Заметки"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-                                            <TextBlock x:Name="OverviewNotesTextBlock"
-                                   Text="—"
-                                   FontSize="13"
-                                   Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                   TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="1"
-                        Background="{StaticResource NiatecSurfaceBrush}"
-                        CornerRadius="14"
-                        Padding="14"
-                        BorderBrush="{StaticResource NiatecBorderBrush}"
-                        BorderThickness="1">
-                                        <StackPanel Spacing="6">
-                                            <TextBlock Text="Документы"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-                                            <TextBlock x:Name="OverviewFilesTextBlock"
-                                   Text="Откройте вкладку «Файлы» или папку клиента"
-                                   FontSize="13"
-                                   Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                   TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                        Background="{StaticResource NiatecSurfaceBrush}"
-                        CornerRadius="14"
-                        Padding="14"
-                        BorderBrush="{StaticResource NiatecBorderBrush}"
-                        BorderThickness="1">
-                                        <StackPanel Spacing="6">
-                                            <TextBlock Text="Адрес"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-                                            <TextBlock x:Name="OverviewAddressTextBlock"
-                                   Text="—"
-                                   FontSize="13"
-                                   Foreground="{StaticResource NiatecTextSecondaryBrush}"
-                                   TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-
-                                <Border Background="{StaticResource NiatecSurfaceAltBrush}"
+                                <!-- Сводка клиента — единый блок вместо 5 мини-карточек -->
+                                <Border Background="{StaticResource NiatecSurfaceBrush}"
                     CornerRadius="14"
-                    Padding="12"
+                    Padding="16,4"
                     BorderBrush="{StaticResource NiatecBorderBrush}"
                     BorderThickness="1">
-                                    <TextBlock Text="Для изменения данных клиента откройте вкладку «Карточка». Остальные рабочие данные доступны во вкладках ЭЦП, Банк, Заметки и Файлы."
-                           FontSize="12"
-                           Foreground="{StaticResource NiatecTextMutedBrush}"
-                           TextWrapping="Wrap"/>
+                                    <StackPanel>
+
+                                        <!-- ЭЦП -->
+                                        <Grid Padding="0,11" ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="ЭЦП"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextMutedBrush}"
+                                   VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="OverviewSignatureTextBlock"
+                                   Grid.Column="1"
+                                   Text="—"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+
+                                        <!-- Банковские счета -->
+                                        <Grid Padding="0,11" ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Банковские счета"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"/>
+                                            <TextBlock x:Name="OverviewAccountsTextBlock"
+                                   Grid.Column="1"
+                                   Text="—"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+
+                                        <!-- Заметки -->
+                                        <Grid Padding="0,11" ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Заметки"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextMutedBrush}"
+                                   VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="OverviewNotesTextBlock"
+                                   Grid.Column="1"
+                                   Text="—"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+
+                                        <!-- Документы -->
+                                        <Grid Padding="0,11" ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Документы"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextMutedBrush}"
+                                   VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="OverviewFilesTextBlock"
+                                   Grid.Column="1"
+                                   Text="—"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+
+                                        <!-- Адрес -->
+                                        <Grid Padding="0,11" ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Адрес"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextMutedBrush}"
+                                   VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="OverviewAddressTextBlock"
+                                   Grid.Column="1"
+                                   Text="—"
+                                   FontSize="13"
+                                   Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                    </StackPanel>
                                 </Border>
 
                             </StackPanel>
@@ -1479,7 +1478,7 @@
                                                                 FontSize="15" FontWeight="SemiBold"
                                                                 Foreground="{StaticResource NiatecTextPrimaryBrush}" TextWrapping="Wrap"/>
                                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                                <Border Background="#2F4F6F" CornerRadius="8" Padding="8,2">
+                                                                <Border Background="{StaticResource NiatecInfoBrush}" CornerRadius="8" Padding="8,2">
                                                                     <TextBlock Text="{x:Bind FileTypeLabel}"
                                                                         Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                                                         FontSize="12" FontWeight="SemiBold"/>

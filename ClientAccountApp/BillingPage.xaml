@@ -46,21 +46,21 @@
                     BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
                     <TextBlock Text="Оплачено" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatPaidTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="#5A9E6E"/>
+                    <TextBlock x:Name="StatPaidTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource NiatecSuccessBrush}"/>
                 </StackPanel>
             </Border>
             <Border Grid.Column="2" Background="{StaticResource NiatecSurfaceAltBrush}"
                     BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
                     <TextBlock Text="Выставлено" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatIssuedTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="#D7BA7D"/>
+                    <TextBlock x:Name="StatIssuedTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource NiatecAccentBrush}"/>
                 </StackPanel>
             </Border>
             <Border Grid.Column="3" Background="{StaticResource NiatecSurfaceAltBrush}"
                     BorderBrush="{StaticResource NiatecDangerBrush}" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
                     <TextBlock Text="Просрочено" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatOverdueTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="#E24B4A"/>
+                    <TextBlock x:Name="StatOverdueTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource NiatecDangerBrush}"/>
                 </StackPanel>
             </Border>
         </Grid>
@@ -103,8 +103,7 @@
 
             <!-- Левая колонка: реестр счетов -->
             <Border Grid.Column="0" Background="{StaticResource NiatecSurfaceBrush}"
-        BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="12"
-        RequestedTheme="Light">
+        BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="12">
                 <Grid RowSpacing="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -272,8 +271,7 @@
 
             <!-- Правая колонка: форма счёта -->
             <Border Grid.Column="1" Background="{StaticResource NiatecSurfaceBrush}"
-        BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="0"
-        RequestedTheme="Light">
+        BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>

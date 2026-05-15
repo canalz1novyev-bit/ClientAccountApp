@@ -143,49 +143,111 @@
                 Grid.Column="1"
                 Style="{StaticResource NiatecCardBorderStyle}">
 
-                <StackPanel Spacing="10">
+                <StackPanel Spacing="12">
                     <TextBlock
                         Text="Карточка ЭЦП"
                         Style="{StaticResource NiatecSectionTitleTextStyle}"/>
 
-                    <TextBlock Text="Клиент" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                    <TextBlock
-                        x:Name="ProblemClientNameTextBlock"
-                        Text="—"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                        TextWrapping="Wrap"/>
+                    <!-- Строки: подпись слева, значение справа -->
+                    <Border Background="{StaticResource NiatecSurfaceAltBrush}"
+                            BorderBrush="{StaticResource NiatecBorderBrush}"
+                            BorderThickness="1" CornerRadius="12" Padding="14,4">
+                        <StackPanel>
 
-                    <TextBlock Text="ИНН" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                    <TextBlock
-                        x:Name="ProblemInnTextBlock"
-                        Text="—"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            <Grid Padding="0,10" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Клиент" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextMutedBrush}"
+                                           VerticalAlignment="Top" Margin="0,1,0,0"/>
+                                <TextBlock x:Name="ProblemClientNameTextBlock" Grid.Column="1"
+                                           Text="—" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                           TextWrapping="Wrap"/>
+                            </Grid>
 
-                    <TextBlock Text="Удостоверяющий центр" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                    <TextBlock
-                        x:Name="ProblemAuthorityTextBlock"
-                        Text="—"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                        TextWrapping="Wrap"/>
+                            <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
 
-                    <TextBlock Text="Дата окончания" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                    <TextBlock
-                        x:Name="ProblemExpiresTextBlock"
-                        Text="—"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            <Grid Padding="0,10" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="ИНН" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextMutedBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock x:Name="ProblemInnTextBlock" Grid.Column="1"
+                                           Text="—" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            </Grid>
 
-                    <TextBlock Text="Статус" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                    <TextBlock
-                        x:Name="ProblemStatusTextBlock"
-                        Text="—"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
 
-                    <TextBlock Text="Комментарий" Style="{StaticResource NiatecCaptionTextStyle}"/>
-                    <TextBlock
-                        x:Name="ProblemCommentTextBlock"
-                        Text="—"
-                        Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                        TextWrapping="Wrap"/>
+                            <Grid Padding="0,10" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Удост. центр" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextMutedBrush}"
+                                           VerticalAlignment="Top" Margin="0,1,0,0"/>
+                                <TextBlock x:Name="ProblemAuthorityTextBlock" Grid.Column="1"
+                                           Text="—" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                           TextWrapping="Wrap"/>
+                            </Grid>
+
+                            <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+
+                            <Grid Padding="0,10" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Дата окончания" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextMutedBrush}"
+                                           VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="ProblemExpiresTextBlock" Grid.Column="1"
+                                           Text="—" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
+                            </Grid>
+
+                            <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+
+                            <Grid Padding="0,10" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Статус" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextMutedBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock x:Name="ProblemStatusTextBlock" Grid.Column="1"
+                                           Text="—" FontSize="13" FontWeight="SemiBold"
+                                           Foreground="{StaticResource NiatecWarningBrush}"
+                                           TextWrapping="Wrap"/>
+                            </Grid>
+
+                            <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+
+                            <Grid Padding="0,10" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Комментарий" FontSize="12"
+                                           Foreground="{StaticResource NiatecTextMutedBrush}"
+                                           VerticalAlignment="Top" Margin="0,1,0,0"/>
+                                <TextBlock x:Name="ProblemCommentTextBlock" Grid.Column="1"
+                                           Text="—" FontSize="13"
+                                           Foreground="{StaticResource NiatecTextSecondaryBrush}"
+                                           TextWrapping="Wrap"/>
+                            </Grid>
+
+                        </StackPanel>
+                    </Border>
 
                     <Button
                         Content="Перейти к клиенту"

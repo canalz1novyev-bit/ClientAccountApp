@@ -36,9 +36,9 @@ namespace ClientAccountApp
 
             string status = themeKey switch
             {
-                ThemeService.ThemeDark => "Тёмная тема применена.",
-                ThemeService.ThemeLight => "Светлая тема применена.",
-                ThemeService.ThemeMilitary => "Тема M81 Woodland применена.",
+                ThemeService.ThemeDark => "✓ Тёмная тема применена.",
+                ThemeService.ThemeLight => "✓ Светлая тема применена.",
+                ThemeService.ThemeMilitary => "✓ Военная тема применена.",
                 _ => ""
             };
             if (string.IsNullOrEmpty(status)) return;
@@ -52,26 +52,23 @@ namespace ClientAccountApp
         {
             string theme = ThemeService.CurrentTheme;
 
-            var accent = new SolidColorBrush(ColorHelper.FromArgb(255, 184, 134, 11));
-            var milAccent = new SolidColorBrush(ColorHelper.FromArgb(255, 100, 160, 50));
-            var def = new SolidColorBrush(ColorHelper.FromArgb(255, 42, 53, 72));
+            var accentBrush  = ThemeService.GetBrush("NiatecAccentBrush");
+            var milAccent    = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 100, 160, 50));
+            var defaultBrush = ThemeService.GetBrush("NiatecBorderBrush");
 
-            DarkThemeCard.BorderBrush = theme == ThemeService.ThemeDark ? accent : def;
+            DarkThemeCard.BorderBrush = theme == ThemeService.ThemeDark ? accentBrush : defaultBrush;
             DarkThemeCard.BorderThickness = theme == ThemeService.ThemeDark
-                ? new Thickness(2)
-                : new Thickness(1);
+                ? new Thickness(2.5) : new Thickness(1.5);
 
-            LightThemeCard.BorderBrush = theme == ThemeService.ThemeLight ? accent : def;
+            LightThemeCard.BorderBrush = theme == ThemeService.ThemeLight ? accentBrush : defaultBrush;
             LightThemeCard.BorderThickness = theme == ThemeService.ThemeLight
-                ? new Thickness(2)
-                : new Thickness(1);
+                ? new Thickness(2.5) : new Thickness(1.5);
 
             if (MilitaryThemeCard != null)
             {
-                MilitaryThemeCard.BorderBrush = theme == ThemeService.ThemeMilitary ? milAccent : def;
+                MilitaryThemeCard.BorderBrush = theme == ThemeService.ThemeMilitary ? milAccent : defaultBrush;
                 MilitaryThemeCard.BorderThickness = theme == ThemeService.ThemeMilitary
-                    ? new Thickness(2)
-                    : new Thickness(1);
+                    ? new Thickness(2.5) : new Thickness(1.5);
             }
         }
 

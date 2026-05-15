@@ -20,7 +20,6 @@
 
                 <Grid ColumnSpacing="10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="24"/>
                         <ColumnDefinition Width="2.2*"/>
                         <ColumnDefinition Width="145"/>
                         <ColumnDefinition Width="115"/>
@@ -28,26 +27,7 @@
                         <ColumnDefinition Width="360"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border
-                    Grid.Column="0"
-                    Width="16"
-                    Height="16"
-                    CornerRadius="8"
-                    Background="{Binding StatusBrush}"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center">
-
-                        <TextBlock
-                        Text="{Binding StatusIcon}"
-                        Foreground="White"
-                        FontSize="9"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        TextAlignment="Center"/>
-                    </Border>
-
-                    <StackPanel Grid.Column="1" Spacing="2">
+                    <StackPanel Grid.Column="0" Spacing="2">
                         <TextBlock
                         Text="{Binding ClientName}"
                         FontSize="13"
@@ -63,7 +43,7 @@
                     </StackPanel>
 
                     <TextBlock
-                    Grid.Column="2"
+                    Grid.Column="1"
                     Text="{Binding ContractStatusText}"
                     FontSize="12"
                     FontWeight="SemiBold"
@@ -72,14 +52,14 @@
                     TextTrimming="CharacterEllipsis"/>
 
                     <TextBlock
-                    Grid.Column="3"
+                    Grid.Column="2"
                     Text="{Binding ContractNumber}"
                     FontSize="12"
                     Foreground="{StaticResource NiatecTextPrimaryBrush}"
                     VerticalAlignment="Center"
                     TextTrimming="CharacterEllipsis"/>
 
-                    <StackPanel Grid.Column="4" Spacing="2" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="3" Spacing="2" VerticalAlignment="Center">
                         <TextBlock
                         Text="{Binding GeneratedAtText}"
                         FontSize="11"
@@ -94,7 +74,7 @@
                     </StackPanel>
 
                     <StackPanel
-                    Grid.Column="5"
+                    Grid.Column="4"
                     Orientation="Horizontal"
                     Spacing="6"
                     HorizontalAlignment="Right"
@@ -348,38 +328,12 @@
 
                                         <!-- Клиент и статус -->
                                         <StackPanel Grid.Column="0" Spacing="6">
-                                            <Grid ColumnSpacing="10">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <Border
-                                                    Width="18"
-                                                    Height="18"
-                                                    CornerRadius="9"
-                                                    Background="{Binding StatusBrush}"
-                                                    VerticalAlignment="Top"
-                                                    Margin="0,2,0,0">
-
-                                                    <TextBlock
-                                                        Text="{Binding StatusIcon}"
-                                                        Foreground="White"
-                                                        FontSize="10"
-                                                        FontWeight="SemiBold"
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center"
-                                                        TextAlignment="Center"/>
-                                                </Border>
-
-                                                <TextBlock
-                                                    Grid.Column="1"
-                                                    Text="{Binding ClientName}"
-                                                    FontSize="16"
-                                                    FontWeight="SemiBold"
-                                                    Foreground="{StaticResource NiatecTextPrimaryBrush}"
-                                                    TextWrapping="Wrap"/>
-                                            </Grid>
+                                            <TextBlock
+                                                Text="{Binding ClientName}"
+                                                FontSize="16"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                TextWrapping="Wrap"/>
 
                                             <TextBlock
                                                 Text="{Binding ClientMetaText}"
@@ -393,31 +347,58 @@
                                                 TextWrapping="Wrap"/>
                                         </StackPanel>
 
-                                        <!-- Реквизиты договора -->
-                                        <StackPanel Grid.Column="1" Spacing="6">
-                                            <TextBlock
-                                                Text="Номер договора"
-                                                Style="{StaticResource NiatecCaptionTextStyle}"/>
-                                            <TextBlock
-                                                Text="{Binding ContractNumber}"
-                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                            <TextBlock
-                                                Text="Сформирован"
-                                                Style="{StaticResource NiatecCaptionTextStyle}"
-                                                Margin="0,6,0,0"/>
-                                            <TextBlock
-                                                Text="{Binding GeneratedAtText}"
-                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-
-                                            <TextBlock
-                                                Text="Подписан"
-                                                Style="{StaticResource NiatecCaptionTextStyle}"
-                                                Margin="0,6,0,0"/>
-                                            <TextBlock
-                                                Text="{Binding SignedAtText}"
-                                                Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
-                                        </StackPanel>
+                                        <!-- Реквизиты договора — строки с разделителями -->
+                                        <Border Grid.Column="1"
+                                                Background="{StaticResource NiatecSurfaceBrush}"
+                                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                                BorderThickness="1" CornerRadius="10" Padding="12,2">
+                                            <StackPanel>
+                                                <Grid Padding="0,8" ColumnSpacing="10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="85"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Номер" FontSize="12"
+                                                               Foreground="{StaticResource NiatecTextMutedBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding ContractNumber}"
+                                                               FontSize="13" FontWeight="SemiBold"
+                                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                                <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+                                                <Grid Padding="0,8" ColumnSpacing="10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="85"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Сформирован" FontSize="12"
+                                                               Foreground="{StaticResource NiatecTextMutedBrush}"
+                                                               VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding GeneratedAtText}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                                <Border BorderThickness="0,0,0,1" BorderBrush="{StaticResource NiatecBorderBrush}" CornerRadius="0"/>
+                                                <Grid Padding="0,8" ColumnSpacing="10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="85"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Подписан" FontSize="12"
+                                                               Foreground="{StaticResource NiatecTextMutedBrush}"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding SignedAtText}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource NiatecTextPrimaryBrush}"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
 
                                         <!-- Действия -->
                                         <StackPanel Grid.Column="2" Spacing="8">

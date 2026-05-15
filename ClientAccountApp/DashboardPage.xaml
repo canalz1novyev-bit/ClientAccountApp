@@ -65,6 +65,16 @@
                     Click="RefreshDashboardButton_Click"
                     VerticalAlignment="Top"
                     Style="{StaticResource NiatecSecondaryButtonStyle}"/>
+
+                <ProgressRing
+                    x:Name="DashboardProgressRing"
+                    Grid.Column="1"
+                    Width="20" Height="20"
+                    VerticalAlignment="Top"
+                    Margin="0,8,0,0"
+                    IsActive="False"
+                    Visibility="Collapsed"
+                    Foreground="{StaticResource NiatecAccentBrush}"/>
             </Grid>
 
             <!-- Карточки показателей -->

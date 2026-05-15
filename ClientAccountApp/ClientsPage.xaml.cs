@@ -1312,19 +1312,59 @@ namespace ClientAccountApp
             int organizationId = ActiveOrganizationService.GetRequired().Id;
             using (var db = new AppDbContext())
             {
-                var contractMap = db.ClientContracts.AsNoTracking().Where(x => x.OrganizationProfileId == organizationId).ToDictionary(x => x.ClientInfoId);
-                var clientsFromDb = db.Clients.AsNoTracking().OrderBy(c => c.Name).ToList();
+                // ── Батч-загрузка: 5 запросов вместо 6×N ──────────────────────────
+                var contractMap = db.ClientContracts
+                    .AsNoTracking()
+                    .Where(x => x.OrganizationProfileId == organizationId)
+                    .ToDictionary(x => x.ClientInfoId);
+
+                // Все ЭЦП одним запросом, сгруппированные по клиенту
+                var signaturesMap = db.DigitalSignatures
+                    .AsNoTracking()
+                    .OrderBy(s => s.ExpiresDate)
+                    .ToList()
+                    .GroupBy(s => s.ClientInfoId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // Кол-во счетов и имя первого банка одним запросом
+                var accountsMap = db.BankAccounts
+                    .AsNoTracking()
+                    .OrderBy(a => a.BankName)
+                    .ToList()
+                    .GroupBy(a => a.ClientInfoId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // Кол-во заметок и дата последней — одним запросом
+                var notesMap = db.ClientNotes
+                    .AsNoTracking()
+                    .ToList()
+                    .GroupBy(n => n.ClientInfoId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                var clientsFromDb = db.Clients
+                    .AsNoTracking()
+                    .OrderBy(c => c.Name)
+                    .ToList();
+
+                // ── Цикл без обращений к БД ────────────────────────────────────────
                 foreach (var client in clientsFromDb)
                 {
-                    client.SignatureCount = db.DigitalSignatures.Count(s => s.ClientInfoId == client.Id);
-                    client.AccountCount = db.BankAccounts.Count(a => a.ClientInfoId == client.Id);
-                    client.NoteCount = db.ClientNotes.Count(n => n.ClientInfoId == client.Id);
-                    var clientSignatures = db.DigitalSignatures.AsNoTracking().Where(s => s.ClientInfoId == client.Id).OrderBy(s => s.ExpiresDate).ToList();
+                    var clientSignatures = signaturesMap.TryGetValue(client.Id, out var sigs) ? sigs : new List<DigitalSignature>();
+                    var clientAccounts   = accountsMap.TryGetValue(client.Id, out var accs)   ? accs : new List<BankAccount>();
+                    var clientNotes      = notesMap.TryGetValue(client.Id, out var nts)         ? nts  : new List<ClientNote>();
+
+                    client.SignatureCount = clientSignatures.Count;
+                    client.AccountCount  = clientAccounts.Count;
+                    client.NoteCount     = clientNotes.Count;
+
                     FillClientSignatureInfo(client, clientSignatures);
-                    var latestNote = db.ClientNotes.AsNoTracking().Where(n => n.ClientInfoId == client.Id).OrderByDescending(n => n.CreatedAt).FirstOrDefault();
+
+                    var latestNote = clientNotes.OrderByDescending(n => n.CreatedAt).FirstOrDefault();
                     if (latestNote != null) client.LatestNoteCreatedAt = latestNote.CreatedAt;
-                    var primaryBank = db.BankAccounts.AsNoTracking().Where(a => a.ClientInfoId == client.Id).OrderBy(a => a.BankName).FirstOrDefault();
+
+                    var primaryBank = clientAccounts.FirstOrDefault();
                     if (primaryBank != null) client.PrimaryBankName = primaryBank.BankName;
+
                     ApplyActiveOrganizationContractStateToClient(client, contractMap);
                     if (!MatchesCurrentFilter(client)) continue;
                     _clients.Add(client);

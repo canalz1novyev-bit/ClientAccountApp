@@ -22,37 +22,53 @@
             <Border Grid.Row="1" Style="{StaticResource NiatecCardBorderStyle}">
                 <StackPanel Spacing="16">
                     <TextBlock Text="Тема приложения" Style="{StaticResource NiatecSectionTitleTextStyle}"/>
-                    <TextBlock Text="Выберите тёмную или светлую тему. Изменение применяется немедленно."
+                    <TextBlock Text="Выберите одну из трёх тем оформления. Изменение применяется немедленно."
                                Style="{StaticResource NiatecCaptionTextStyle}"/>
 
                     <StackPanel Orientation="Horizontal" Spacing="12">
+
+                        <!-- Тёмная тема -->
                         <Border x:Name="DarkThemeCard"
-                                Width="160" Height="100" CornerRadius="12"
+                                Width="160" Height="110" CornerRadius="12"
                                 Background="#0B0F17"
-                                BorderBrush="{StaticResource NiatecBorderBrush}"
-                                BorderThickness="2" Padding="12"
+                                BorderThickness="2" Padding="14"
                                 Tapped="DarkThemeCard_Tapped">
-                            <StackPanel Spacing="8" VerticalAlignment="Center">
-                                <TextBlock Text="Тёмная" Foreground="White"
+                            <StackPanel Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="🌑  Тёмная" Foreground="White"
                                            FontSize="14" FontWeight="SemiBold"/>
                                 <TextBlock Text="Классический тёмный интерфейс"
                                            Foreground="#9AA7BD" FontSize="11" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
+                        <!-- Светлая тема -->
                         <Border x:Name="LightThemeCard"
-                                Width="160" Height="100" CornerRadius="12"
+                                Width="160" Height="110" CornerRadius="12"
                                 Background="#F0F2F5"
-                                BorderBrush="{StaticResource NiatecBorderBrush}"
-                                BorderThickness="2" Padding="12"
+                                BorderThickness="2" Padding="14"
                                 Tapped="LightThemeCard_Tapped">
-                            <StackPanel Spacing="8" VerticalAlignment="Center">
-                                <TextBlock Text="Светлая" Foreground="#1A2033"
+                            <StackPanel Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="☀️  Светлая" Foreground="#1A2033"
                                            FontSize="14" FontWeight="SemiBold"/>
                                 <TextBlock Text="Светлый интерфейс для работы днём"
                                            Foreground="#4A5568" FontSize="11" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
+
+                        <!-- Военная тема -->
+                        <Border x:Name="MilitaryThemeCard"
+                                Width="160" Height="110" CornerRadius="12"
+                                Background="#16200E"
+                                BorderThickness="2" Padding="14"
+                                Tapped="MilitaryThemeCard_Tapped">
+                            <StackPanel Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="🌿  Военная" Foreground="#D0E8A0"
+                                           FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="Оливковый стиль для особых условий"
+                                           Foreground="#8AAA64" FontSize="11" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
 
                     <TextBlock x:Name="ThemeStatusTextBlock" Text=""

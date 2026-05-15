@@ -7,9 +7,24 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ClientAccountApp
 {
+    // DTO для передачи данных из фонового потока в UI-поток
+    internal sealed class DashboardData
+    {
+        public OrganizationProfile?          Organization        { get; init; }
+        public List<ClientInfo>              Clients             { get; init; } = new();
+        public Dictionary<int, string>       ClientMap           { get; init; } = new();
+        public List<DigitalSignature>        AttentionSignatures { get; init; } = new();
+        public List<ClientContract>          ContractsInWork     { get; init; } = new();
+        public List<Invoice>                 UnpaidInvoices      { get; init; } = new();
+        public List<Invoice>                 Invoices            { get; init; } = new();
+        public List<ClientContract>          Contracts           { get; init; } = new();
+        public DateTime                      Today               { get; init; }
+    }
+
     public sealed partial class DashboardPage : Page
     {
         private static readonly CultureInfo RuCulture = new("ru-RU");
@@ -22,92 +37,32 @@ namespace ClientAccountApp
 
         private void DashboardPage_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadDashboard();
+            _ = LoadDashboardAsync();
         }
 
         private void RefreshDashboardButton_Click(object sender, RoutedEventArgs e)
         {
-            LoadDashboard();
+            _ = LoadDashboardAsync();
         }
 
-        private void LoadDashboard()
+        private void SetLoadingState(bool isLoading)
         {
+            RefreshDashboardButton.IsEnabled    = !isLoading;
+            RefreshDashboardButton.Visibility   = isLoading ? Visibility.Collapsed : Visibility.Visible;
+            DashboardProgressRing.IsActive      = isLoading;
+            DashboardProgressRing.Visibility    = isLoading ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async Task LoadDashboardAsync()
+        {
+            SetLoadingState(true);
             try
             {
-                var organization = ActiveOrganizationService.Current;
+                // Вся работа с БД — в фоновом потоке
+                var data = await Task.Run(() => FetchDashboardData());
 
-                ActiveOrganizationTextBlock.Text = organization == null
-                    ? "Рабочая организация: не выбрана"
-                    : $"Рабочая организация: {organization.Name} · ИНН {organization.Inn}";
-
-                DashboardUpdatedAtTextBlock.Text = $"Обновлено: {DateTime.Now:dd.MM.yyyy HH:mm}";
-
-                if (organization != null)
-                {
-                    ClientContractService.EnsureContractsForActiveOrganization();
-                }
-
-                using var db = new AppDbContext();
-
-                int organizationId = organization?.Id ?? 0;
-                DateTime today = DateTime.Today;
-
-                var clients = db.Clients
-                    .AsNoTracking()
-                    .OrderBy(c => c.Name)
-                    .ToList();
-
-                var clientMap = clients.ToDictionary(
-                    c => c.Id,
-                    c => string.IsNullOrWhiteSpace(c.Name) ? "Клиент без названия" : c.Name);
-
-                var signatures = db.DigitalSignatures
-                    .AsNoTracking()
-                    .ToList();
-
-                var attentionSignatures = signatures
-                    .Where(s => s.ExpiresDate.Date <= today.AddDays(30))
-                    .OrderBy(s => s.ExpiresDate)
-                    .ToList();
-
-                var contracts = organizationId > 0
-                    ? db.ClientContracts
-                        .AsNoTracking()
-                        .Where(c => c.OrganizationProfileId == organizationId)
-                        .ToList()
-                    : new List<ClientContract>();
-
-                var contractsInWork = contracts
-                    .Where(c => !string.Equals(c.Status, "Договор подписан", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                var invoices = organizationId > 0
-                    ? db.Invoices
-                        .AsNoTracking()
-                        .Where(i => i.OrganizationProfileId == organizationId)
-                        .ToList()
-                    : db.Invoices
-                        .AsNoTracking()
-                        .ToList();
-
-                var unpaidInvoices = invoices
-                    .Where(i =>
-                        !string.Equals(i.Status, "Оплачен", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(i.Status, "Отменен", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(i.Status, "Отменён", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                decimal unpaidAmount = unpaidInvoices.Sum(i => i.TotalWithVat);
-
-                ClientsTotalTextBlock.Text = clients.Count.ToString();
-                SignaturesAttentionTextBlock.Text = attentionSignatures.Count.ToString();
-                ContractsWorkTextBlock.Text = contractsInWork.Count.ToString();
-                UnpaidInvoicesTextBlock.Text = unpaidInvoices.Count.ToString();
-                UnpaidInvoicesAmountTextBlock.Text = $"К оплате: {FormatMoney(unpaidAmount)}";
-
-                FillCategoryAnalyticsPanel(clients);
-                FillAttentionPanel(attentionSignatures, contractsInWork, unpaidInvoices, clientMap, today);
-                FillRecentPanel(clients, invoices, contracts, clientMap);
+                // Применяем данные в UI-потоке
+                ApplyDashboardData(data);
             }
             catch (Exception ex)
             {
@@ -115,8 +70,91 @@ namespace ClientAccountApp
                 AttentionPanel.Children.Add(CreateInfoRow(
                     "Ошибка загрузки сводки",
                     ex.Message,
-                    "#7A2E2E"));
+                    "NiatecDangerBrush"));
+                AppLogger.LogError("DashboardPage.LoadDashboardAsync", ex);
             }
+            finally
+            {
+                SetLoadingState(false);
+            }
+        }
+
+        private DashboardData FetchDashboardData()
+        {
+            var organization = ActiveOrganizationService.Current;
+            int organizationId = organization?.Id ?? 0;
+            DateTime today = DateTime.Today;
+
+            using var db = new AppDbContext();
+
+            var clients = db.Clients.AsNoTracking().OrderBy(c => c.Name).ToList();
+            var clientMap = clients.ToDictionary(
+                c => c.Id,
+                c => string.IsNullOrWhiteSpace(c.Name) ? "Клиент без названия" : c.Name);
+
+            var signatures = db.DigitalSignatures.AsNoTracking().ToList();
+            var attentionSignatures = signatures
+                .Where(s => s.ExpiresDate.Date <= today.AddDays(30))
+                .OrderBy(s => s.ExpiresDate)
+                .ToList();
+
+            var contracts = organizationId > 0
+                ? db.ClientContracts.AsNoTracking()
+                    .Where(c => c.OrganizationProfileId == organizationId).ToList()
+                : new List<ClientContract>();
+
+            var contractsInWork = contracts
+                .Where(c => !string.Equals(c.Status, "Договор подписан", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var invoices = organizationId > 0
+                ? db.Invoices.AsNoTracking()
+                    .Where(i => i.OrganizationProfileId == organizationId).ToList()
+                : db.Invoices.AsNoTracking().ToList();
+
+            var unpaidInvoices = invoices
+                .Where(i =>
+                    !string.Equals(i.Status, "Оплачен",  StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(i.Status, "Отменен",  StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(i.Status, "Отменён",  StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return new DashboardData
+            {
+                Organization        = organization,
+                Clients             = clients,
+                ClientMap           = clientMap,
+                AttentionSignatures = attentionSignatures,
+                ContractsInWork     = contractsInWork,
+                UnpaidInvoices      = unpaidInvoices,
+                Invoices            = invoices,
+                Contracts           = contracts,
+                Today               = today,
+            };
+        }
+
+        private void ApplyDashboardData(DashboardData d)
+        {
+            ActiveOrganizationTextBlock.Text = d.Organization == null
+                ? "Рабочая организация: не выбрана"
+                : $"Рабочая организация: {d.Organization.Name} · ИНН {d.Organization.Inn}";
+
+            DashboardUpdatedAtTextBlock.Text = $"Обновлено: {DateTime.Now:dd.MM.yyyy HH:mm}";
+
+            if (d.Organization != null)
+                ClientContractService.EnsureContractsForActiveOrganization();
+
+            decimal unpaidAmount = d.UnpaidInvoices.Sum(i => i.TotalWithVat);
+
+            ClientsTotalTextBlock.Text      = d.Clients.Count.ToString();
+            SignaturesAttentionTextBlock.Text = d.AttentionSignatures.Count.ToString();
+            ContractsWorkTextBlock.Text     = d.ContractsInWork.Count.ToString();
+            UnpaidInvoicesTextBlock.Text    = d.UnpaidInvoices.Count.ToString();
+            UnpaidInvoicesAmountTextBlock.Text = $"К оплате: {FormatMoney(unpaidAmount)}";
+
+            FillCategoryAnalyticsPanel(d.Clients);
+            FillAttentionPanel(d.AttentionSignatures, d.ContractsInWork, d.UnpaidInvoices, d.ClientMap, d.Today);
+            FillRecentPanel(d.Clients, d.Invoices, d.Contracts, d.ClientMap);
         }
 
         private void FillCategoryAnalyticsPanel(List<ClientInfo> clients)
@@ -133,7 +171,7 @@ namespace ClientAccountApp
                 CategoryAnalyticsPanel.Children.Add(CreateInfoRow(
                     "Пока нет клиентов",
                     "После добавления клиентов здесь появится распределение по категориям бизнеса.",
-                    "#2F4F6F"));
+                    "NiatecInfoBrush"));
 
                 return;
             }
@@ -309,12 +347,12 @@ namespace ClientAccountApp
                     ? $"ЭЦП просрочена на {Math.Abs(daysLeft)} дн."
                     : $"ЭЦП истекает через {daysLeft} дн.";
 
-                string color = daysLeft < 0 ? "#7A2E2E" : "#7A5A22";
+                string brushKey = daysLeft < 0 ? "NiatecDangerBrush" : "NiatecWarningBrush";
 
                 AttentionPanel.Children.Add(CreateInfoRow(
                     clientName ?? "Клиент",
                     status,
-                    color));
+                    brushKey));
             }
 
             if (contractsInWork.Count > 0)
@@ -324,7 +362,7 @@ namespace ClientAccountApp
                 AttentionPanel.Children.Add(CreateInfoRow(
                     "Договоры",
                     $"В работе: {contractsInWork.Count}. Проверьте договоры, которые требуют формирования или подписания.",
-                    "#7A5A22"));
+                    "NiatecWarningBrush"));
             }
 
             if (unpaidInvoices.Count > 0)
@@ -336,7 +374,7 @@ namespace ClientAccountApp
                 AttentionPanel.Children.Add(CreateInfoRow(
                     "Начисления",
                     $"Не оплачено счетов: {unpaidInvoices.Count}. Сумма: {FormatMoney(amount)}.",
-                    "#7A5A22"));
+                    "NiatecWarningBrush"));
             }
 
             if (!hasItems)
@@ -344,7 +382,7 @@ namespace ClientAccountApp
                 AttentionPanel.Children.Add(CreateInfoRow(
                     "Всё спокойно",
                     "На сегодня критичных задач не найдено.",
-                    "#2F6F46"));
+                    "NiatecSuccessBrush"));
             }
         }
 
@@ -369,7 +407,7 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Клиент",
                     $"{client.Name} · ИНН {client.Inn} · {category}",
-                    "#2F4F6F"));
+                    "NiatecInfoBrush"));
             }
 
             foreach (var invoice in invoices.OrderByDescending(i => i.Id).Take(2))
@@ -381,7 +419,7 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Счёт",
                     $"{invoice.InvoiceNumber} · {clientName ?? "Клиент"} · {FormatMoney(invoice.TotalWithVat)}",
-                    "#2F4F6F"));
+                    "NiatecInfoBrush"));
             }
 
             foreach (var contract in contracts.OrderByDescending(c => c.UpdatedAt).Take(2))
@@ -393,7 +431,7 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Договор",
                     $"{clientName ?? "Клиент"} · {contract.Status}",
-                    "#2F4F6F"));
+                    "NiatecAccentBlueBrush"));
             }
 
             if (!hasItems)
@@ -401,75 +439,42 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Пока нет событий",
                     "После работы с клиентами, счетами и договорами здесь появятся последние действия.",
-                    "#2F4F6F"));
+                    "NiatecInfoBrush"));
             }
         }
 
-        private Border CreateInfoRow(string title, string description, string colorHex)
+        // accentBrushKey — ключ темы: "NiatecDangerBrush", "NiatecWarningBrush", "NiatecSuccessBrush", "NiatecInfoBrush"
+        private Border CreateInfoRow(string title, string description, string accentBrushKey)
         {
-            return new Border
+            var titleBlock = new TextBlock
             {
-                Background = ThemeBrush("NiatecSurfaceAltBrush", "#11151C"),
-                BorderBrush = ThemeBrush("NiatecBorderBrush", "#243042"),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(12),
-                Padding = new Thickness(12),
-                Child = new Grid
-                {
-                    ColumnSpacing = 10,
-                    ColumnDefinitions =
-                    {
-                        new ColumnDefinition { Width = new GridLength(6) },
-                        new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
-                    },
-                    Children =
-                    {
-                        CreateAccentBar(colorHex),
-                        CreateTextStack(title, description)
-                    }
-                }
-            };
-        }
-
-        private Border CreateAccentBar(string colorHex)
-        {
-            var border = new Border
-            {
-                Background = BrushFromHex(colorHex),
-                CornerRadius = new CornerRadius(3),
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
-            };
-
-            Grid.SetColumn(border, 0);
-            return border;
-        }
-
-        private StackPanel CreateTextStack(string title, string description)
-        {
-            var panel = new StackPanel
-            {
-                Spacing = 4
-            };
-
-            panel.Children.Add(new TextBlock
-            {
-                Text = title,
+                Text       = title,
                 Foreground = ThemeBrush("NiatecTextPrimaryBrush", "#FFFFFF"),
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 TextWrapping = TextWrapping.Wrap
-            });
+            };
 
-            panel.Children.Add(new TextBlock
+            var descBlock = new TextBlock
             {
-                Text = description,
+                Text       = description,
                 Foreground = ThemeBrush("NiatecTextSecondaryBrush", "#B8B8B8"),
-                FontSize = 12,
+                FontSize   = 12,
                 TextWrapping = TextWrapping.Wrap
-            });
+            };
 
-            Grid.SetColumn(panel, 1);
-            return panel;
+            var textPanel = new StackPanel { Spacing = 3 };
+            textPanel.Children.Add(titleBlock);
+            textPanel.Children.Add(descBlock);
+
+            return new Border
+            {
+                Background      = ThemeBrush("NiatecSurfaceAltBrush", "#11151C"),
+                BorderBrush     = ThemeBrush(accentBrushKey, "#808080"),
+                BorderThickness = new Thickness(3, 0, 0, 0),
+                CornerRadius    = new CornerRadius(0, 10, 10, 0),
+                Padding         = new Thickness(12, 10, 12, 10),
+                Child           = textPanel
+            };
         }
 
         private static Brush ThemeBrush(string resourceKey, string fallbackHex)

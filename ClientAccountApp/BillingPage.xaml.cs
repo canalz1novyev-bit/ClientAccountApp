@@ -38,12 +38,12 @@ namespace ClientAccountApp
             public bool IsOverdue { get; set; }
             public string OverdueBadgeText { get; set; } = "";
             public Brush StatusBackgroundBrush { get; set; } =
-                new SolidColorBrush(ColorHelper.FromArgb(255, 47, 79, 111));
+                ThemeService.GetBrush("NiatecInfoBrush");
             public Brush StatusForegroundBrush { get; set; } =
-                new SolidColorBrush(ColorHelper.FromArgb(255, 255, 255, 255));
+                ThemeService.GetBrush("NiatecTextPrimaryBrush");
             public Brush CardBorderBrush => IsOverdue
-                ? new SolidColorBrush(ColorHelper.FromArgb(255, 162, 45, 45))
-                : new SolidColorBrush(ColorHelper.FromArgb(255, 43, 49, 64));
+                ? ThemeService.GetBrush("NiatecDangerBrush")
+                : ThemeService.GetBrush("NiatecBorderBrush");
             public Visibility OverdueBadgeVisibility =>
                 IsOverdue ? Visibility.Visible : Visibility.Collapsed;
             public Visibility QuickPaidButtonVisibility =>
@@ -186,7 +186,7 @@ namespace ClientAccountApp
             if (InvoiceDocumentsListView.SelectedItem is InvoiceDocumentListItem selectedDocument)
             {
                 OpenInvoiceDocumentButton.IsEnabled = selectedDocument.CanOpen;
-                BillingStatusTextBlock.Text = $"Выбран документ: {selectedDocument.Title}.";
+                StatusMessageHelper.Info(BillingStatusTextBlock, $"Выбран документ: {selectedDocument.Title}.");
             }
             else
             {
@@ -204,7 +204,6 @@ namespace ClientAccountApp
         {
             if (InvoiceDocumentsListView == null) return;
             InvoiceDocumentsListView.UpdateLayout();
-            bool isLight = ThemeService.CurrentTheme == ThemeService.ThemeLight;
             object? selectedItem = InvoiceDocumentsListView.SelectedItem;
             foreach (object item in InvoiceDocumentsListView.Items)
             {
@@ -217,21 +216,13 @@ namespace ClientAccountApp
                 {
                     if (isSelected)
                     {
-                        cardBorder.Background = isLight
-                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 255, 249, 230))
-                            : new SolidColorBrush(ColorHelper.FromArgb(255, 32, 48, 74));
-                        cardBorder.BorderBrush = isLight
-                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 212, 160, 23))
-                            : new SolidColorBrush(ColorHelper.FromArgb(255, 122, 99, 54));
+                        cardBorder.Background   = ThemeService.GetBrush("NiatecSurfaceBrush");
+                        cardBorder.BorderBrush  = ThemeService.GetBrush("NiatecAccentBrush");
                     }
                     else
                     {
-                        cardBorder.Background = isLight
-                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 245, 247, 250))
-                            : new SolidColorBrush(ColorHelper.FromArgb(255, 23, 26, 33));
-                        cardBorder.BorderBrush = isLight
-                            ? new SolidColorBrush(ColorHelper.FromArgb(255, 221, 225, 234))
-                            : new SolidColorBrush(ColorHelper.FromArgb(255, 43, 49, 64));
+                        cardBorder.Background   = ThemeService.GetBrush("NiatecSurfaceAltBrush");
+                        cardBorder.BorderBrush  = ThemeService.GetBrush("NiatecBorderBrush");
                     }
                 }
                 if (accentBar != null) accentBar.Opacity = isSelected ? 1 : 0;
@@ -257,11 +248,11 @@ namespace ClientAccountApp
         private void OpenInvoiceDocumentButton_Click(object sender, RoutedEventArgs e)
         {
             if (InvoiceDocumentsListView.SelectedItem is not InvoiceDocumentListItem item)
-            { BillingStatusTextBlock.Text = "Сначала выберите документ счёта."; return; }
+            { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выберите документ счёта."); return; }
             string fullPath = ClientFileStorageService.GetFullPath(item.RelativePath);
-            if (!File.Exists(fullPath)) { BillingStatusTextBlock.Text = "Файл документа не найден."; return; }
+            if (!File.Exists(fullPath)) { StatusMessageHelper.Error(BillingStatusTextBlock, "Файл документа не найден."); return; }
             ClientFileStorageService.OpenFile(fullPath);
-            BillingStatusTextBlock.Text = $"Открыт документ: {item.Title}.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Открыт документ: {item.Title}.");
         }
 
         private bool TryOpenFirstAvailableInvoiceDocument(int invoiceId)
@@ -277,12 +268,12 @@ namespace ClientAccountApp
                     string fullPath = ClientFileStorageService.GetFullPath(document.RelativePath);
                     if (!File.Exists(fullPath)) continue;
                     ClientFileStorageService.OpenFile(fullPath);
-                    BillingStatusTextBlock.Text = $"Открыт документ: {document.DocumentType} · {document.DocumentFormat}.";
+                    StatusMessageHelper.Success(BillingStatusTextBlock, $"Открыт документ: {document.DocumentType} · {document.DocumentFormat}.");
                     return true;
                 }
                 return false;
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка открытия документа счёта: {ex.Message}"; return false; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка открытия документа счёта: {ex.Message}"); return false; }
         }
 
         private void GenerateInvoiceWordListItemButton_Click(object sender, RoutedEventArgs e)
@@ -307,24 +298,24 @@ namespace ClientAccountApp
             if (sender is not FrameworkElement element || element.DataContext is not BillingListItem item) return;
             using var db = new AppDbContext();
             var invoice = db.Invoices.FirstOrDefault(x => x.Id == item.InvoiceId);
-            if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных."; return; }
+            if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет в базе данных."); return; }
             invoice.Status = InvoiceStatusNames.Paid;
             invoice.UpdatedAt = DateTime.Now;
             db.SaveChanges();
             LoadInvoices(invoice.Id);
             LoadInvoiceIntoForm(invoice.Id);
-            BillingStatusTextBlock.Text = $"Счет {invoice.InvoiceNumber} отмечен как оплаченный.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Счет {invoice.InvoiceNumber} отмечен как оплаченный.");
         }
 
         private static Brush GetInvoiceStatusBrush(string status) => status switch
         {
-            "Черновик" => new SolidColorBrush(ColorHelper.FromArgb(255, 47, 79, 111)),
-            "Выставлен" => new SolidColorBrush(ColorHelper.FromArgb(255, 140, 110, 40)),
-            "Оплачен" => new SolidColorBrush(ColorHelper.FromArgb(255, 58, 110, 72)),
-            "Просрочен" => new SolidColorBrush(ColorHelper.FromArgb(255, 162, 45, 45)),
-            "Отменен" => new SolidColorBrush(ColorHelper.FromArgb(255, 100, 55, 55)),
-            "Отменён" => new SolidColorBrush(ColorHelper.FromArgb(255, 100, 55, 55)),
-            _ => new SolidColorBrush(ColorHelper.FromArgb(255, 80, 80, 80))
+            "Черновик" => ThemeService.GetBrush("NiatecInfoBrush"),
+            "Выставлен" => ThemeService.GetBrush("NiatecWarningBrush"),
+            "Оплачен"  => ThemeService.GetBrush("NiatecSuccessBrush"),
+            "Просрочен" => ThemeService.GetBrush("NiatecDangerBrush"),
+            "Отменен"  => ThemeService.GetBrush("NiatecDangerBrush"),
+            "Отменён"  => ThemeService.GetBrush("NiatecDangerBrush"),
+            _ => ThemeService.GetBrush("NiatecTextMutedBrush")
         };
 
         private void UpdateInvoiceDocumentActionsState()
@@ -357,16 +348,16 @@ namespace ClientAccountApp
 
         private void GenerateInvoiceWordButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала сохрани счет."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала сохрани счет."); return; }
             try
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет в базе данных."); return; }
                 var client = db.Clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
-                if (client == null) { BillingStatusTextBlock.Text = "Не удалось найти клиента счета."; return; }
+                if (client == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти клиента счета."); return; }
                 var itemCount = db.InvoiceItems.Count(x => x.InvoiceId == invoice.Id);
-                if (itemCount == 0) { BillingStatusTextBlock.Text = "Сначала добавь хотя бы одну строку услуги."; return; }
+                if (itemCount == 0) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала добавь хотя бы одну строку услуги."); return; }
                 string tempPath = InvoiceWordService.GenerateInvoiceDocx(invoice.Id);
                 var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
                 string invoiceRelativePath = Convert.ToString(copyResult.RelativePath) ?? "";
@@ -383,12 +374,12 @@ namespace ClientAccountApp
                 LoadInvoices(invoice.Id);
                 LoadInvoiceIntoForm(invoice.Id);
                 LoadInvoiceDocuments(invoice.Id);
-                BillingStatusTextBlock.Text = $"Word-счёт {invoice.InvoiceNumber} сформирован и добавлен во вкладку «Документы».";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Word-счёт {invoice.InvoiceNumber} сформирован и добавлен во вкладку «Документы».");
                 if (File.Exists(fullPath)) ClientFileStorageService.OpenFile(fullPath);
-                else BillingStatusTextBlock.Text = "Word-счёт сформирован, но файл не найден на диске для открытия.";
+                else StatusMessageHelper.Error(BillingStatusTextBlock, "Word-счёт сформирован, но файл не найден на диске для открытия.");
                 try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка формирования Word-счёта: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования Word-счёта: {ex.Message}"); }
         }
 
         private void LoadOrganizationSettingsIntoForm()
@@ -424,29 +415,29 @@ namespace ClientAccountApp
                 Phone = OrganizationPhoneTextBox.Text.Trim()
             };
             OrganizationSettingsService.Save(settings);
-            BillingStatusTextBlock.Text = "Настройки организации сохранены.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, "Настройки организации сохранены.");
         }
 
         private void OpenInvoiceWordButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала открой счет."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала открой счет."); return; }
             try
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.AsNoTracking().FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных."; return; }
-                if (string.IsNullOrWhiteSpace(invoice.DocumentRelativePath)) { BillingStatusTextBlock.Text = "У этого счета еще не сформирован документ."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет в базе данных."); return; }
+                if (string.IsNullOrWhiteSpace(invoice.DocumentRelativePath)) { StatusMessageHelper.Success(BillingStatusTextBlock, "У этого счета еще не сформирован документ."); return; }
                 string fullPath = ClientFileStorageService.GetFullPath(invoice.DocumentRelativePath);
-                if (!File.Exists(fullPath)) { BillingStatusTextBlock.Text = "Файл счета не найден на диске."; return; }
+                if (!File.Exists(fullPath)) { StatusMessageHelper.Error(BillingStatusTextBlock, "Файл счета не найден на диске."); return; }
                 ClientFileStorageService.OpenFile(fullPath);
-                BillingStatusTextBlock.Text = "Документ счета открыт.";
+                StatusMessageHelper.Success(BillingStatusTextBlock, "Документ счета открыт.");
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка открытия счета: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка открытия счета: {ex.Message}"); }
         }
 
         private void GenerateInvoiceFacturaPdfButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала выберите счёт."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выберите счёт."); return; }
             GenerateAndOpenInvoiceFacturaPdfForInvoice(_selectedInvoiceId.Value);
         }
 
@@ -456,9 +447,9 @@ namespace ClientAccountApp
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == invoiceId);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счёт для формирования счёт-фактуры PDF."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счёт для формирования счёт-фактуры PDF."); return; }
                 var client = db.Clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
-                if (client == null) { BillingStatusTextBlock.Text = "Не удалось найти клиента для формирования счёт-фактуры PDF."; return; }
+                if (client == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти клиента для формирования счёт-фактуры PDF."); return; }
                 string tempPath = BillingInvoiceFacturaPdfService.Generate(invoice.Id);
                 var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
                 string relativePath = Convert.ToString(copyResult.RelativePath) ?? "";
@@ -469,10 +460,10 @@ namespace ClientAccountApp
                 db.SaveChanges();
                 LoadInvoiceDocuments(invoice.Id);
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
-                BillingStatusTextBlock.Text = $"Счёт-фактура PDF по счёту {invoice.InvoiceNumber} сформирована.";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Счёт-фактура PDF по счёту {invoice.InvoiceNumber} сформирована.");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка формирования счёт-фактуры PDF: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования счёт-фактуры PDF: {ex.Message}"); }
         }
 
         private async void GenerateUpdPdfButton_Click(object sender, RoutedEventArgs e)
@@ -530,7 +521,7 @@ namespace ClientAccountApp
                 db.SaveChanges();
                 LoadInvoices(invoice.Id); LoadInvoiceIntoForm(invoice.Id); LoadInvoiceDocuments(invoice.Id);
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
-                BillingStatusTextBlock.Text = $"УПД PDF по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"УПД PDF по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
                 else await ShowMessageAsync("УПД PDF", "УПД PDF сформирован, но файл не найден на диске для открытия.");
             }
@@ -807,39 +798,39 @@ namespace ClientAccountApp
 
         private void MarkInvoiceStatus(string newStatus, string successMessage)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала открой счет."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала открой счет."); return; }
             using var db = new AppDbContext();
             var invoice = db.Invoices.FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
-            if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных."; return; }
+            if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет в базе данных."); return; }
             invoice.Status = newStatus; invoice.UpdatedAt = DateTime.Now;
             db.SaveChanges();
             LoadInvoices(invoice.Id); LoadInvoiceIntoForm(invoice.Id);
-            BillingStatusTextBlock.Text = successMessage;
+            StatusMessageHelper.Success(BillingStatusTextBlock, successMessage);
         }
 
         private async void MarkInvoiceIssuedButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала открой счет, который нужно отметить выставленным."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала открой счет, который нужно отметить выставленным."); return; }
             try
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет в базе данных."); return; }
                 invoice.Status = InvoiceStatusNames.Issued; invoice.UpdatedAt = DateTime.Now;
                 db.SaveChanges();
                 _selectedInvoiceId = invoice.Id;
                 LoadInvoices(invoice.Id); LoadInvoiceIntoForm(invoice.Id);
-                BillingStatusTextBlock.Text = $"Счет {invoice.InvoiceNumber} отмечен как выставленный.";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Счет {invoice.InvoiceNumber} отмечен как выставленный.");
                 await ShowPostInvoiceIssuedDialogAsync(invoice.Id);
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка отметки счета как выставленного: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка отметки счета как выставленного: {ex.Message}"); }
         }
 
         private async Task ShowPostInvoiceIssuedDialogAsync(int invoiceId)
         {
             using var db = new AppDbContext();
             var invoice = db.Invoices.FirstOrDefault(x => x.Id == invoiceId);
-            if (invoice == null) { BillingStatusTextBlock.Text = "Счет выставлен, но не удалось найти его для формирования документов."; return; }
+            if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Счет выставлен, но не удалось найти его для формирования документов."); return; }
             string vatHint = invoice.VatAmount > 0
                 ? "В счёте есть НДС. Можно сформировать УПД XML для загрузки в Saby/СБИС и УПД PDF для печати/просмотра."
                 : "В счёте НДС равен 0. Можно сформировать УПД XML и УПД PDF.";
@@ -851,7 +842,7 @@ namespace ClientAccountApp
             ContentDialogResult result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary) { GenerateAndOpenUpdXmlForInvoice(invoice.Id); return; }
             if (result == ContentDialogResult.Secondary) { await GenerateAndOpenUpdPdfForInvoice(); return; }
-            BillingStatusTextBlock.Text = $"Счет {invoice.InvoiceNumber} выставлен. Формирование документов отложено.";
+            StatusMessageHelper.Info(BillingStatusTextBlock, $"Счет {invoice.InvoiceNumber} выставлен. Формирование документов отложено.");
         }
 
         private void GenerateAndOpenActForInvoice(int invoiceId)
@@ -860,9 +851,9 @@ namespace ClientAccountApp
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == invoiceId);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счёт для формирования акта."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счёт для формирования акта."); return; }
                 var client = db.Clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
-                if (client == null) { BillingStatusTextBlock.Text = "Не удалось найти клиента для формирования акта."; return; }
+                if (client == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти клиента для формирования акта."); return; }
                 string tempActPath = BillingActWordService.GenerateActDocx(invoice.Id);
                 var copyResult = ClientFileStorageService.CopyFileForClient(client, tempActPath);
                 string relativePath = Convert.ToString(copyResult.RelativePath) ?? "";
@@ -872,11 +863,11 @@ namespace ClientAccountApp
                 InvoiceDocumentService.RegisterInvoiceDocument(db, invoice, client, "Акт", "Word", fileName, relativePath, fileSizeBytes);
                 db.SaveChanges(); LoadInvoiceDocuments(invoice.Id);
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
-                BillingStatusTextBlock.Text = $"Акт по счету {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Акт по счету {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
                 try { if (File.Exists(tempActPath)) File.Delete(tempActPath); } catch { }
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка формирования акта: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования акта: {ex.Message}"); }
         }
 
         private void GenerateAndOpenInvoiceFacturaForInvoice(int invoiceId)
@@ -885,9 +876,9 @@ namespace ClientAccountApp
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == invoiceId);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счёт для формирования счёт-фактуры."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счёт для формирования счёт-фактуры."); return; }
                 var client = db.Clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
-                if (client == null) { BillingStatusTextBlock.Text = "Не удалось найти клиента для формирования счёт-фактуры."; return; }
+                if (client == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти клиента для формирования счёт-фактуры."); return; }
                 string tempPath = BillingInvoiceFacturaWordService.Generate(invoice.Id);
                 var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
                 string relativePath = Convert.ToString(copyResult.RelativePath) ?? "";
@@ -897,11 +888,11 @@ namespace ClientAccountApp
                 InvoiceDocumentService.RegisterInvoiceDocument(db, invoice, client, "Счёт-фактура", "Word", fileName, relativePath, fileSizeBytes);
                 db.SaveChanges(); LoadInvoiceDocuments(invoice.Id);
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
-                BillingStatusTextBlock.Text = $"Счёт-фактура по счёту {invoice.InvoiceNumber} сформирована и добавлена в файлы клиента «{client.Name}».";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Счёт-фактура по счёту {invoice.InvoiceNumber} сформирована и добавлена в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
                 try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка формирования счёт-фактуры: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования счёт-фактуры: {ex.Message}"); }
         }
 
         private void GenerateAndOpenActXmlForInvoice(int invoiceId)
@@ -910,9 +901,9 @@ namespace ClientAccountApp
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == invoiceId);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счёт для формирования XML акта."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счёт для формирования XML акта."); return; }
                 var client = db.Clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
-                if (client == null) { BillingStatusTextBlock.Text = "Не удалось найти клиента для формирования XML акта."; return; }
+                if (client == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти клиента для формирования XML акта."); return; }
                 string tempPath = BillingSellerXmlService.GenerateActSellerXml(invoice.Id);
                 var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
                 string relativePath = Convert.ToString(copyResult.RelativePath) ?? "";
@@ -922,23 +913,23 @@ namespace ClientAccountApp
                 InvoiceDocumentService.RegisterInvoiceDocument(db, invoice, client, "Акт", "XML", fileName, relativePath, fileSizeBytes);
                 db.SaveChanges(); LoadInvoiceDocuments(invoice.Id);
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
-                BillingStatusTextBlock.Text = $"XML акта по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"XML акта по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
                 TryDeleteTempFile(tempPath);
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка формирования XML акта: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования XML акта: {ex.Message}"); }
         }
 
         private void GenerateActWordButton_Click(object sender, RoutedEventArgs e)
-        { if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала выберите счёт."; return; } GenerateAndOpenActForInvoice(_selectedInvoiceId.Value); }
+        { if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выберите счёт."); return; } GenerateAndOpenActForInvoice(_selectedInvoiceId.Value); }
         private void GenerateInvoiceFacturaWordButton_Click(object sender, RoutedEventArgs e)
-        { if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала выберите счёт."; return; } GenerateAndOpenInvoiceFacturaForInvoice(_selectedInvoiceId.Value); }
+        { if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выберите счёт."); return; } GenerateAndOpenInvoiceFacturaForInvoice(_selectedInvoiceId.Value); }
         private void GenerateActXmlButton_Click(object sender, RoutedEventArgs e)
-        { if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала выберите счёт."; return; } GenerateAndOpenActXmlForInvoice(_selectedInvoiceId.Value); }
+        { if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выберите счёт."); return; } GenerateAndOpenActXmlForInvoice(_selectedInvoiceId.Value); }
         private void GenerateInvoiceFacturaXmlButton_Click(object sender, RoutedEventArgs e)
-        { if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала выберите счёт."; return; } GenerateAndOpenInvoiceFacturaXmlForInvoice(_selectedInvoiceId.Value); }
+        { if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выберите счёт."); return; } GenerateAndOpenInvoiceFacturaXmlForInvoice(_selectedInvoiceId.Value); }
         private void GenerateUpdXmlButton_Click(object sender, RoutedEventArgs e)
-        { if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала выберите счёт."; return; } GenerateAndOpenUpdXmlForInvoice(_selectedInvoiceId.Value); }
+        { if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выберите счёт."); return; } GenerateAndOpenUpdXmlForInvoice(_selectedInvoiceId.Value); }
 
         private void GenerateAndOpenInvoiceFacturaXmlForInvoice(int invoiceId)
         {
@@ -946,9 +937,9 @@ namespace ClientAccountApp
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == invoiceId);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счёт для формирования XML счёт-фактуры."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счёт для формирования XML счёт-фактуры."); return; }
                 var client = db.Clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
-                if (client == null) { BillingStatusTextBlock.Text = "Не удалось найти клиента для формирования XML счёт-фактуры."; return; }
+                if (client == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти клиента для формирования XML счёт-фактуры."); return; }
                 string tempPath = BillingSellerXmlService.GenerateInvoiceFacturaSellerXml(invoice.Id);
                 var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
                 string relativePath = Convert.ToString(copyResult.RelativePath) ?? "";
@@ -958,11 +949,11 @@ namespace ClientAccountApp
                 InvoiceDocumentService.RegisterInvoiceDocument(db, invoice, client, "Счёт-фактура", "XML", fileName, relativePath, fileSizeBytes);
                 db.SaveChanges(); LoadInvoiceDocuments(invoice.Id);
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
-                BillingStatusTextBlock.Text = $"XML счёт-фактуры по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"XML счёт-фактуры по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
                 TryDeleteTempFile(tempPath);
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка формирования XML счёт-фактуры: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования XML счёт-фактуры: {ex.Message}"); }
         }
 
         private void GenerateAndOpenUpdXmlForInvoice(int invoiceId)
@@ -972,9 +963,9 @@ namespace ClientAccountApp
             {
                 using var db = new AppDbContext();
                 var invoice = db.Invoices.FirstOrDefault(x => x.Id == invoiceId);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счёт для формирования УПД XML."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счёт для формирования УПД XML."); return; }
                 var client = db.Clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
-                if (client == null) { BillingStatusTextBlock.Text = "Не удалось найти клиента для формирования УПД XML."; return; }
+                if (client == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти клиента для формирования УПД XML."); return; }
                 tempPath = BillingSellerXmlService.GenerateUpdSellerXml(invoice.Id);
                 var copyResult = ClientFileStorageService.CopyFileForClient(client, tempPath);
                 string relativePath = Convert.ToString(copyResult.RelativePath) ?? "";
@@ -984,11 +975,11 @@ namespace ClientAccountApp
                 InvoiceDocumentService.RegisterInvoiceDocument(db, invoice, client, "УПД", "XML", fileName, relativePath, fileSizeBytes);
                 db.SaveChanges(); LoadInvoiceDocuments(invoice.Id);
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
-                BillingStatusTextBlock.Text = $"УПД XML по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"УПД XML по счёту {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
                 TryDeleteTempFile(tempPath);
             }
-            catch (Exception ex) { BillingStatusTextBlock.Text = $"Ошибка формирования УПД XML: {ex.Message}"; }
+            catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования УПД XML: {ex.Message}"); }
         }
 
         private static void TryDeleteTempFile(string tempPath)
@@ -1001,10 +992,10 @@ namespace ClientAccountApp
 
         private void DuplicateInvoiceButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала открой счет, который нужно дублировать."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала открой счет, который нужно дублировать."); return; }
             using var db = new AppDbContext();
             var sourceInvoice = db.Invoices.AsNoTracking().FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
-            if (sourceInvoice == null) { BillingStatusTextBlock.Text = "Не удалось найти исходный счет."; return; }
+            if (sourceInvoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти исходный счет."); return; }
             var sourceItems = db.InvoiceItems.AsNoTracking().Where(x => x.InvoiceId == sourceInvoice.Id).OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList();
             var newInvoice = new Invoice
             {
@@ -1029,7 +1020,7 @@ namespace ClientAccountApp
             db.SaveChanges();
             RecalculateInvoiceTotalsInDatabase(newInvoice.Id);
             LoadInvoices(newInvoice.Id); LoadInvoiceIntoForm(newInvoice.Id);
-            BillingStatusTextBlock.Text = $"Создана копия счета {newInvoice.InvoiceNumber}.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Создана копия счета {newInvoice.InvoiceNumber}.");
         }
 
         protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -1060,12 +1051,12 @@ namespace ClientAccountApp
                     InvoicesListView.SelectedItem = item;
                     InvoicesListView.ScrollIntoView(item);
                     LoadInvoiceIntoForm(invoiceId);
-                    BillingStatusTextBlock.Text = $"Открыт новый черновик счёта {item.InvoiceNumber}.";
+                    StatusMessageHelper.Success(BillingStatusTextBlock, $"Открыт новый черновик счёта {item.InvoiceNumber}.");
                 }
             }
             else if (migrationResult.RegisteredDocuments > 0)
             {
-                BillingStatusTextBlock.Text = $"Старые Word-счета добавлены во вкладку «Документы»: {migrationResult.RegisteredDocuments}.";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Старые Word-счета добавлены во вкладку «Документы»: {migrationResult.RegisteredDocuments}.");
             }
         }
 
@@ -1100,15 +1091,15 @@ namespace ClientAccountApp
         }
 
         private void NewServiceCatalogButton_Click(object sender, RoutedEventArgs e)
-        { ClearServiceCatalogEditor(); BillingStatusTextBlock.Text = "Заполни новую типовую услугу и сохрани."; }
+        { ClearServiceCatalogEditor(); StatusMessageHelper.Warning(BillingStatusTextBlock, "Заполни новую типовую услугу и сохрани."); }
 
         private void SaveServiceCatalogButton_Click(object sender, RoutedEventArgs e)
         {
             string name = ServiceCatalogNameTextBox.Text.Trim();
-            if (string.IsNullOrWhiteSpace(name)) { BillingStatusTextBlock.Text = "Укажи название услуги."; return; }
-            if (!TryParseDecimal(ServiceCatalogPriceTextBox.Text, out decimal price) || price < 0) { BillingStatusTextBlock.Text = "Цена услуги указана неверно."; return; }
+            if (string.IsNullOrWhiteSpace(name)) { StatusMessageHelper.Info(BillingStatusTextBlock, "Укажи название услуги."); return; }
+            if (!TryParseDecimal(ServiceCatalogPriceTextBox.Text, out decimal price) || price < 0) { StatusMessageHelper.Info(BillingStatusTextBlock, "Цена услуги указана неверно."); return; }
             string unit = string.IsNullOrWhiteSpace(ServiceCatalogUnitTextBox.Text) ? "усл." : ServiceCatalogUnitTextBox.Text.Trim();
-            if (!TryParseDecimal(ServiceCatalogVatRateTextBox.Text, out decimal vatRate) || vatRate < 0) { BillingStatusTextBlock.Text = "Ставка НДС указана неверно."; return; }
+            if (!TryParseDecimal(ServiceCatalogVatRateTextBox.Text, out decimal vatRate) || vatRate < 0) { StatusMessageHelper.Info(BillingStatusTextBlock, "Ставка НДС указана неверно."); return; }
             using var db = new AppDbContext();
             bool isNew = !_selectedServiceCatalogId.HasValue;
             ServiceCatalog service;
@@ -1121,25 +1112,25 @@ namespace ClientAccountApp
             else
             {
                 service = db.ServicesCatalog.FirstOrDefault(x => x.Id == _selectedServiceCatalogId.Value);
-                if (service == null) { BillingStatusTextBlock.Text = "Не удалось найти услугу в справочнике."; return; }
+                if (service == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти услугу в справочнике."); return; }
             }
             service.Name = name; service.DefaultPrice = price; service.Unit = unit; service.DefaultVatRate = vatRate; service.IsActive = true;
             db.SaveChanges();
             _selectedServiceCatalogId = service.Id;
             LoadServicesCatalog(service.Id);
-            BillingStatusTextBlock.Text = isNew ? $"Услуга «{service.Name}» добавлена в справочник." : $"Услуга «{service.Name}» обновлена.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, isNew ? $"Услуга «{service.Name}» добавлена в справочник." : $"Услуга «{service.Name}» обновлена.");
         }
 
         private void DeleteServiceCatalogButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedServiceCatalogId.HasValue) { BillingStatusTextBlock.Text = "Сначала выбери услугу из справочника."; return; }
+            if (!_selectedServiceCatalogId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выбери услугу из справочника."); return; }
             using var db = new AppDbContext();
             var service = db.ServicesCatalog.FirstOrDefault(x => x.Id == _selectedServiceCatalogId.Value);
-            if (service == null) { BillingStatusTextBlock.Text = "Не удалось найти услугу в справочнике."; return; }
+            if (service == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти услугу в справочнике."); return; }
             service.IsActive = false; db.SaveChanges();
             string deletedName = service.Name;
             ClearServiceCatalogEditor(); LoadServicesCatalog();
-            BillingStatusTextBlock.Text = $"Услуга «{deletedName}» удалена из активного справочника.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Услуга «{deletedName}» удалена из активного справочника.");
         }
 
         private void InvoiceServiceCatalogComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1150,7 +1141,7 @@ namespace ClientAccountApp
             InvoiceItemUnitTextBox.Text = string.IsNullOrWhiteSpace(service.Unit) ? "усл." : service.Unit;
             InvoiceItemUnitPriceTextBox.Text = service.DefaultPrice.ToString("0.##");
             InvoiceItemVatRateTextBox.Text = service.DefaultVatRate.ToString("0.##");
-            BillingStatusTextBlock.Text = $"Подставлена услуга «{service.Name}».";
+            StatusMessageHelper.Info(BillingStatusTextBlock, $"Подставлена услуга «{service.Name}».");
         }
 
         private void LoadInvoiceItems(int invoiceId, int? selectItemId = null)
@@ -1187,7 +1178,6 @@ namespace ClientAccountApp
         private void UpdateItemEditorMode(bool isEditing)
         {
             if (SaveInvoiceItemMainButton == null) return;
-            bool isLight = ThemeService.CurrentTheme == ThemeService.ThemeLight;
             if (isEditing)
             {
                 SaveInvoiceItemMainButton.Content = "Сохранить изменения";
@@ -1196,8 +1186,8 @@ namespace ClientAccountApp
                 if (InvoiceItemEditorHint != null) InvoiceItemEditorHint.Text = "Измени поля и нажми «Сохранить изменения»";
                 if (InvoiceItemEditorModeBorder != null)
                 {
-                    InvoiceItemEditorModeBorder.Background = isLight ? new SolidColorBrush(ColorHelper.FromArgb(255, 255, 252, 235)) : new SolidColorBrush(ColorHelper.FromArgb(255, 40, 38, 10));
-                    InvoiceItemEditorModeBorder.BorderBrush = isLight ? new SolidColorBrush(ColorHelper.FromArgb(255, 212, 160, 23)) : new SolidColorBrush(ColorHelper.FromArgb(255, 100, 90, 20));
+                    InvoiceItemEditorModeBorder.Background  = ThemeService.GetBrush("NiatecSurfaceBrush");
+                    InvoiceItemEditorModeBorder.BorderBrush = ThemeService.GetBrush("NiatecAccentBrush");
                 }
             }
             else
@@ -1208,8 +1198,8 @@ namespace ClientAccountApp
                 if (InvoiceItemEditorHint != null) InvoiceItemEditorHint.Text = "Заполни поля и нажми «Добавить строку»";
                 if (InvoiceItemEditorModeBorder != null)
                 {
-                    InvoiceItemEditorModeBorder.Background = isLight ? new SolidColorBrush(ColorHelper.FromArgb(255, 245, 247, 250)) : new SolidColorBrush(ColorHelper.FromArgb(255, 10, 26, 10));
-                    InvoiceItemEditorModeBorder.BorderBrush = isLight ? new SolidColorBrush(ColorHelper.FromArgb(255, 221, 225, 234)) : new SolidColorBrush(ColorHelper.FromArgb(255, 10, 74, 10));
+                    InvoiceItemEditorModeBorder.Background  = ThemeService.GetBrush("NiatecSurfaceAltBrush");
+                    InvoiceItemEditorModeBorder.BorderBrush = ThemeService.GetBrush("NiatecBorderBrush");
                 }
             }
         }
@@ -1261,12 +1251,12 @@ namespace ClientAccountApp
         }
 
         private void NewInvoiceItemButton_Click(object sender, RoutedEventArgs e)
-        { ClearInvoiceItemsEditor(); UpdateItemEditorMode(isEditing: false); BillingStatusTextBlock.Text = "Заполни поля и нажми «Добавить строку»."; }
+        { ClearInvoiceItemsEditor(); UpdateItemEditorMode(isEditing: false); StatusMessageHelper.Warning(BillingStatusTextBlock, "Заполни поля и нажми «Добавить строку»."); }
 
         private bool EnsureInvoiceDraftExists()
         {
             if (_selectedInvoiceId.HasValue) return true;
-            if (InvoiceClientComboBox.SelectedItem is not ClientInfo selectedClient) { BillingStatusTextBlock.Text = "Сначала выбери клиента."; return false; }
+            if (InvoiceClientComboBox.SelectedItem is not ClientInfo selectedClient) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выбери клиента."); return false; }
             using var db = new AppDbContext();
             var invoice = new Invoice
             {
@@ -1288,18 +1278,18 @@ namespace ClientAccountApp
             db.Invoices.Add(invoice); db.SaveChanges();
             _selectedInvoiceId = invoice.Id;
             LoadInvoices(invoice.Id);
-            BillingStatusTextBlock.Text = $"Черновик счета {invoice.InvoiceNumber} создан автоматически.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Черновик счета {invoice.InvoiceNumber} создан автоматически.");
             return true;
         }
 
         private void SaveInvoiceItemButton_Click(object sender, RoutedEventArgs e)
         {
             string serviceName = InvoiceItemNameTextBox.Text.Trim();
-            if (string.IsNullOrWhiteSpace(serviceName)) { BillingStatusTextBlock.Text = "Укажи название услуги."; return; }
-            if (!TryParseDecimal(InvoiceItemQuantityTextBox.Text, out decimal quantity) || quantity <= 0) { BillingStatusTextBlock.Text = "Количество должно быть больше нуля."; return; }
+            if (string.IsNullOrWhiteSpace(serviceName)) { StatusMessageHelper.Info(BillingStatusTextBlock, "Укажи название услуги."); return; }
+            if (!TryParseDecimal(InvoiceItemQuantityTextBox.Text, out decimal quantity) || quantity <= 0) { StatusMessageHelper.Info(BillingStatusTextBlock, "Количество должно быть больше нуля."); return; }
             string unit = string.IsNullOrWhiteSpace(InvoiceItemUnitTextBox.Text) ? "усл." : InvoiceItemUnitTextBox.Text.Trim();
-            if (!TryParseDecimal(InvoiceItemUnitPriceTextBox.Text, out decimal unitPrice) || unitPrice < 0) { BillingStatusTextBlock.Text = "Цена указана неверно."; return; }
-            if (!TryParseDecimal(InvoiceItemVatRateTextBox.Text, out decimal vatRate) || vatRate < 0) { BillingStatusTextBlock.Text = "Ставка НДС указана неверно."; return; }
+            if (!TryParseDecimal(InvoiceItemUnitPriceTextBox.Text, out decimal unitPrice) || unitPrice < 0) { StatusMessageHelper.Info(BillingStatusTextBlock, "Цена указана неверно."); return; }
+            if (!TryParseDecimal(InvoiceItemVatRateTextBox.Text, out decimal vatRate) || vatRate < 0) { StatusMessageHelper.Info(BillingStatusTextBlock, "Ставка НДС указана неверно."); return; }
             if (!EnsureInvoiceDraftExists()) return;
             using var db = new AppDbContext();
             bool isNew = !_selectedInvoiceItemId.HasValue;
@@ -1313,7 +1303,7 @@ namespace ClientAccountApp
             else
             {
                 item = db.InvoiceItems.FirstOrDefault(x => x.Id == _selectedInvoiceItemId.Value);
-                if (item == null) { BillingStatusTextBlock.Text = "Не удалось найти строку счета."; return; }
+                if (item == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти строку счета."); return; }
             }
             item.ServiceCatalogId = InvoiceServiceCatalogComboBox.SelectedItem is ServiceCatalog selectedService ? selectedService.Id : null;
             item.ServiceName = serviceName; item.Quantity = quantity; item.Unit = unit; item.UnitPrice = unitPrice; item.VatRate = vatRate;
@@ -1344,7 +1334,7 @@ namespace ClientAccountApp
                 if (refreshed != null) currentBillingItem.TotalText = FormatMoney(refreshed.TotalWithVat);
             }
             ClearInvoiceItemsEditor();
-            BillingStatusTextBlock.Text = isNew ? "Строка услуги добавлена. Можно добавить ещё одну." : "Строка услуги обновлена.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, isNew ? "Строка услуги добавлена. Можно добавить ещё одну." : "Строка услуги обновлена.");
         }
 
         private void InlineDeleteInvoiceItemButton_Click(object sender, RoutedEventArgs e)
@@ -1357,20 +1347,20 @@ namespace ClientAccountApp
             db.InvoiceItems.Remove(toDelete); db.SaveChanges();
             RecalculateInvoiceTotalsInDatabase(_selectedInvoiceId.Value);
             LoadInvoiceItems(_selectedInvoiceId.Value); UpdateBillingStats(); ClearInvoiceItemsEditor();
-            BillingStatusTextBlock.Text = $"Строка «{item.ServiceName}» удалена.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Строка «{item.ServiceName}» удалена.");
         }
 
         private void DeleteInvoiceItemButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала открой счет."; return; }
-            if (!_selectedInvoiceItemId.HasValue) { BillingStatusTextBlock.Text = "Сначала выбери строку услуги."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала открой счет."); return; }
+            if (!_selectedInvoiceItemId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выбери строку услуги."); return; }
             using var db = new AppDbContext();
             var item = db.InvoiceItems.FirstOrDefault(x => x.Id == _selectedInvoiceItemId.Value);
-            if (item == null) { BillingStatusTextBlock.Text = "Не удалось найти строку счета."; return; }
+            if (item == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти строку счета."); return; }
             db.InvoiceItems.Remove(item); db.SaveChanges();
             RecalculateInvoiceTotalsInDatabase(_selectedInvoiceId.Value);
             ClearInvoiceItemsEditor(); LoadInvoiceItems(_selectedInvoiceId.Value); LoadInvoices(_selectedInvoiceId.Value);
-            BillingStatusTextBlock.Text = "Строка услуги удалена.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, "Строка услуги удалена.");
         }
 
         private static bool TryParseDecimal(string? text, out decimal value)
@@ -1419,9 +1409,9 @@ namespace ClientAccountApp
                 if (invoice == null) return;
                 invoice.Status = InvoiceStatusNames.Paid; invoice.UpdatedAt = DateTime.Now; db.SaveChanges();
                 LoadInvoices(item.InvoiceId);
-                BillingStatusTextBlock.Text = $"Счёт {item.InvoiceNumber} отмечен как оплаченный.";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Счёт {item.InvoiceNumber} отмечен как оплаченный.");
             }
-            catch (Exception ex) { AppLogger.LogError("BillingPage.QuickMarkPaid", ex); BillingStatusTextBlock.Text = "Ошибка при сохранении статуса."; }
+            catch (Exception ex) { AppLogger.LogError("BillingPage.QuickMarkPaid", ex); StatusMessageHelper.Error(BillingStatusTextBlock, "Ошибка при сохранении статуса."); }
         }
 
         private void QuickMarkIssuedButton_Click(object sender, RoutedEventArgs e)
@@ -1434,9 +1424,9 @@ namespace ClientAccountApp
                 if (invoice == null) return;
                 invoice.Status = InvoiceStatusNames.Issued; invoice.UpdatedAt = DateTime.Now; db.SaveChanges();
                 LoadInvoices(item.InvoiceId);
-                BillingStatusTextBlock.Text = $"Счёт {item.InvoiceNumber} отмечен как выставленный.";
+                StatusMessageHelper.Success(BillingStatusTextBlock, $"Счёт {item.InvoiceNumber} отмечен как выставленный.");
             }
-            catch (Exception ex) { AppLogger.LogError("BillingPage.QuickMarkIssued", ex); BillingStatusTextBlock.Text = "Ошибка при сохранении статуса."; }
+            catch (Exception ex) { AppLogger.LogError("BillingPage.QuickMarkIssued", ex); StatusMessageHelper.Error(BillingStatusTextBlock, "Ошибка при сохранении статуса."); }
         }
 
         private void LoadInvoices(int? selectInvoiceId = null)
@@ -1514,7 +1504,7 @@ namespace ClientAccountApp
                 }
             }
             if (_invoices.Count == 0)
-                BillingStatusTextBlock.Text = invoices.Count == 0 ? "Счетов пока нет. Создай первый счет или добавь строку услуги." : "По текущим фильтрам счета не найдены.";
+                StatusMessageHelper.Info(BillingStatusTextBlock, invoices.Count == 0 ? "Счетов пока нет. Создай первый счет или добавь строку услуги." : "По текущим фильтрам счета не найдены.");
         }
 
         private void PrepareNewInvoiceForm()
@@ -1528,7 +1518,7 @@ namespace ClientAccountApp
             if (InvoiceStatusEditorComboBox.Items.Count > 0) InvoiceStatusEditorComboBox.SelectedIndex = 0;
             InvoiceSourceTextBlock.Text = InvoiceSourceTypeNames.Manual;
             InvoicePeriodTextBox.Text = ""; InvoiceCommentTextBox.Text = "";
-            BillingStatusTextBlock.Text = "Заполни шапку счета и сохрани черновик.";
+            StatusMessageHelper.Warning(BillingStatusTextBlock, "Заполни шапку счета и сохрани черновик.");
             _invoiceItems.Clear(); ClearInvoiceItemsEditor(); UpdateInvoiceTotalsFromItems();
             UpdateInvoiceDocumentActionsState(); LoadInvoiceDocuments(null);
         }
@@ -1615,7 +1605,7 @@ namespace ClientAccountApp
         {
             using var db = new AppDbContext();
             var invoice = db.Invoices.AsNoTracking().FirstOrDefault(x => x.Id == invoiceId);
-            if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных."; return; }
+            if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет в базе данных."); return; }
             _selectedInvoiceId = invoice.Id;
             var client = _clients.FirstOrDefault(x => x.Id == invoice.ClientInfoId);
             InvoiceClientComboBox.SelectedItem = client;
@@ -1626,7 +1616,7 @@ namespace ClientAccountApp
             InvoiceSourceTextBlock.Text = string.IsNullOrWhiteSpace(invoice.SourceType) ? InvoiceSourceTypeNames.Manual : invoice.SourceType;
             InvoicePeriodTextBox.Text = invoice.PeriodText ?? "";
             InvoiceCommentTextBox.Text = invoice.Comment ?? "";
-            BillingStatusTextBlock.Text = $"Открыт счет {invoice.InvoiceNumber}.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Открыт счет {invoice.InvoiceNumber}.");
             LoadInvoiceItems(invoice.Id); ClearInvoiceItemsEditor();
             string clientName = client?.Name ?? "Клиент не выбран";
             UpdateInvoiceQuickSummary($"Счет {invoice.InvoiceNumber} • {clientName} • {invoice.TotalWithVat:N2} ₽ • {invoice.Status}");
@@ -1646,7 +1636,7 @@ namespace ClientAccountApp
 
         private void SaveInvoiceButton_Click(object sender, RoutedEventArgs e)
         {
-            if (InvoiceClientComboBox.SelectedItem is not ClientInfo selectedClient) { BillingStatusTextBlock.Text = "Сначала выбери клиента."; return; }
+            if (InvoiceClientComboBox.SelectedItem is not ClientInfo selectedClient) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала выбери клиента."); return; }
             using var db = new AppDbContext();
             bool isNew = !_selectedInvoiceId.HasValue;
             Invoice invoice;
@@ -1654,7 +1644,7 @@ namespace ClientAccountApp
             else
             {
                 invoice = db.Invoices.FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
-                if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет для сохранения."; return; }
+                if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет для сохранения."); return; }
             }
             if (isNew || !invoice.OrganizationProfileId.HasValue) invoice.OrganizationProfileId = GetRequiredActiveOrganizationId();
             invoice.ClientInfoId = selectedClient.Id;
@@ -1670,15 +1660,15 @@ namespace ClientAccountApp
             _selectedInvoiceId = invoice.Id;
             RecalculateInvoiceTotalsInDatabase(invoice.Id);
             LoadInvoices(invoice.Id); LoadInvoiceIntoForm(invoice.Id); UpdateInvoiceDocumentActionsState();
-            BillingStatusTextBlock.Text = isNew ? $"Черновик счета {invoice.InvoiceNumber} создан." : $"Счет {invoice.InvoiceNumber} обновлен.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, isNew ? $"Черновик счета {invoice.InvoiceNumber} создан." : $"Счет {invoice.InvoiceNumber} обновлен.");
         }
 
         private void DeleteInvoiceButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_selectedInvoiceId.HasValue) { BillingStatusTextBlock.Text = "Сначала открой счет, который нужно удалить."; return; }
+            if (!_selectedInvoiceId.HasValue) { StatusMessageHelper.Warning(BillingStatusTextBlock, "Сначала открой счет, который нужно удалить."); return; }
             using var db = new AppDbContext();
             var invoice = db.Invoices.FirstOrDefault(x => x.Id == _selectedInvoiceId.Value);
-            if (invoice == null) { BillingStatusTextBlock.Text = "Не удалось найти счет в базе данных."; return; }
+            if (invoice == null) { StatusMessageHelper.Error(BillingStatusTextBlock, "Не удалось найти счет в базе данных."); return; }
             var documents = db.InvoiceDocuments.Where(x => x.InvoiceId == invoice.Id).ToList();
             db.InvoiceDocuments.RemoveRange(documents);
             var items = db.InvoiceItems.Where(x => x.InvoiceId == invoice.Id).ToList();
@@ -1686,7 +1676,7 @@ namespace ClientAccountApp
             db.Invoices.Remove(invoice); db.SaveChanges();
             InvoicesListView.SelectedItem = null;
             PrepareNewInvoiceForm(); LoadInvoices(); UpdateInvoiceActionButtonsState();
-            BillingStatusTextBlock.Text = $"Счет {invoice.InvoiceNumber} удален.";
+            StatusMessageHelper.Success(BillingStatusTextBlock, $"Счет {invoice.InvoiceNumber} удален.");
             _invoiceItems.Clear(); ClearInvoiceItemsEditor(); UpdateInvoiceTotalsFromItems();
         }
     }

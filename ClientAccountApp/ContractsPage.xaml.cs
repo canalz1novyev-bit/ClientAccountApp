@@ -625,20 +625,20 @@ namespace ClientAccountApp
             {
                 case "Договор подписан":
                     item.StatusIcon = "✓";
-                    item.StatusBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 58, 110, 72));
-                    item.StatusTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 115, 201, 145));
+                    item.StatusBrush     = ThemeService.GetBrush("NiatecSuccessBrush");
+                    item.StatusTextBrush = ThemeService.GetBrush("NiatecSuccessBrush");
                     break;
 
                 case "Требует подписания":
                     item.StatusIcon = "•";
-                    item.StatusBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 140, 110, 40));
-                    item.StatusTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 215, 186, 125));
+                    item.StatusBrush     = ThemeService.GetBrush("NiatecWarningBrush");
+                    item.StatusTextBrush = ThemeService.GetBrush("NiatecWarningBrush");
                     break;
 
                 default:
                     item.StatusIcon = "•";
-                    item.StatusBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 80, 80, 80));
-                    item.StatusTextBrush = new SolidColorBrush(ColorHelper.FromArgb(255, 184, 184, 184));
+                    item.StatusBrush     = ThemeService.GetBrush("NiatecTextMutedBrush");
+                    item.StatusTextBrush = ThemeService.GetBrush("NiatecTextMutedBrush");
                     break;
             }
         }
