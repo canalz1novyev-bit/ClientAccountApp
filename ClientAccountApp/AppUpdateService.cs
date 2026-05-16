@@ -118,7 +118,10 @@ namespace ClientAccountApp
                     UseShellExecute = true
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("AppUpdateService.OpenReleasePage", ex);
+            }
         }
 
         private static bool IsVersionNewer(string available, string current)

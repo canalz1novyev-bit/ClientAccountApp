@@ -101,7 +101,7 @@ namespace ClientAccountApp
                 client.ContractGeneratedAt = DateTime.Now;
                 db.SaveChanges();
 
-                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
 
                 _lastGeneratedFilePath = ClientFileStorageService.GetFullPath(relativePath);
                 if (File.Exists(_lastGeneratedFilePath))

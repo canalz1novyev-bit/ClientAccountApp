@@ -1,7 +1,20 @@
-﻿namespace ClientAccountApp
+using System;
+
+namespace ClientAccountApp
 {
+    /// <summary>
+    /// УСТАРЕЛО. Ключ DaData больше не хранится в исходниках.
+    /// Используйте <see cref="CounterpartyApiKeysService.GetDaDataApiKey"/> — ключ берётся
+    /// из защищённого Windows Credential Vault. Настройка ключа: «Параметры → Источники проверок контрагентов».
+    /// Этот класс оставлен для обратной совместимости и кидает исключение при обращении к токену.
+    /// </summary>
+    [Obsolete("Используйте CounterpartyApiKeysService.GetDaDataApiKey(). Ключ хранится в Windows Credential Vault.", error: true)]
     public static class InnLookupSettings
     {
-        public const string DadataToken = "bb64f1e3f1715f84399c4c2228f954cf1a3165a1";
+        [Obsolete("Используйте CounterpartyApiKeysService.GetDaDataApiKey()", error: true)]
+        public static string DadataToken =>
+            throw new InvalidOperationException(
+                "InnLookupSettings.DadataToken удалён из соображений безопасности. " +
+                "Используйте CounterpartyApiKeysService.GetDaDataApiKey() — ключ хранится в Windows Credential Vault.");
     }
 }

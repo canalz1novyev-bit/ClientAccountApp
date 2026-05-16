@@ -144,6 +144,50 @@
 
                     <StackPanel Spacing="14">
                         <TextBlock
+                            Text="DaData — проверка по ИНН"
+                            Style="{StaticResource NiatecSectionTitleTextStyle}"/>
+
+                        <TextBlock
+                            Text="Ключ хранится в защищённом Windows Credential Vault. Получить ключ можно на dadata.ru → личный кабинет → API."
+                            Style="{StaticResource NiatecCaptionTextStyle}"/>
+
+                        <PasswordBox
+                            x:Name="DaDataApiKeyPasswordBox"
+                            Header="API-ключ DaData"
+                            PlaceholderText="Вставьте ваш ключ"/>
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button
+                                Grid.Column="0"
+                                Content="Сохранить ключ DaData"
+                                Style="{StaticResource NiatecPrimaryButtonStyle}"
+                                Click="SaveDaDataApiKeyButton_Click"/>
+
+                            <Button
+                                Grid.Column="1"
+                                Content="Удалить"
+                                Style="{StaticResource NiatecSecondaryButtonStyle}"
+                                Click="ClearDaDataApiKeyButton_Click"/>
+                        </Grid>
+
+                        <Border Style="{StaticResource NiatecInnerPanelBorderStyle}">
+                            <TextBlock
+                                x:Name="DaDataApiKeyStatusTextBlock"
+                                Text=""
+                                Foreground="{StaticResource NiatecAccentBrush}"
+                                TextWrapping="Wrap"/>
+                        </Border>
+
+                        <Border BorderThickness="0,0,0,1"
+                                BorderBrush="{StaticResource NiatecBorderBrush}"
+                                Margin="0,8,0,0"/>
+
+                        <TextBlock
                             Text="Как должен работать поставщик"
                             Style="{StaticResource NiatecSectionTitleTextStyle}"/>
 

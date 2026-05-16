@@ -500,7 +500,7 @@ namespace ClientAccountApp
                 string finalFullPath = ClientFileStorageService.GetFullPath(contractRelativePath);
                 StatusTextBlock.Text = $"Договор сформирован и добавлен в файлы клиента «{clientFromDb.Name}».";
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
-                try { if (File.Exists(tempContractPath)) File.Delete(tempContractPath); } catch { }
+                try { if (File.Exists(tempContractPath)) File.Delete(tempContractPath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
             }
             catch (Exception ex) { StatusTextBlock.Text = $"Ошибка формирования договора: {ex.Message}"; }
         }

@@ -377,7 +377,7 @@ namespace ClientAccountApp
                 StatusMessageHelper.Success(BillingStatusTextBlock, $"Word-счёт {invoice.InvoiceNumber} сформирован и добавлен во вкладку «Документы».");
                 if (File.Exists(fullPath)) ClientFileStorageService.OpenFile(fullPath);
                 else StatusMessageHelper.Error(BillingStatusTextBlock, "Word-счёт сформирован, но файл не найден на диске для открытия.");
-                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
             }
             catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования Word-счёта: {ex.Message}"); }
         }
@@ -526,7 +526,10 @@ namespace ClientAccountApp
                 else await ShowMessageAsync("УПД PDF", "УПД PDF сформирован, но файл не найден на диске для открытия.");
             }
             catch (Exception ex) { await ShowMessageAsync("УПД PDF", "Не удалось сформировать УПД PDF:\n\n" + ex); }
-            finally { try { if (!string.IsNullOrWhiteSpace(tempPath) && File.Exists(tempPath)) File.Delete(tempPath); } catch { } }
+            finally { try { if (!string.IsNullOrWhiteSpace(tempPath) && File.Exists(tempPath)) File.Delete(tempPath); } catch (Exception _ex)
+            {
+                AppLogger.LogError("BillingPage.GenerateAndOpenUpdPdfForInvoice", _ex);
+            } }
         }
 
         private (int InvoiceId, int ClientId) TryResolveInvoiceIdentity(int invoiceId, string invoiceNumber)
@@ -552,7 +555,10 @@ namespace ClientAccountApp
                     if (byNumber.InvoiceId > 0 && byNumber.ClientId > 0) return byNumber;
                 }
             }
-            catch { }
+            catch (Exception _ex)
+            {
+                AppLogger.LogError("BillingPage.TryResolveInvoiceIdentity", _ex);
+            }
             return (0, 0);
         }
 
@@ -593,7 +599,10 @@ namespace ClientAccountApp
                     if (resultByNumber > 0) return resultByNumber;
                 }
             }
-            catch { }
+            catch (Exception _ex)
+            {
+                AppLogger.LogError("BillingPage.TryResolveClientIdByInvoice", _ex);
+            }
             return 0;
         }
 
@@ -693,7 +702,10 @@ namespace ClientAccountApp
                 else if (targetType == typeof(DateTime)) property.SetValue(target, Convert.ToDateTime(value));
                 else property.SetValue(target, value);
             }
-            catch { }
+            catch (Exception _ex)
+            {
+                AppLogger.LogError("BillingPage.SetPropertyIfExists", _ex);
+            }
         }
 
         private static int GetIntValue(object source, params string[] propertyNames)
@@ -778,7 +790,7 @@ namespace ClientAccountApp
                     _syncingInvoiceSelection = false;
                     DispatcherQueue.TryEnqueue(() =>
                     {
-                        try { if (compact) InvoicesCompactListView.ScrollIntoView(selectedItem); else InvoicesListView.ScrollIntoView(selectedItem); } catch { }
+                        try { if (compact) InvoicesCompactListView.ScrollIntoView(selectedItem); else InvoicesListView.ScrollIntoView(selectedItem); } catch { /* ScrollIntoView может упасть если список переотрисован */ }
                     });
                 }
             }
@@ -865,7 +877,7 @@ namespace ClientAccountApp
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
                 StatusMessageHelper.Success(BillingStatusTextBlock, $"Акт по счету {invoice.InvoiceNumber} сформирован и добавлен в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
-                try { if (File.Exists(tempActPath)) File.Delete(tempActPath); } catch { }
+                try { if (File.Exists(tempActPath)) File.Delete(tempActPath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
             }
             catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования акта: {ex.Message}"); }
         }
@@ -890,7 +902,7 @@ namespace ClientAccountApp
                 string finalFullPath = ClientFileStorageService.GetFullPath(relativePath);
                 StatusMessageHelper.Success(BillingStatusTextBlock, $"Счёт-фактура по счёту {invoice.InvoiceNumber} сформирована и добавлена в файлы клиента «{client.Name}».");
                 if (File.Exists(finalFullPath)) ClientFileStorageService.OpenFile(finalFullPath);
-                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
             }
             catch (Exception ex) { StatusMessageHelper.Error(BillingStatusTextBlock, $"Ошибка формирования счёт-фактуры: {ex.Message}"); }
         }
@@ -984,7 +996,7 @@ namespace ClientAccountApp
 
         private static void TryDeleteTempFile(string tempPath)
         {
-            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
         }
 
         private void MarkInvoicePaidButton_Click(object sender, RoutedEventArgs e) =>
@@ -1161,7 +1173,7 @@ namespace ClientAccountApp
                     _syncingInvoiceSelection = false;
                     DispatcherQueue.TryEnqueue(() =>
                     {
-                        try { if (_isInvoicesCompactView) InvoicesCompactListView.ScrollIntoView(itemToSelect); else InvoicesListView.ScrollIntoView(itemToSelect); } catch { }
+                        try { if (_isInvoicesCompactView) InvoicesCompactListView.ScrollIntoView(itemToSelect); else InvoicesListView.ScrollIntoView(itemToSelect); } catch { /* ScrollIntoView может упасть если список переотрисован */ }
                     });
                 }
             }
@@ -1498,8 +1510,8 @@ namespace ClientAccountApp
                     InvoicesListView.SelectedItem = itemToSelect; InvoicesCompactListView.SelectedItem = itemToSelect;
                     DispatcherQueue.TryEnqueue(() =>
                     {
-                        try { InvoicesListView.ScrollIntoView(itemToSelect); } catch { }
-                        try { InvoicesCompactListView.ScrollIntoView(itemToSelect); } catch { }
+                        try { InvoicesListView.ScrollIntoView(itemToSelect); } catch { /* ScrollIntoView может упасть если список переотрисован — игнорируем */ }
+                        try { InvoicesCompactListView.ScrollIntoView(itemToSelect); } catch { /* ScrollIntoView может упасть если список переотрисован — игнорируем */ }
                     });
                 }
             }

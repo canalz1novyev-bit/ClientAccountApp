@@ -52,11 +52,9 @@ namespace ClientAccountApp
     "https://zakupki.gov.ru/epz/dishonestsupplier/search/results.html";
 
 
-        // ВАЖНО:
-        // Не публикуй реальный ключ в GitHub.
-        // Временно для теста можешь вставить ключ сюда,
-        // потом лучше вынесем в Settings.
-        private const string DaDataApiKey = "bb64f1e3f1715f84399c4c2228f954cf1a3165a1";
+        // API-ключ DaData хранится в Windows Credential Vault через CounterpartyApiKeysService.
+        // НИКОГДА не хранить ключ в исходниках — он попадёт в git и станет публичным.
+        // Настроить ключ можно в окне "Параметры → Источники проверок контрагентов".
 
         static CounterpartyCheckService()
         {
@@ -67,9 +65,9 @@ namespace ClientAccountApp
                 Http.DefaultRequestHeaders.UserAgent.ParseAdd(
                     "NIATEC.Client/0.9 CounterpartyCheck");
             }
-            catch
+            catch (Exception ex)
             {
-                // не критично
+                AppLogger.LogWarning("CounterpartyCheckService.UserAgent", ex.Message);
             }
         }
 
@@ -805,16 +803,17 @@ namespace ClientAccountApp
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(DaDataApiKey) ||
-                    DaDataApiKey == "ВСТАВЬ_СЮДА_СВОЙ_DADATA_API_КЛЮЧ")
+                string apiKey = CounterpartyApiKeysService.GetDaDataApiKey();
+
+                if (string.IsNullOrWhiteSpace(apiKey))
                 {
                     return new CounterpartySourceCheckResult
                     {
                         SourceName = "DaData / Организация по ИНН",
                         Status = "Ключ не указан",
                         IsRealDataReceived = false,
-                        Summary = "API-ключ DaData не указан в CounterpartyCheckService.",
-                        Details = "Вставьте ключ DaData в переменную DaDataApiKey или вынесите его в настройки приложения.",
+                        Summary = "API-ключ DaData не настроен.",
+                        Details = "Откройте «Параметры → Источники проверок контрагентов» и введите ваш ключ DaData. Ключ хранится в защищённом Windows Credential Vault, в исходниках не сохраняется.",
                         TechnicalInfo = "Проверка не выполнялась."
                     };
                 }
@@ -822,7 +821,7 @@ namespace ClientAccountApp
                 using var request = new HttpRequestMessage(HttpMethod.Post, DaDataPartyUrl);
 
                 request.Headers.TryAddWithoutValidation("Accept", "application/json");
-                request.Headers.TryAddWithoutValidation("Authorization", "Token " + DaDataApiKey);
+                request.Headers.TryAddWithoutValidation("Authorization", "Token " + apiKey);
 
                 string body = JsonSerializer.Serialize(new
                 {

@@ -220,7 +220,10 @@ namespace ClientAccountApp.Services
                         Year     = s.Settings.Year,
                     });
                 }
-                catch { }
+                catch (Exception _ex)
+            {
+                AppLogger.LogError("RsvSessionService.GetAll", _ex);
+            }
             }
             return result;
         }
@@ -229,7 +232,7 @@ namespace ClientAccountApp.Services
 
         public static void Delete(string filePath)
         {
-            try { if (File.Exists(filePath)) File.Delete(filePath); } catch { }
+            try { if (File.Exists(filePath)) File.Delete(filePath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
         }
     }
 }

@@ -75,7 +75,10 @@ namespace ClientAccountApp
                     if (p.Length >= 3) RsvDirPatronymicBox.Text = p[2];
                 }
             }
-            catch { }
+            catch (Exception _ex)
+            {
+                AppLogger.LogError("RsvPage.TryLoadOrgFromProfile", _ex);
+            }
         }
 
         // ═════════════════════════════════════════════════════════════════════

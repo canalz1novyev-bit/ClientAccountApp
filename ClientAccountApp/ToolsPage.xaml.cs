@@ -1324,7 +1324,10 @@ namespace ClientAccountApp
                         bankBic     = orgPr.BankBic ?? "";
                     }
                 }
-                catch { }
+                catch (Exception _ex)
+            {
+                AppLogger.LogError("ToolsPage.DoExportKudir", _ex);
+            }
 
                 var org = new BankStatementUsnXmlExporter.OrgInfo(
                     inn, kpp, name, bankName, bankAccount, bankBic);

@@ -21,15 +21,17 @@ namespace ClientAccountApp
             if (bic.Length != 9)
                 return null;
 
-            if (string.IsNullOrWhiteSpace(InnLookupSettings.DadataToken))
-                throw new InvalidOperationException("Токен DaData не указан в InnLookupSettings.cs.");
+            string apiKey = CounterpartyApiKeysService.GetDaDataApiKey();
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new InvalidOperationException(
+                    "Ключ DaData не настроен. Откройте «Параметры → Источники проверок контрагентов» и введите ключ.");
 
             using var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/bank");
 
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("Token", InnLookupSettings.DadataToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
 
             var requestJson = JsonSerializer.Serialize(new
             {

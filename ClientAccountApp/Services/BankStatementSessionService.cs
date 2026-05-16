@@ -208,8 +208,7 @@ namespace ClientAccountApp.Services
 
         public static void Delete(string filePath)
         {
-            try { if (File.Exists(filePath)) File.Delete(filePath); }
-            catch { }
+            try { if (File.Exists(filePath)) File.Delete(filePath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────

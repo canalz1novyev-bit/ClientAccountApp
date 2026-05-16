@@ -141,7 +141,10 @@ namespace ClientAccountApp
                     Path.Combine(folder, "startup-log.txt"),
                     DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine);
             }
-            catch { }
+            catch (Exception _ex)
+            {
+                AppLogger.LogError("App.WriteAppLog", _ex);
+            }
         }
     }
 }

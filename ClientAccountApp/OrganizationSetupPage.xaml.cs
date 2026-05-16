@@ -292,9 +292,9 @@ namespace ClientAccountApp
                 OrganizationBankNameTextBox.Text         = result.BankName;
                 OrganizationCorrespondentAccountTextBox.Text = result.CorrespondentAccount;
             }
-            catch
+            catch (Exception _ex)
             {
-                // Тихая ошибка — пользователь заполнит вручную
+                AppLogger.LogError("OrganizationSetupPage.OrganizationBankBicTextBox_LostFocus", _ex);
             }
         }
 

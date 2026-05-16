@@ -471,10 +471,10 @@ namespace ClientAccountApp
                     if (File.Exists(tempContractPath))
                         File.Delete(tempContractPath);
                 }
-                catch
-                {
-                    // временный файл не критичен
-                }
+                catch (Exception _ex)
+            {
+                AppLogger.LogError("ContractsPage.OpenContractButton_Click", _ex);
+            }
             }
             catch (Exception ex)
             {
@@ -740,7 +740,7 @@ namespace ClientAccountApp
                 client.ContractGeneratedAt = DateTime.Now;
                 db.SaveChanges();
 
-                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch (Exception _exDel) { AppLogger.LogWarning("FileDelete", _exDel.Message); }
 
                 string finalPath = ClientFileStorageService.GetFullPath(relativePath);
                 LoadContracts();

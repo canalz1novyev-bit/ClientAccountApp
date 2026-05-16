@@ -204,10 +204,10 @@ namespace ClientAccountApp
                     if (await first.IsVisibleAsync())
                         return true;
                 }
-                catch
-                {
-                    // Playwright бросает исключение если элемент не найден — это ожидаемо, пробуем следующий
-                }
+                catch (Exception _ex)
+            {
+                AppLogger.LogError("EgrulExtractService.HasVisibleAsync", _ex);
+            }
             }
 
             return false;
@@ -222,10 +222,10 @@ namespace ClientAccountApp
                     if (await locator.CountAsync() > 0)
                         return locator.First;
                 }
-                catch
-                {
-                    // Playwright бросает исключение если элемент не найден — это ожидаемо, пробуем следующий
-                }
+                catch (Exception _ex)
+            {
+                AppLogger.LogError("EgrulExtractService.PickFirstAvailableAsync", _ex);
+            }
             }
 
             throw new InvalidOperationException("Не удалось найти нужный элемент на странице ФНС.");
@@ -244,10 +244,10 @@ namespace ClientAccountApp
                     if (await first.IsVisibleAsync())
                         return first;
                 }
-                catch
-                {
-                    // Playwright бросает исключение если элемент не найден — это ожидаемо, пробуем следующий
-                }
+                catch (Exception _ex)
+            {
+                AppLogger.LogError("EgrulExtractService.PickFirstVisibleAsync", _ex);
+            }
             }
 
             throw new InvalidOperationException("Не удалось найти кнопку получения выписки на странице ФНС.");

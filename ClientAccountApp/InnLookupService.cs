@@ -16,10 +16,12 @@ namespace ClientAccountApp
 
         public static async Task<InnLookupResult> FindByInnAsync(string inn, string currentClientType)
         {
-            if (string.IsNullOrWhiteSpace(InnLookupSettings.DadataToken) ||
-    InnLookupSettings.DadataToken == "PASTE_REAL_DADATA_TOKEN_HERE")
+            string apiKey = CounterpartyApiKeysService.GetDaDataApiKey();
+
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
-                throw new InvalidOperationException("Токен DaData не указан в файле InnLookupSettings.cs.");
+                throw new InvalidOperationException(
+                    "Ключ DaData не настроен. Откройте «Параметры → Источники проверок контрагентов» и введите ключ.");
             }
 
             string searchType = IsEntrepreneurType(currentClientType) ? "INDIVIDUAL" : "LEGAL";
@@ -37,7 +39,7 @@ namespace ClientAccountApp
                 "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party");
 
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("Token", InnLookupSettings.DadataToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Token", apiKey);
             request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
 
             using HttpResponseMessage response = await _httpClient.SendAsync(request);

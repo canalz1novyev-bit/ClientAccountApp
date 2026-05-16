@@ -247,7 +247,10 @@ namespace ClientAccountApp
                 Directory.CreateDirectory(Path.GetDirectoryName(_settingsPath)!);
                 File.WriteAllText(_settingsPath, theme);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("ThemeService.SaveTheme", ex);
+            }
         }
 
         private static string LoadTheme()
@@ -257,7 +260,10 @@ namespace ClientAccountApp
                 if (File.Exists(_settingsPath))
                     return File.ReadAllText(_settingsPath).Trim();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("ThemeService.LoadTheme", ex);
+            }
             return ThemeDark;
         }
     }

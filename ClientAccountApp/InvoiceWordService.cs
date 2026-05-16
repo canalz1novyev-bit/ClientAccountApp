@@ -289,7 +289,10 @@ namespace ClientAccountApp
                     var logoPara = AppendLogoToParagraph(mainPart, logoPath);
                     leftCell.Append(logoPara);
                 }
-                catch { }
+                catch (Exception _ex)
+            {
+                AppLogger.LogError("InvoiceWordService.CreateHeaderWithQr", _ex);
+            }
             }
 
             leftCell.Append(CreateParagraph(

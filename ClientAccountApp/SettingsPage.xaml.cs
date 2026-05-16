@@ -25,7 +25,70 @@ namespace ClientAccountApp
             {
                 SafeUpdateStorageInfo();
                 UpdateThemeCardSelection();
+                UpdateDaDataKeyStatus();
             });
+        }
+
+        // ─── DaData API key ───────────────────────────────────────────────────
+
+        private void UpdateDaDataKeyStatus()
+        {
+            try
+            {
+                bool hasKey = CounterpartyApiKeysService.HasDaDataApiKey();
+                DaDataApiKeySettingsBox.Password = hasKey ? "********" : "";
+                DaDataKeySettingsStatusTextBlock.Text = hasKey
+                    ? "✓ Ключ DaData сохранён в защищённом хранилище Windows."
+                    : "Ключ DaData не настроен — автозаполнение по ИНН и поиск банка по БИК недоступны.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("SettingsPage.UpdateDaDataKeyStatus", ex);
+            }
+        }
+
+        private void SaveDaDataKeyFromSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string raw = DaDataApiKeySettingsBox.Password ?? "";
+
+                if (raw == "********")
+                {
+                    DaDataKeySettingsStatusTextBlock.Text = "Ключ оставлен без изменений.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(raw))
+                {
+                    DaDataKeySettingsStatusTextBlock.Text = "Введите ключ DaData или нажмите «Удалить».";
+                    return;
+                }
+
+                CounterpartyApiKeysService.SaveDaDataApiKey(raw.Trim());
+                DaDataApiKeySettingsBox.Password = "********";
+                DaDataKeySettingsStatusTextBlock.Text = "✓ Ключ DaData сохранён в защищённом хранилище Windows.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("SettingsPage.SaveDaDataKey", ex);
+                DaDataKeySettingsStatusTextBlock.Text = "Не удалось сохранить ключ: " + ex.Message;
+            }
+        }
+
+        private void ClearDaDataKeyFromSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                CounterpartyApiKeysService.SaveDaDataApiKey("");
+                DaDataApiKeySettingsBox.Password = "";
+                DaDataKeySettingsStatusTextBlock.Text = "Ключ DaData удалён.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("SettingsPage.ClearDaDataKey", ex);
+                DaDataKeySettingsStatusTextBlock.Text = "Не удалось удалить ключ: " + ex.Message;
+            }
         }
 
         // ─── Тема ─────────────────────────────────────────────────────────────

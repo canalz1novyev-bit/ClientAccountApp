@@ -17,6 +17,12 @@ namespace ClientAccountApp
         {
             var settings = CounterpartyProviderSettingsService.Load();
 
+            // DaData
+            DaDataApiKeyPasswordBox.Password = CounterpartyApiKeysService.HasDaDataApiKey() ? "********" : "";
+            DaDataApiKeyStatusTextBlock.Text = CounterpartyApiKeysService.HasDaDataApiKey()
+                ? "✓ Ключ DaData сохранён в защищённом хранилище."
+                : "Ключ DaData не настроен — автопроверка по ИНН недоступна.";
+
             KadApiEnabledCheckBox.IsChecked = settings.KadApiEnabled;
             KadProviderNameTextBox.Text = settings.KadProviderName;
             KadApiUrlTextBox.Text = settings.KadApiUrl;
@@ -102,6 +108,51 @@ namespace ClientAccountApp
             }
 
             KadHttpMethodComboBox.SelectedIndex = 1;
+        }
+
+        private void SaveDaDataApiKeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string raw = DaDataApiKeyPasswordBox.Password ?? "";
+
+                // Маска "********" значит "ключ уже сохранён, не трогать"
+                if (raw == "********")
+                {
+                    DaDataApiKeyStatusTextBlock.Text = "Ключ DaData оставлен без изменений.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(raw))
+                {
+                    DaDataApiKeyStatusTextBlock.Text = "Введите ключ DaData или нажмите «Удалить».";
+                    return;
+                }
+
+                CounterpartyApiKeysService.SaveDaDataApiKey(raw.Trim());
+                DaDataApiKeyPasswordBox.Password = "********";
+                DaDataApiKeyStatusTextBlock.Text = "✓ Ключ DaData сохранён в защищённом хранилище Windows.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("CounterpartySourcesSettingsPage.SaveDaDataApiKey", ex);
+                DaDataApiKeyStatusTextBlock.Text = "Не удалось сохранить ключ: " + ex.Message;
+            }
+        }
+
+        private void ClearDaDataApiKeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                CounterpartyApiKeysService.SaveDaDataApiKey("");
+                DaDataApiKeyPasswordBox.Password = "";
+                DaDataApiKeyStatusTextBlock.Text = "Ключ DaData удалён.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogError("CounterpartySourcesSettingsPage.ClearDaDataApiKey", ex);
+                DaDataApiKeyStatusTextBlock.Text = "Не удалось удалить ключ: " + ex.Message;
+            }
         }
 
         private void BackToSettingsButton_Click(object sender, RoutedEventArgs e)

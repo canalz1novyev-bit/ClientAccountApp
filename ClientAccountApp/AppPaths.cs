@@ -74,7 +74,10 @@ namespace ClientAccountApp
                     return folder;
                 }
             }
-            catch { }
+            catch (Exception _ex)
+            {
+                AppLogger.LogError("AppPaths.GetDefaultStorageRoot", _ex);
+            }
 
             // Запасной вариант — AppData (старое поведение)
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -95,7 +98,10 @@ namespace ClientAccountApp
                     return customRoot;
                 }
             }
-            catch { }
+            catch (Exception _ex)
+            {
+                AppLogger.LogError("AppPaths.ResolveStorageRoot", _ex);
+            }
 
             return _defaultStorageRoot;
         }
