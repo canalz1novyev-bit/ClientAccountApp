@@ -44,9 +44,9 @@
          COMMON SIZES
          ========================= -->
 
-    <CornerRadius x:Key="NiatecCardCornerRadius">14</CornerRadius>
+    <CornerRadius x:Key="NiatecCardCornerRadius">10</CornerRadius>
     <Thickness x:Key="NiatecCardBorderThickness">1</Thickness>
-    <Thickness x:Key="NiatecCardPadding">16</Thickness>
+    <Thickness x:Key="NiatecCardPadding">12</Thickness>
 
     <!-- =========================
          TEXT STYLES
@@ -55,19 +55,19 @@
     <!-- Текст -->
     <Style x:Key="NiatecPageTitleTextStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource NiatecTextPrimaryBrush}"/>
-        <Setter Property="FontSize" Value="30"/>
+        <Setter Property="FontSize" Value="22"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
     <Style x:Key="NiatecPageSubtitleTextStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource NiatecTextSecondaryBrush}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <Style x:Key="NiatecSectionTitleTextStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource NiatecTextPrimaryBrush}"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
@@ -84,8 +84,8 @@
     </Style>
 
     <Style x:Key="NiatecMetricNumberTextStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource NiatecAccentBrush}"/>
-        <Setter Property="FontSize" Value="26"/>
+        <Setter Property="Foreground" Value="{StaticResource NiatecTextPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="22"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     
@@ -106,8 +106,8 @@
         <Setter Property="Background" Value="{StaticResource NiatecSurfaceAltBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource NiatecBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="Padding" Value="12"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="10"/>
     </Style>
 
     <!-- =========================
@@ -120,9 +120,9 @@
        TargetType="Button"
        BasedOn="{StaticResource DefaultButtonStyle}">
 
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="14,8"/>
-        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="MinHeight" Value="32"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
@@ -166,9 +166,9 @@
         <Setter Property="Foreground" Value="{StaticResource NiatecTextPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource NiatecBorderBrush}"/>
         <Setter Property="Padding" Value="0"/>
-        <Setter Property="Width" Value="36"/>
-        <Setter Property="Height" Value="36"/>
-        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Width" Value="32"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="MinHeight" Value="32"/>
     </Style>
     <!-- Акцентная информационная строка -->
     <Style x:Key="NiatecAccentInfoTextStyle" TargetType="TextBlock">
@@ -189,8 +189,8 @@
         <Setter Property="Background" Value="{StaticResource NiatecBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource NiatecBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="20"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="TextWrapping" Value="Wrap"/>

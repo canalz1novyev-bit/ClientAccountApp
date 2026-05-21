@@ -22,7 +22,7 @@ namespace ClientAccountApp
     public sealed class ClientsPageState
     {
         public string SearchText { get; set; } = "";
-        public string ViewMode { get; set; } = "Обычный";
+        public string ViewMode { get; set; } = "Табличный";
         public string SignatureFilter { get; set; } = "Все клиенты";
         public string StatusFilter { get; set; } = "Все статусы";
         public int? SelectedClientId { get; set; }

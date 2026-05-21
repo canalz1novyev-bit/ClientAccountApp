@@ -7,7 +7,7 @@
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="16">
+        <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="16" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

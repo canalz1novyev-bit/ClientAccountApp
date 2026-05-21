@@ -10,7 +10,7 @@
         <KeyboardAccelerator Key="F" Modifiers="Control" Invoked="FocusSearchAccelerator_Invoked"/>
     </Page.KeyboardAccelerators>
 
-    <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="12">
+    <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="16" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -20,10 +20,10 @@
 
         <!-- Заголовок -->
         <StackPanel Spacing="4">
-            <TextBlock Text="Начисления" FontSize="30" FontWeight="SemiBold"
+            <TextBlock Text="Начисления" FontSize="22" FontWeight="SemiBold"
                        Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
             <TextBlock Text="Реестр счетов, ручное выставление и будущие автоначисления"
-                       FontSize="13" Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
+                       FontSize="12" Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
         </StackPanel>
 
         <!-- Статистика -->
@@ -53,7 +53,7 @@
                     BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12,10">
                 <StackPanel Spacing="2">
                     <TextBlock Text="Выставлено" FontSize="12" Foreground="{StaticResource NiatecTextMutedBrush}"/>
-                    <TextBlock x:Name="StatIssuedTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource NiatecAccentBrush}"/>
+                    <TextBlock x:Name="StatIssuedTextBlock" Text="—" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
                 </StackPanel>
             </Border>
             <Border Grid.Column="3" Background="{StaticResource NiatecSurfaceAltBrush}"
@@ -130,6 +130,7 @@
                     <Grid Grid.Row="1">
                         <!-- Обычный вид -->
                         <ListView x:Name="InvoicesListView" SelectionMode="Single"
+                                  Visibility="Collapsed"
                                   SelectionChanged="InvoicesListView_SelectionChanged"
                                   Background="Transparent" BorderThickness="0"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -170,7 +171,7 @@
                                             </StackPanel>
                                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalText}"
                                                        FontSize="15" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource NiatecAccentBrush}"
+                                                       Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                                        HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                             <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                                                        Text="{Binding ClientName}" FontSize="13" FontWeight="SemiBold"
@@ -190,7 +191,7 @@
                                                 <TextBlock Grid.Column="2" Text="{Binding DueDateText}" FontSize="12"
                                                            Foreground="{StaticResource NiatecTextMutedBrush}"/>
                                                 <TextBlock Grid.Column="3" Text="{Binding DocumentStateText}" FontSize="12"
-                                                           Foreground="{StaticResource NiatecAccentBrush}" HorizontalAlignment="Right"/>
+                                                           Foreground="{StaticResource NiatecTextMutedBrush}" HorizontalAlignment="Right"/>
                                             </Grid>
                                             <Border Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
                                                     Background="{StaticResource NiatecSurfaceAltBrush}"
@@ -258,7 +259,7 @@
                                                        Foreground="{StaticResource NiatecTextSecondaryBrush}"
                                                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Grid.Column="3" Text="{Binding TotalText}" FontSize="12"
-                                                       FontWeight="SemiBold" Foreground="{StaticResource NiatecAccentBrush}"
+                                                       FontWeight="SemiBold" Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                                        HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
@@ -376,7 +377,7 @@
                                                         <TextBlock Grid.Column="1" Text="{Binding VatAmountText}" FontSize="11"
                                                                    Foreground="{StaticResource NiatecTextMutedBrush}" VerticalAlignment="Center"/>
                                                         <TextBlock Grid.Column="2" Text="{Binding AmountWithVatText}" FontSize="14"
-                                                                   FontWeight="SemiBold" Foreground="{StaticResource NiatecAccentBrush}"
+                                                                   FontWeight="SemiBold" Foreground="{StaticResource NiatecTextPrimaryBrush}"
                                                                    VerticalAlignment="Center"/>
                                                         <Button Grid.Column="3" Content="✕" FontSize="12" Width="28" Height="28"
                                                                 Padding="0" VerticalAlignment="Center"
@@ -429,7 +430,7 @@
                                                         BorderThickness="1" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
                                                     <TextBlock x:Name="InvoiceItemEditorModeLabel" Text="+ Новая строка"
                                                                FontSize="11" FontWeight="SemiBold"
-                                                               Foreground="{StaticResource NiatecAccentBrush}"/>
+                                                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
                                                 </Border>
                                             </Grid>
                                             <TextBox x:Name="InvoiceItemNameTextBox"
@@ -551,7 +552,7 @@
                                                     <TextBlock Text="{Binding MetaText}" FontSize="11"
                                                                Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
                                                     <TextBlock Text="{Binding StatusText}" FontSize="11"
-                                                               Foreground="{StaticResource NiatecAccentBrush}"/>
+                                                               Foreground="{StaticResource NiatecTextMutedBrush}"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
@@ -598,7 +599,7 @@
                         </Border>
                         <Border BorderBrush="{StaticResource NiatecBorderBrush}" BorderThickness="0,1,0,0" Padding="14,8">
                             <TextBlock x:Name="BillingStatusTextBlock" Text="Выберите счёт или создайте новый."
-                                       Foreground="{StaticResource NiatecAccentBrush}" FontSize="12" TextWrapping="Wrap"/>
+                                       Foreground="{StaticResource NiatecTextMutedBrush}" FontSize="12" TextWrapping="Wrap"/>
                         </Border>
                     </StackPanel>
 

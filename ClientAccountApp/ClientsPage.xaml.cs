@@ -37,7 +37,7 @@ namespace ClientAccountApp
         private MenuFlyoutItem? _createContractMenuItem;
         private readonly MenuFlyout _clientFileContextFlyout = new();
         private ClientFile? _contextClientFile;
-        private int _clientViewMode = 0;
+        private int _clientViewMode = 2;
 
         private bool _clientFormReady = false;
         private Border? _rightTappedClientBorder;
@@ -213,8 +213,8 @@ namespace ClientAccountApp
 
         private static int ParseClientViewMode(string? viewMode) => viewMode switch
         {
-            "Табличный" => 2,
-            _ => 0
+            "Обычный" => 0,
+            _ => 2
         };
 
         private static string GetComboBoxText(ComboBox? comboBox, string fallback)

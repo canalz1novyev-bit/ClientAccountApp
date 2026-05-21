@@ -62,7 +62,7 @@ namespace ClientAccountApp
         private bool _pageReady = false;
         private int? _selectedInvoiceId;
         private int? _selectedInvoiceItemId;
-        private bool _isInvoicesCompactView = false;
+        private bool _isInvoicesCompactView = true;
         private bool _syncingInvoiceSelection = false;
         private bool _loadingItemFromDb = false;
 

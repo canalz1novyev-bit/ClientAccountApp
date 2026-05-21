@@ -171,7 +171,7 @@ namespace ClientAccountApp
                 CategoryAnalyticsPanel.Children.Add(CreateInfoRow(
                     "Пока нет клиентов",
                     "После добавления клиентов здесь появится распределение по категориям бизнеса.",
-                    "NiatecInfoBrush"));
+                    "NiatecBorderBrush"));
 
                 return;
             }
@@ -407,7 +407,7 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Клиент",
                     $"{client.Name} · ИНН {client.Inn} · {category}",
-                    "NiatecInfoBrush"));
+                    "NiatecBorderBrush"));
             }
 
             foreach (var invoice in invoices.OrderByDescending(i => i.Id).Take(2))
@@ -419,7 +419,7 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Счёт",
                     $"{invoice.InvoiceNumber} · {clientName ?? "Клиент"} · {FormatMoney(invoice.TotalWithVat)}",
-                    "NiatecInfoBrush"));
+                    "NiatecBorderBrush"));
             }
 
             foreach (var contract in contracts.OrderByDescending(c => c.UpdatedAt).Take(2))
@@ -431,7 +431,7 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Договор",
                     $"{clientName ?? "Клиент"} · {contract.Status}",
-                    "NiatecAccentBlueBrush"));
+                    "NiatecBorderBrush"));
             }
 
             if (!hasItems)
@@ -439,11 +439,11 @@ namespace ClientAccountApp
                 RecentPanel.Children.Add(CreateInfoRow(
                     "Пока нет событий",
                     "После работы с клиентами, счетами и договорами здесь появятся последние действия.",
-                    "NiatecInfoBrush"));
+                    "NiatecBorderBrush"));
             }
         }
 
-        // accentBrushKey — ключ темы: "NiatecDangerBrush", "NiatecWarningBrush", "NiatecSuccessBrush", "NiatecInfoBrush"
+        // accentBrushKey — ключ темы: "NiatecDangerBrush", "NiatecWarningBrush", "NiatecSuccessBrush", "NiatecBorderBrush"
         private Border CreateInfoRow(string title, string description, string accentBrushKey)
         {
             var titleBlock = new TextBlock

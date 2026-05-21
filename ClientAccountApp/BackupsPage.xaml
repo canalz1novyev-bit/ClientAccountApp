@@ -9,7 +9,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Border
             Background="{StaticResource NiatecBackgroundBrush}"
-            Padding="24">
+            Padding="16">
 
             <StackPanel Spacing="18">
 

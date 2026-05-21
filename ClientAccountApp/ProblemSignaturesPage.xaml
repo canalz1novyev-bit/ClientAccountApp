@@ -9,8 +9,8 @@
 
     <Grid
         Background="{StaticResource NiatecBackgroundBrush}"
-        Padding="24"
-        RowSpacing="16">
+        Padding="16"
+        RowSpacing="12">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -118,7 +118,7 @@
 
                                         <TextBlock
                                             Text="{x:Bind CertificationAuthority}"
-                                            Foreground="{StaticResource NiatecAccentBlueBrush}"
+                                            Foreground="{StaticResource NiatecTextMutedBrush}"
                                             TextWrapping="Wrap"/>
 
                                         <TextBlock

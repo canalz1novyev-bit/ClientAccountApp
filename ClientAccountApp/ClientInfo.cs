@@ -143,6 +143,46 @@ namespace ClientAccountApp
             }
         }
 
+        /// <summary>
+        /// Имя + категория бизнеса через точку. Тип клиента (ИП/ООО) уже содержится в Name,
+        /// поэтому здесь не повторяется. Используется в карточке списка клиентов.
+        /// </summary>
+        [NotMapped]
+        public string NameWithCategory
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(BusinessCategory))
+                    return Name;
+                return $"{Name} · {BusinessCategory}";
+            }
+        }
+
+        /// <summary>
+        /// ИНН без типа клиента: "ИНН 6805000020605" или "ИНН не указан".
+        /// </summary>
+        [NotMapped]
+        public string InnDisplayText =>
+            string.IsNullOrWhiteSpace(Inn)
+                ? "ИНН не указан"
+                : $"ИНН {Inn}";
+
+        /// <summary>
+        /// Visibility.Visible — ЭЦП в норме (текст начинается с "ЭЦП действует").
+        /// Используется для условного цвета в карточке: серый когда OK, оранжевый когда проблема.
+        /// </summary>
+        [NotMapped]
+        public Visibility SignatureOk =>
+            SignatureWarningText.StartsWith("ЭЦП действует", StringComparison.OrdinalIgnoreCase)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+        [NotMapped]
+        public Visibility SignatureNotOk =>
+            SignatureWarningText.StartsWith("ЭЦП действует", StringComparison.OrdinalIgnoreCase)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
         [NotMapped]
         public int SignatureCount { get; set; }
 

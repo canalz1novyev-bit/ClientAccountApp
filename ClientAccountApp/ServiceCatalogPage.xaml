@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="24" RowSpacing="16">
+    <Grid Background="{StaticResource NiatecBackgroundBrush}" Padding="16" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -16,12 +16,12 @@
         <StackPanel Spacing="4">
             <TextBlock
                 Text="Справочник услуг"
-                FontSize="30"
+                FontSize="22"
                 FontWeight="SemiBold"
                 Foreground="{StaticResource NiatecTextPrimaryBrush}"/>
             <TextBlock
                 Text="Типовые услуги для быстрого добавления в счета"
-                FontSize="13"
+                FontSize="12"
                 Foreground="{StaticResource NiatecTextSecondaryBrush}"/>
         </StackPanel>
 
